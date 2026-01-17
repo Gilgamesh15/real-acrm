@@ -1,6 +1,7 @@
 import "@fontsource-variable/inter";
 import "@fontsource-variable/tektur";
 import "@fontsource/poiret-one";
+import { Analytics } from "@vercel/analytics/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -130,6 +131,7 @@ export function Layout() {
         <Toaster richColors />
         <ScrollRestoration />
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );
