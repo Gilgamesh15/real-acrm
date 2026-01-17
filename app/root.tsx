@@ -32,6 +32,8 @@ import { cookieConsent } from "./cookies.server";
 import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
+const GOOGLE_VERIFICATION = import.meta.env.VITE_GOOGLE_VERIFICATION;
+
 export const meta: Route.MetaFunction = () => [
   { title: "ACRM | Fashion Projects" },
   { name: "description", content: "Sklep z projektami mody z second-handu." },
@@ -94,6 +96,9 @@ export function Layout() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
         <meta name="format-detection" content="telephone=no" />
+        {GOOGLE_VERIFICATION && (
+          <meta name="google-site-verification" content={GOOGLE_VERIFICATION} />
+        )}
         <Meta />
         <Links />
       </head>
