@@ -41,6 +41,70 @@ class FilterService {
   static PRODUCT_SIMILARITY_SIZE_MULTIPLIER = 0.3;
   static PRODUCT_SIMILARITY_CATEGORY_MULTIPLIER = 0.3;
 
+  private getPieceScoreExpression(search: string) {
+    const searchLength = search.length;
+    const lengthBoost = sql<number>`GREATEST(1.0, 1.5 - (${searchLength}::float / 20.0))`;
+
+    return sql`(
+      similarity(unaccent(lower(${schema.pieces.name})), unaccent(lower(${search}))) * ${FilterService.PIECE_SIMILARITY_NAME_MULTIPLIER} +
+      similarity(unaccent(lower((SELECT "name" FROM "brands" WHERE "id" = ${schema.pieces.brandId}))), unaccent(lower(${search}))) * ${FilterService.PIECE_SIMILARITY_BRAND_MULTIPLIER} +
+      similarity(unaccent(lower((SELECT "name" FROM "sizes" WHERE "id" = ${schema.pieces.sizeId}))), unaccent(lower(${search}))) * ${FilterService.PIECE_SIMILARITY_SIZE_MULTIPLIER} +
+      COALESCE(similarity(unaccent(lower((SELECT "name" FROM "categories" WHERE "id" = ${schema.pieces.categoryId}))), unaccent(lower(${search}))), 0) * ${FilterService.PIECE_SIMILARITY_CATEGORY_MULTIPLIER} +
+      COALESCE(
+        (SELECT SUM(similarity(unaccent(lower(k)), unaccent(lower(${search}))))
+         FROM unnest(${schema.pieces.keywords}) AS k),
+        0
+      ) * ${FilterService.PIECE_SIMILARITY_KEYWORDS_MULTIPLIER} +
+      CASE
+        WHEN unaccent(lower(${schema.pieces.name})) LIKE unaccent(lower(${search})) || '%' THEN 0.3
+        WHEN unaccent(lower((SELECT "name" FROM "brands" WHERE "id" = ${schema.pieces.brandId}))) LIKE unaccent(lower(${search})) || '%' THEN 0.25
+        ELSE 0
+      END
+    ) * ${lengthBoost}`;
+  }
+
+  private getProductScoreExpression(search: string) {
+    const searchLength = search.length;
+    const lengthBoost = sql<number>`GREATEST(1.0, 1.5 - (${searchLength}::float / 20.0))`;
+
+    return sql`(
+      similarity(unaccent(lower(${schema.products.name})), unaccent(lower(${search}))) * ${FilterService.PRODUCT_SIMILARITY_NAME_MULTIPLIER} +
+      COALESCE(
+        (SELECT SUM(similarity(unaccent(lower(k)), unaccent(lower(${search}))))
+         FROM unnest(${schema.products.keywords}) AS k),
+        0
+      ) * ${FilterService.PRODUCT_SIMILARITY_KEYWORDS_MULTIPLIER} +
+      COALESCE(
+        (SELECT MAX(similarity(unaccent(lower(b.name)), unaccent(lower(${search}))))
+         FROM ${schema.pieces} pc
+         JOIN ${schema.brands} b ON b.id = pc.brand_id
+         WHERE pc.product_id = ${schema.products.id}
+           AND pc.status = 'published'),
+        0
+      ) * ${FilterService.PRODUCT_SIMILARITY_BRAND_MULTIPLIER} +
+      COALESCE(
+        (SELECT MAX(similarity(unaccent(lower(s.name)), unaccent(lower(${search}))))
+         FROM ${schema.pieces} pc
+         JOIN ${schema.sizes} s ON s.id = pc.size_id
+         WHERE pc.product_id = ${schema.products.id}
+           AND pc.status = 'published'),
+        0
+      ) * ${FilterService.PRODUCT_SIMILARITY_SIZE_MULTIPLIER} +
+      COALESCE(
+        (SELECT MAX(similarity(unaccent(lower(c.name)), unaccent(lower(${search}))))
+         FROM ${schema.pieces} pc
+         JOIN ${schema.categories} c ON c.id = pc.category_id
+         WHERE pc.product_id = ${schema.products.id}
+           AND pc.status = 'published'),
+        0
+      ) * ${FilterService.PRODUCT_SIMILARITY_CATEGORY_MULTIPLIER} +
+      CASE
+        WHEN unaccent(lower(${schema.products.name})) LIKE unaccent(lower(${search})) || '%' THEN 0.3
+        ELSE 0
+      END
+    ) * ${lengthBoost}`;
+  }
+
   async findFiltered<
     TProductArgs extends DBQueryArgs<"products", "one">,
     TPieceArgs extends DBQueryArgs<"pieces", "one">,
@@ -445,6 +509,14 @@ class FilterService {
       );
     }
 
+    // Fuzzy search filter - filter out results below similarity threshold
+    if (search && search.trim()) {
+      const scoreExpression = this.getPieceScoreExpression(search.trim());
+      conditions.push(
+        sql`${scoreExpression} > ${FilterService.SIMILARITY_LOWER_BOUND}`
+      );
+    }
+
     // Build orderBy clause
     let orderByClause;
     const direction = sortOrder === "desc" ? desc : asc;
@@ -457,6 +529,13 @@ class FilterService {
         break;
       case "alphabetical":
         orderByClause = direction(schema.pieces.name);
+        break;
+      case "relevance":
+        if (search && search.trim()) {
+          orderByClause = desc(this.getPieceScoreExpression(search.trim()));
+        } else {
+          orderByClause = direction(schema.pieces.createdAt);
+        }
         break;
       case "date":
       default:
@@ -675,6 +754,14 @@ class FilterService {
       );
     }
 
+    // Fuzzy search filter - filter out results below similarity threshold
+    if (search && search.trim()) {
+      const scoreExpression = this.getProductScoreExpression(search.trim());
+      conditions.push(
+        sql`${scoreExpression} > ${FilterService.SIMILARITY_LOWER_BOUND}`
+      );
+    }
+
     // Build orderBy clause
     let orderByClause;
     const direction = sortOrder === "desc" ? desc : asc;
@@ -697,6 +784,13 @@ class FilterService {
         break;
       case "alphabetical":
         orderByClause = direction(schema.products.name);
+        break;
+      case "relevance":
+        if (search && search.trim()) {
+          orderByClause = desc(this.getProductScoreExpression(search.trim()));
+        } else {
+          orderByClause = direction(schema.products.createdAt);
+        }
         break;
       case "date":
       default:

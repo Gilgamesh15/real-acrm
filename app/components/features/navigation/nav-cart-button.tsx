@@ -22,17 +22,14 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 
-import { authClient } from "~/lib/auth-client";
 import {
   calculateProductPrice,
-  getReservationData,
   priceFromGrosz,
 } from "~/lib/utils";
 
 import { PriceSummary } from "../price-summary/price-summary";
 import {
   ProductCardContent,
-  ProductCardCountdown,
   ProductCardImage,
   ProductCardInfo,
   ProductCardMedia,
@@ -46,8 +43,6 @@ import { useCheckoutDialog } from "../providers/checkout-dialog-provider";
 
 export const NavCartButton = () => {
   const navigate = useNavigate();
-  const session = authClient.useSession.get();
-  const currentUserId = session?.data?.user?.id;
   const [isOpen, setIsOpen] = React.useState(false);
   const {
     items: { products, pieces },
@@ -155,15 +150,8 @@ export const NavCartButton = () => {
                       <ProductCardPieces>
                         {product.pieces.map((piece) => {
                           const [primaryImage] = piece.images;
-                          const { isReserved, expiresAt } = getReservationData(
-                            piece,
-                            currentUserId
-                          );
                           return (
                             <ProductCardRoot key={piece.id} size="sm">
-                              {isReserved && (
-                                <ProductCardCountdown expiresAt={expiresAt} />
-                              )}
                               <ProductCardMedia size="sm">
                                 <ProductCardImage
                                   onClick={() => {
@@ -199,17 +187,9 @@ export const NavCartButton = () => {
               {pieces.map((piece) => {
                 const [primaryImage] = piece.images;
 
-                const { isReserved, expiresAt } = getReservationData(
-                  piece,
-                  currentUserId
-                );
-
                 return (
                   <li key={piece.id}>
                     <ProductCardRoot size="sm">
-                      {isReserved && (
-                        <ProductCardCountdown expiresAt={expiresAt} />
-                      )}
                       <ProductCardMedia size="sm">
                         <ProductCardImage
                           onClick={() => {
