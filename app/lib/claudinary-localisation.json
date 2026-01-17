@@ -1,0 +1,420 @@
+{
+  "pl": {
+    "or": "Lub",
+    "back": "Wstecz",
+    "advanced": "Zaawansowane",
+    "close": "Zamknij",
+    "no_results": "Brak wyników",
+    "search_placeholder": "Szukaj plików",
+    "about_uw": "O widżecie przesyłania",
+    "menu": {
+      "files": "Moje pliki",
+      "web": "Adres internetowy",
+      "camera": "Aparat",
+      "gsearch": "Wyszukiwanie obrazów",
+      "gdrive": "Dysk Google",
+      "dropbox": "Dropbox",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "shutterstock": "Shutterstock"
+    },
+    "selection_counter": {
+      "selected": "Wybrano"
+    },
+    "actions": {
+      "upload": "Prześlij",
+      "clear_all": "Wyczyść wszystko",
+      "log_out": "Wyloguj się"
+    },
+    "notifications": {
+      "general_error": "Wystąpił błąd.",
+      "general_prompt": "Czy na pewno?",
+      "limit_reached": "Nie można wybrać więcej plików.",
+      "invalid_add_url": "Adres URL musi być poprawny.",
+      "invalid_public_id": "Publiczny identyfikator nie może zawierać znaków \\,?,&,#,%,<,>.",
+      "no_new_files": "Pliki zostały już przesłane.",
+      "image_purchased": "Obraz zakupiony",
+      "video_purchased": "Wideo zakupione",
+      "purchase_failed": "Zakup nie powiódł się. Spróbuj ponownie.",
+      "service_logged_out": "Usługa wylogowana z powodu błędu",
+      "great": "Świetnie"
+    },
+    "advanced_options": {
+      "public_id_ph": "Publiczny identyfikator",
+      "tags_ph": "Dodaj tag",
+      "add_new": "Dodaj nowy tag:",
+      "upload_preset_placeholder": "Ustawienia przesyłania"
+    },
+    "landscape_overlay": {
+      "title": "Tryb poziomy nie jest obsługiwany",
+      "description": "Obróć urządzenie do trybu pionowego, aby kontynuować."
+    },
+    "queue": {
+      "title": "Kolejka przesyłania",
+      "title_uploading_with_counter": "Przesyłanie {{num}} zasobów",
+      "title_uploading": "Przesyłanie zasobów",
+      "mini_title": "Przesłano",
+      "mini_title_uploading": "Przesyłanie",
+      "show_completed": "Pokaż ukończone",
+      "retry_failed": "Ponów nieudane",
+      "abort_all": "Przerwij wszystko",
+      "upload_more": "Prześlij więcej",
+      "done": "Gotowe",
+      "mini_upload_count": "{{num}} przesłanych",
+      "mini_failed": "{{num}} nieudanych",
+      "statuses": {
+        "uploading": "Przesyłanie...",
+        "error": "Błąd",
+        "uploaded": "Gotowe",
+        "aborted": "Przerwano"
+      }
+    },
+    "uploader": {
+      "filesize": {
+        "na": "N/D",
+        "b": "{{size}} bajtów",
+        "k": "{{size}} KB",
+        "m": "{{size}} MB",
+        "g": "{{size}} GB",
+        "t": "{{size}} TB"
+      },
+      "errors": {
+        "file_too_large": "Rozmiar pliku ({{size}}) przekracza maksymalny dozwolony ({{allowed}})",
+        "max_dimensions_validation": "Wymiary obrazu ({{width}}X{{height}}) są większe niż maksymalne dozwolone: ({{maxWidth}}X{{maxHeight}})",
+        "min_dimensions_validation": "Wymiary obrazu ({{width}}X{{height}}) są mniejsze niż minimalne wymagane: ({{minWidth}}X{{minHeight}})",
+        "unavailable": "N/D",
+        "max_number_of_files": "Przekroczono maksymalną liczbę plików",
+        "allowed_formats": "Format pliku jest niedozwolony",
+        "max_file_size": "Plik jest zbyt duży",
+        "min_file_size": "Plik jest zbyt mały"
+      }
+    },
+    "crop": {
+      "title": "Kadrowanie",
+      "crop_btn": "Kadruj",
+      "skip_btn": "Pomiń",
+      "reset_btn": "Resetuj",
+      "close_btn": "Tak",
+      "close_prompt": "Zamknięcie anuluje wszystkie przesyłania. Czy na pewno?",
+      "image_error": "Błąd ładowania obrazu",
+      "corner_tooltip": "Przeciągnij róg, aby zmienić rozmiar",
+      "handle_tooltip": "Przeciągnij uchwyt, aby zmienić rozmiar"
+    },
+    "camera": {
+      "capture": "Zrób zdjęcie",
+      "cancel": "Anuluj",
+      "take_pic": "Zrób zdjęcie i prześlij je",
+      "explanation": "Upewnij się, że aparat jest podłączony i że przeglądarka pozwala na korzystanie z aparatu. Gdy będzie gotowe, kliknij Zrób zdjęcie.",
+      "camera_error": "Nie udało się uzyskać dostępu do aparatu",
+      "retry": "Ponów próbę aparatu",
+      "file_name": "Aparat_{{time}}"
+    },
+    "dropbox": {
+      "no_auth_title": "Prześlij pliki z konta Dropbox.",
+      "no_auth_action": "Połącz z Dropbox",
+      "no_photos": "Brak zdjęć",
+      "no_files": "Brak plików",
+      "root_crumb": "Główny",
+      "list_headers": {
+        "select": "Wybierz",
+        "name": "Nazwa",
+        "modified": "Zmodyfikowano"
+      },
+      "menu": {
+        "browse": "Przeglądaj",
+        "recent": "Ostatnie"
+      },
+      "authenticating": "Uwierzytelnianie..."
+    },
+    "facebook": {
+      "no_photos": "Brak zdjęć...",
+      "no_auth_title": "Prześlij pliki z konta Facebook.",
+      "no_auth_action": "Połącz z Facebook",
+      "no_auth_statement": "Nie opublikujemy niczego bez Twojej zgody.",
+      "album_subtitle": "{{count}} zdjęć",
+      "menu": {
+        "uploaded": "Twoje zdjęcia",
+        "tagged": "Zdjęcia z Tobą",
+        "albums": "Albumy"
+      }
+    },
+    "google_drive": {
+      "no_auth_title": "Prześlij pliki z Dysku Google.",
+      "no_auth_action": "Połącz z Dyskiem Google",
+      "search": {
+        "placeholder": "Szukaj...",
+        "reset": "Resetuj wyszukiwanie"
+      },
+      "grid": {
+        "folders": "Foldery",
+        "files": "Pliki",
+        "empty_folder": "Ten folder jest pusty."
+      },
+      "recent": "Ostatnie",
+      "starred": "Oznaczone gwiazdką",
+      "my_drive": "Mój dysk",
+      "shared_drive": "Dyski współdzielone",
+      "search_results": "Wyniki wyszukiwania",
+      "shared_with_me": "Współdzielone ze mną",
+      "name": "Nazwa",
+      "modifiedTime": "Ostatnio modyfikowany",
+      "modifiedByMeTime": "Ostatnio modyfikowany przeze mnie",
+      "viewedByMeTime": "Ostatnio otwarty przeze mnie",
+      "notifications": {
+        "retrieve_failed": "Nie udało się pobrać danych przesyłania z Dysku Google."
+      }
+    },
+    "image_search": {
+      "main_title": "Wyszukiwanie obrazów",
+      "inputPlaceholder": "Szukaj obrazów",
+      "customPlaceholder": "Szukaj {{site}}",
+      "show_options": "Pokaż opcje",
+      "hide_options": "Ukryj opcje",
+      "filters_title": "Strona",
+      "all": "wszystkie",
+      "rights": "Prawa użytkowania:",
+      "rights_options": {
+        "not_filtered": "bez filtrowania licencji",
+        "free": "bezpłatne do użycia lub udostępniania",
+        "free_com": "bezpłatne do użycia lub udostępniania, nawet komercyjnie",
+        "free_mod": "bezpłatne do użycia, udostępniania lub modyfikowania",
+        "free_mod_com": "bezpłatne do użycia, udostępniania lub modyfikowania, nawet komercyjnie"
+      },
+      "search_error": "Wyszukiwanie nie powiodło się, spróbuj ponownie."
+    },
+    "instagram": {
+      "no_auth_title": "Prześlij zdjęcia z konta Instagram.",
+      "no_auth_action": "Połącz z Instagram",
+      "header_title": "Twoje ostatnie zdjęcia z Instagrama",
+      "authenticating": "Uwierzytelnianie..."
+    },
+    "local": {
+      "browse": "Przeglądaj",
+      "dd_title_single": "Przeciągnij i upuść zasób tutaj",
+      "dd_title_multi": "Przeciągnij i upuść zasoby tutaj",
+      "drop_title_single": "Upuść plik, aby przesłać",
+      "drop_title_multiple": "Upuść pliki, aby przesłać"
+    },
+    "shutterstock": {
+      "no_auth_title": "Prześlij zasoby z konta Shutterstock.",
+      "toggle_filters_button": "Filtry",
+      "no_auth_action": "Połącz z Shutterstock",
+      "authenticating": "Uwierzytelnianie...",
+      "statement": "Shutterstock oferuje najlepszej jakości, wolne od opłat stockowe obrazy, zdjęcia, wektory, ilustracje, wideo i muzykę do prawie każdej aplikacji.",
+      "reg_link_text": "Kliknij tutaj, aby utworzyć konto Shutterstock",
+      "next_btn": "Dalej",
+      "media_types": {
+        "images": "Obrazy",
+        "videos": "Wideo"
+      },
+      "filters": {
+        "more_label": "Więcej",
+        "sort_options": {
+          "label": "Sortuj według",
+          "newest": "Najnowsze",
+          "relevance": "Trafność",
+          "popular": "Popularne",
+          "random": "Losowe"
+        },
+        "people": {
+          "label": "Osoby",
+          "only_images_with_people": "Tylko obrazy z ludźmi",
+          "only_videos_with_people": "Tylko wideo z ludźmi"
+        },
+        "gender": {
+          "label": "Płeć",
+          "male": "Mężczyzna",
+          "female": "Kobieta",
+          "both": "Obie"
+        },
+        "size": {
+          "label": "Rozmiar",
+          "small": "Mały",
+          "medium": "Średni",
+          "large": "Duży"
+        },
+        "clear": "wyczyść",
+        "orientation": {
+          "label": "Orientacja",
+          "horizontal": "Pozioma",
+          "vertical": "Pionowa"
+        },
+        "color": "Kolor",
+        "colors": {
+          "red": "czerwony",
+          "orange": "pomarańczowy",
+          "amber": "bursztynowy",
+          "yellow": "żółty",
+          "lime": "limonkowy",
+          "green": "zielony",
+          "teal": "morski",
+          "turquoise": "turkusowy",
+          "aqua": "wodny",
+          "azure": "lazurowy",
+          "blue": "niebieski",
+          "purple": "fioletowy",
+          "orchid": "orchidea",
+          "magenta": "magenta"
+        },
+        "safe": "Bezpieczne",
+        "all_categories": "Wszystkie kategorie",
+        "types": {
+          "all": "Wszystkie typy obrazów",
+          "illustration": "Ilustracja",
+          "photo": "Zdjęcie",
+          "vector": "Wektor"
+        },
+        "duration": {
+          "label": "Czas trwania",
+          "short": "Krótkie",
+          "short_tip": "< 4 minuty",
+          "long": "Długie",
+          "long_tip": "> 20 minut"
+        },
+        "resolution": {
+          "label": "Rozdzielczość",
+          "standard_definition": "SD",
+          "standard_definition_tip": "Standardowa definicja",
+          "high_definition": "HD",
+          "high_definition_tip": "Wysoka definicja",
+          "4k": "4k",
+          "4k_tip": "4k"
+        }
+      },
+      "filter_summary": {
+        "label": "Filtry: {{- summary}}",
+        "gender": "tylko {{value}}",
+        "people": "z {{value}} osobami",
+        "color": "kolor: {{value}}",
+        "category": "w {{- value}}",
+        "unsafe": "niebezpieczne"
+      },
+      "purchase_page": {
+        "purchase_btn_label": "Kup",
+        "plans": {
+          "label": "Wybierz plan",
+          "years": "lata",
+          "days": "dni",
+          "expired": "wygasły",
+          "exceeded": "przekroczony",
+          "manage_plans": "Zarządzaj swoimi planami Shutterstock...",
+          "no_plan": "Twój obecny plan nie zawiera "
+        },
+        "format_and_size": {
+          "label": "Wybierz format i rozmiar"
+        },
+        "aspect_ratio": "Proporcje",
+        "author": "Autor",
+        "description": "Opis",
+        "button_label": {
+          "purchase": "Kup",
+          "acquire": "Kup",
+          "next": "Dalej",
+          "upload": "Prześlij",
+          "purchasing": "Kupowanie...",
+          "downloading": "Pobieranie..."
+        },
+        "button_description": {
+          "next": "Już posiadasz ten {{assetType}}. Kliknij Dalej, aby kontynuować",
+          "upload": "Już posiadasz ten {{assetType}}. Kliknij Prześlij, aby kontynuować",
+          "purchasing": "Kupowanie - to może potrwać kilka sekund...",
+          "downloading": "Pobieranie - to może potrwać kilka sekund..."
+        },
+        "duration": "Czas trwania",
+        "fps": "FPS",
+        "sizes": {
+          "vector_eps": "Wektor",
+          "small_jpg": "Mały",
+          "medium_jpg": "Średni",
+          "huge_jpg": "Duży",
+          "web": "Sieć",
+          "sd": "SD",
+          "hd": "HD",
+          "4k": "4K"
+        },
+        "file_limit_exceeded": "Niektóre opcje przekroczyły limit rozmiaru pliku przesyłania.",
+        "time_left": "pozostało {{time}}"
+      },
+      "purchase_preview": {
+        "loading_preview": "Ładowanie podglądu",
+        "open_in_new_window": "Otwórz w nowym oknie"
+      },
+      "dictionary": {
+        "image": "obraz",
+        "video": "wideo"
+      },
+      "home_page": {
+        "results_header": "Popularne",
+        "categories_header": "Kategorie"
+      },
+      "search": {
+        "placeholder": "Szukaj...",
+        "reset": "Resetuj wyszukiwanie"
+      }
+    },
+    "url": {
+      "inner_title": "Publiczny adres URL pliku do przesłania:",
+      "input_placeholder": "http://remote.site.example/images/remote-image.jpg"
+    },
+    "metadataPage": {
+      "title": "Strukturalne wartości metadanych",
+      "subtitle": "1 zasób wybrany",
+      "subtitle_plural": "{{count}} zasobów wybranych",
+      "tooltip": "Niektóre wymagane pola metadanych nie są ustawione lub podane wartości są nieprawidłowe.",
+      "upload": "Prześlij",
+      "conflict_label": "Nadpisz",
+      "intro": {
+        "openingText": "Możesz wypełnić poniższe pola, aby dodać nowe metadane do swoich zasobów podczas przesyłania.",
+        "conflictWarning": "Uwaga: Wybierz „Nadpisz” dla pól, w których chcesz zastosować nowe wartości zarówno do nowych, jak i zastępowanych zasobów.",
+        "closingText": "Po przesłaniu możesz modyfikować metadane dla poszczególnych zasobów w Bibliotece mediów."
+      },
+      "closePrompt": "Czy na pewno chcesz zamknąć to okno dialogowe? Twoje pliki nie zostaną przesłane.",
+      "backPrompt": "Czy na pewno? Twój wybór plików i wprowadzone wartości metadanych zostaną utracone.",
+      "approveCancel": "Tak",
+      "cancel": "Anuluj",
+      "validationErrors": {
+        "string": {
+          "min": "Musi mieć co najmniej {{min}} znaków.",
+          "max": "Nie może mieć więcej niż {{max}} znaków.",
+          "minAndMax": "Musi mieć od {{min}} do {{max}} znaków.",
+          "regex": "Musi zawierać tylko XXXX."
+        },
+        "integer": {
+          "lessThan": "Musi być mniejsze niż {{less}}.",
+          "lessThanEqual": "Nie może być większe niż {{max}}.",
+          "greaterThan": "Musi być większe niż {{more}}.",
+          "greaterThanEqual": "Musi być co najmniej {{min}}."
+        },
+        "number": {
+          "lessThan": "Musi być mniejsze niż {{less}}.",
+          "lessThanEqual": "Nie może być większe niż {{max}}.",
+          "greaterThan": "Musi być większe niż {{more}}.",
+          "greaterThanEqual": "Musi być co najmniej {{min}}."
+        },
+        "enum": {
+          "oneOf": "{{originalValue}} musi być jedną z określonych opcji powyżej."
+        },
+        "set": {
+          "oneOf": "{{originalValue}} musi być jedną z określonych opcji powyżej."
+        },
+        "date": {
+          "lessThan": "Musi być przed {{max}}.",
+          "lessThanEqual": "Nie może być po {{max}}.",
+          "greaterThan": "Musi być po {{min}}.",
+          "greaterThanEqual": "Nie może być przed {{min}}."
+        },
+        "stringError": "Musi być tekstem.",
+        "numberError": "Musi być liczbą.",
+        "integerError": "Musi być liczbą.",
+        "dateError": "Musi być datą.",
+        "enumError": "Wybierz jedną z określonych opcji.",
+        "setError": "Wybierz co najmniej jedną z określonych opcji.",
+        "required": "To pole jest wymagane.",
+        "integerTypeError": "To jest pole całkowite.",
+        "digitsLimitError": "Ta liczba nie może mieć więcej niż 16 cyfr.",
+        "unsupportedFields": "Skontaktuj się z administratorem, wystąpił problem z następującymi opcjonalnymi polami metadanych: ",
+        "unsupportedRequiredFields": "Skontaktuj się z administratorem, wystąpił problem z następującymi obowiązkowymi polami metadanych: "
+      }
+    }
+  }
+}

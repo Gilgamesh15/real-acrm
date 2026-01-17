@@ -1,0 +1,437 @@
+/* Ensure each top-level node has relative positioning 
+   so absolutely positioned placeholders work correctly */
+.rich-text > * {
+  position: relative;
+}
+
+/* =====================
+     CORE EDITOR STYLES
+     ===================== */
+.rich-text {
+  -webkit-font-smoothing: antialiased;
+  outline: none;
+  caret-color: var(--primary);
+}
+.rich-text p:not(:first-child):not(td p):not(th p) {
+  margin-top: 20px;
+}
+.rich-text:not(.readonly):not(.ProseMirror-hideselection) ::selection {
+  background-color: oklch(from var(--primary) l c h / 0.4);
+}
+.rich-text:not(.readonly):not(.ProseMirror-hideselection)
+  .selection::selection {
+  background: transparent;
+}
+.rich-text .ProseMirror-selectednode:not(img):not(pre):not(.react-renderer) {
+  background-color: oklch(from var(--accent) l c h / 0.4);
+}
+.rich-text .ProseMirror-hideselection {
+  caret-color: transparent;
+}
+.rich-text.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+/* =====================
+     TEXT DECORATION
+     ===================== */
+.rich-text a span {
+  text-decoration: underline;
+}
+.rich-text s span {
+  text-decoration: line-through;
+}
+.rich-text u span {
+  text-decoration: underline;
+}
+
+/* =====================
+     LINKS
+     ===================== */
+.rich-text a {
+  color: var(--primary);
+  text-underline-offset: 4px;
+  text-decoration: underline;
+}
+
+/* =====================
+     PLACEHOLDER
+     ===================== */
+.rich-text p.is-empty::before {
+  color: var(--muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* =====================
+     DROPCURSOR
+     ===================== */
+.prosemirror-dropcursor-block,
+.prosemirror-dropcursor-inline {
+  background: var(--primary) !important;
+  width: 100%;
+  height: 1px;
+  cursor: grabbing;
+}
+
+/* =====================
+     LISTS
+     ===================== */
+.rich-text ol,
+.rich-text ul,
+.rich-text li {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+.rich-text ol:first-child,
+.rich-text ul:first-child,
+.rich-text li:first-child {
+  margin-top: 0.5rem;
+}
+.rich-text ol:last-child,
+.rich-text ul:last-child,
+.rich-text li:last-child {
+  margin-bottom: 0.5rem;
+}
+.rich-text ol ol,
+.rich-text ul ol,
+.rich-text ol ul,
+.rich-text ul ul,
+.rich-text li ol,
+.rich-text li ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.rich-text li p {
+  margin-top: 0;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text ol ol {
+  list-style: lower-alpha;
+}
+.rich-text ol ol ol {
+  list-style: lower-roman;
+}
+.rich-text ul:not([data-type="taskList"]) {
+  list-style: disc;
+}
+.rich-text ul:not([data-type="taskList"]) ul {
+  list-style: disc;
+}
+.rich-text ul:not([data-type="taskList"]) ul ul {
+  list-style: disc;
+}
+.rich-text ul[data-type="taskList"] li {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.rich-text ul[data-type="taskList"] li:not(:has(> p:first-child)) {
+  list-style-type: none;
+}
+.rich-text ul[data-type="taskList"] li[data-checked="true"] > div > p {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.rich-text ul[data-type="taskList"] li[data-checked="true"] > div > p span {
+  text-decoration: line-through;
+}
+.rich-text ul[data-type="taskList"] li label {
+  position: relative;
+  padding-top: 0.325rem;
+}
+.rich-text ul[data-type="taskList"] li label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.rich-text ul[data-type="taskList"] li label span {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid oklch(from var(--input) l c h / 0.3);
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+}
+.rich-text ul[data-type="taskList"] li label span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background-color: var(--primary-foreground);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-check-icon lucide-check'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+    center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-check-icon lucide-check'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+    center/contain no-repeat;
+}
+.rich-text
+  ul[data-type="taskList"]
+  li
+  label
+  input[type="checkbox"]:checked
+  + span {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.rich-text
+  ul[data-type="taskList"]
+  li
+  label
+  input[type="checkbox"]:checked
+  + span::before {
+  opacity: 1;
+}
+.rich-text ul[data-type="taskList"] li div {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.rich-text > img {
+  margin: 2rem 0;
+  outline: 0.125rem solid transparent;
+}
+.rich-text img.ProseMirror-selectednode {
+  outline-color: var(--primary);
+}
+
+/* =====================
+     HORIZONTAL RULE
+     ===================== */
+.rich-text hr {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border);
+}
+.rich-text [data-type="horizontalRule"] {
+  margin-top: 2.25em;
+  margin-bottom: 2.25em;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.rich-text h1,
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  position: relative;
+}
+.rich-text h1:first-child,
+.rich-text h2:first-child,
+.rich-text h3:first-child,
+.rich-text h4:first-child,
+.rich-text h1:first-of-type,
+.rich-text h2:first-of-type,
+.rich-text h3:first-of-type,
+.rich-text h4:first-of-type {
+  margin-top: 0;
+}
+.rich-text h1 {
+  margin-top: 3em;
+  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.rich-text h2 {
+  margin-top: 2.5em;
+  margin-bottom: 1rem;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.rich-text h3 {
+  margin-top: 2em;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.rich-text h4 {
+  margin-top: 2em;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* =====================
+   CODE FORMATTING
+   ===================== */
+.rich-text code {
+  display: inline-flex;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.125rem;
+  width: fit-content;
+  height: 1.25rem;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  min-width: 1.25rem;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+.rich-text pre {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background-color: oklch(from var(--muted) l c h / 0.2);
+}
+.rich-text pre code {
+  font-family:
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  height: fit-content;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  background: none;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* =====================
+     BLOCKQUOTE
+     ===================== */
+.rich-text blockquote {
+  padding-left: 1.5rem;
+  margin-top: 1.5rem;
+  border-left-width: 2px;
+  font-style: italic;
+}
+
+.rich-text .tableWrapper {
+  overflow-x: auto;
+  position: relative;
+  width: 100%;
+}
+
+.rich-text table {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  table-layout: fixed;
+  color: var(--foreground);
+}
+
+.rich-text th,
+.rich-text td {
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  vertical-align: baseline;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.rich-text th:hover,
+.rich-text td:hover {
+  background-color: oklch(from var(--muted) l c h / 0.5);
+}
+
+.rich-text th {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.rich-text ol,
+.legal-text ol {
+  list-style: none;
+}
+
+.rich-text ol ol,
+.legal-text ol ol {
+  list-style: none;
+}
+
+.rich-text ol ol ol,
+.legal-text ol ol ol {
+  list-style: none;
+}
+
+.rich-text ol ol ol ol,
+.legal-text ol ol ol ol {
+  list-style: none;
+}
+
+/* SET UP COUNTER AND INDICATORS */
+.rich-text ol,
+.legal-text ol {
+  counter-reset: item;
+}
+
+.rich-text ol li,
+.legal-text ol li {
+  counter-increment: item;
+}
+
+.rich-text ol li::marker,
+.legal-text ol li::marker {
+  content: counters(item, ".") ". ";
+}
+
+/* PROGRESSIVE PADDING */
+.rich-text ol,
+.legal-text ol {
+  padding-left: 0rem;
+}
+
+.rich-text ol ol,
+.legal-text ol ol {
+  padding-left: 1rem;
+}
+
+.rich-text ol ol ol,
+.legal-text ol ol ol {
+  padding-left: 1rem;
+}
+
+.rich-text ol ol ol ol,
+.legal-text ol ol ol ol {
+  padding-left: 1rem;
+}
