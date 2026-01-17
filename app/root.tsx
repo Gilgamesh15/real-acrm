@@ -31,6 +31,7 @@ import {
 import { Toaster } from "./components/ui/sonner";
 import { cookieConsent } from "./cookies.server";
 import { loggingMiddleware } from "./middleware/logging.server";
+import { redirectMiddleware } from "./middleware/redirect.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
 const GOOGLE_VERIFICATION = import.meta.env.VITE_GOOGLE_VERIFICATION;
@@ -44,6 +45,7 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export const middleware: MiddlewareFunction[] = [
+  redirectMiddleware,
   loggingMiddleware,
   sessionMiddleware,
 ];
