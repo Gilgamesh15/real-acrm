@@ -16,7 +16,7 @@ export const redirectMiddleware: MiddlewareFunction = async (
 
   for (const [legacyPath, targetPath] of Object.entries(LEGACY_REDIRECTS)) {
     if (pathname === legacyPath || pathname.startsWith(`${legacyPath}/`)) {
-      return redirect(targetPath, 301);
+      throw redirect(targetPath, 301);
     }
   }
 
