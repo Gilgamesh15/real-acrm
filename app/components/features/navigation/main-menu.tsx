@@ -101,7 +101,7 @@ const MainMenu = ({
                             buttonVariants({
                               variant: "outline",
                             }),
-                            "aspect-square relative p-0 m-0 block size-full z-30"
+                            "aspect-square relative p-0 m-0 block size-full z-30 overflow-hidden"
                           )}
                         >
                           <div className="absolute inset-0 bg-linear-to-l from-background/50 via-background/20 to-background/50 z-20" />
@@ -110,7 +110,7 @@ const MainMenu = ({
                             alt={cat.name}
                             className="absolute inset-0 size-full object-cover z-10"
                           />
-                          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide">
+                          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide break-words">
                             {cat.name}
                           </span>
                         </Link>
