@@ -154,7 +154,7 @@ const MobileSidebar = ({
                           variant="outline"
                           className="aspect-square relative p-0 m-0 block size-full"
                           onClick={() =>
-                            handleNavigate(`/kategorie?tagi=${tag.slug}`)
+                            handleNavigate(`/kategorie?tags=${tag.slug}`)
                           }
                         >
                           <div className="absolute inset-0 bg-linear-to-l from-background/50 via-background/20 to-background/50 z-0" />

@@ -817,7 +817,7 @@ function TagsSection({
                 />
 
                 <Link
-                  to={`/kategorie?tagi=${tag.slug}`}
+                  to={`/kategorie?tags=${tag.slug}`}
                   className="h-36 md:h-44 lg:h-60"
                 >
                   <div className="size-full flex items-center justify-center p-12 font-secondary">
@@ -872,7 +872,7 @@ function TagsSection({
 
                     <SwiperSlide className="aspect-5/8">
                       <Link
-                        to={`/kategorie?tagi=${tag.slug}`}
+                        to={`/kategorie?tags=${tag.slug}`}
                         className={cn(
                           buttonVariants({
                             variant: "ghost",
