@@ -7,14 +7,6 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  // Legacy redirects
-  route("/produkty", "./routes/legacy-redirect.ts"),
-  route("/produkty/*", "./routes/legacy-redirect.ts"),
-  route("/produkt", "./routes/legacy-redirect.ts"),
-  route("/produkt/*", "./routes/legacy-redirect.ts"),
-  route("/stylizacje", "./routes/legacy-redirect.ts"),
-  route("/stylizacje/*", "./routes/legacy-redirect.ts"),
-
   // API
   route("/api/cookie-consent", "./api/cookie-consent.ts"),
   route("/api/auth/*", "./api/auth.ts"),

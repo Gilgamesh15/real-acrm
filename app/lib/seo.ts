@@ -25,6 +25,17 @@ const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL;
 const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL;
 const YOUTUBE_URL = import.meta.env.VITE_YOUTUBE_URL;
 
+function toTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ');
+}
+
+
 // ============================================================================
 // Type Definitions (Google-compliant JSON-LD structures)
 // ============================================================================
@@ -449,7 +460,7 @@ export function generateProductStructuredData(
     "@context": "https://schema.org",
     "@type": "Product",
     "@id": productUrl,
-    name: piece.name,
+    name: toTitleCase(piece.name),
     url: productUrl,
     sku: piece.id,
     productID: piece.id,
@@ -624,7 +635,7 @@ export function generateProductGroupStructuredData(
   const productGroup: ProductGroup = {
     "@type": "ProductGroup",
     "@id": productGroupId,
-    name: product.name,
+    name: toTitleCase(product.name),
     description: descriptionText,
     url: productGroupUrl,
     productGroupID: product.id,
@@ -684,7 +695,7 @@ export function generateProductGroupStructuredData(
     const variantProduct: VariantProduct = {
       "@type": "Product",
       "@id": pieceId,
-      name: piece.name,
+      name: toTitleCase(piece.name),
       url: pieceUrl,
       sku: piece.id,
 
@@ -695,7 +706,7 @@ export function generateProductGroupStructuredData(
 
       brand: {
         "@type": "Brand",
-        name: piece.brand.name,
+        name:  piece.brand.name,
       },
 
       size: piece.size.name,
