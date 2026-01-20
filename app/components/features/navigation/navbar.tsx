@@ -97,7 +97,7 @@ const Navbar = ({
       <div className="fixed top-0 left-0 w-screen z-50 divide-y">
         <div
           style={{ height: BOTTOM_NAVBAR_HEIGHT }}
-          className="bg-background text-foreground border-t shadow-xs shadow-foreground/50 flex items-center justify-center"
+          className="bg-background text-foreground border-t shadow-xs shadow-foreground/50 flex items-center justify-center max-w-sm overflow-hidden"
         >
           <div className="w-fit mx-auto">
             <div className="flex items-center gap-2">
