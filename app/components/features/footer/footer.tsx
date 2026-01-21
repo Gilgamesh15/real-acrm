@@ -57,14 +57,14 @@ const FOOTER_LINKS = [
     links: [
       {
         label: "Polityka prywatności",
-        href: "/regulamin/polityka-prywatnosci",
+        href: "/polityka-prywatnosci",
       },
       { label: "Regulamin", href: "/regulamin" },
       {
         label: "Odstąpienie od umowy",
-        href: "/regulamin/odstapienie-od-umowy",
+        href: "/odstapienie-od-umowy",
       },
-      { label: "Reklamacje", href: "/regulamin/reklamacje" },
+      { label: "Reklamacje", href: "/reklamacje" },
     ],
   },
 ];

@@ -352,7 +352,7 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
                 }}
               >
                 <Link
-                  href={`${APP_URL}/regulamin/polityka-prywatnosci`}
+                  href={`${APP_URL}/polityka-prywatnosci`}
                   target="_blank"
                   style={{
                     color: colors.secondary,

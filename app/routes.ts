@@ -58,18 +58,16 @@ export default [
     route("/ubrania/:pieceSlug", "./routes/main/pieces/piece-detail.page.tsx"),
 
     // Legal
-    ...prefix("/regulamin", [
-      index("./routes/main/legal/terms-of-service.page.tsx"),
-      route("reklamacje", "./routes/main/legal/claims.page.tsx"),
-      route(
-        "odstapienie-od-umowy",
-        "./routes/main/legal/right-of-withdrawal.page.tsx"
-      ),
-      route(
-        "polityka-prywatnosci",
-        "./routes/main/legal/privacy-policy.page.tsx"
-      ),
-    ]),
+    route("/regulamin", "./routes/main/legal/terms-of-service.page.tsx"),
+    route("/reklamacje", "./routes/main/legal/claims.page.tsx"),
+    route(
+      "/odstapienie-od-umowy",
+      "./routes/main/legal/right-of-withdrawal.page.tsx"
+    ),
+    route(
+      "/polityka-prywatnosci",
+      "./routes/main/legal/privacy-policy.page.tsx"
+    ),
     route("o-nas", "./routes/main/legal/about-us.page.tsx"),
 
     // returns

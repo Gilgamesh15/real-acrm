@@ -118,7 +118,7 @@ function CookieConsentController({ children }: React.PropsWithChildren) {
         onOpenChange={setIsAlertOpen}
         onPrivacyPolicyClick={() => {
           handleAlertAcknowledgement();
-          navigate("/regulamin/polityka-prywatnosci");
+          navigate("/polityka-prywatnosci");
         }}
         onAcknowledgement={handleAlertAcknowledgement}
       />

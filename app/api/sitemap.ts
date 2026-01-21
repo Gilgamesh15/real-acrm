@@ -48,9 +48,9 @@ export async function loader({}: LoaderFunctionArgs) {
   // Legal pages - low priority, rarely change
   const legalPages = [
     "/regulamin",
-    "/regulamin/reklamacje",
-    "/regulamin/odstapienie-od-umowy",
-    "/regulamin/polityka-prywatnosci",
+    "/reklamacje",
+    "/odstapienie-od-umowy",
+    "/polityka-prywatnosci",
     "/o-nas",
   ];
 
