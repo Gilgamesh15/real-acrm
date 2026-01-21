@@ -71,7 +71,11 @@ export type ProductAttributes = {
 /**
  * Merchant API availability values
  */
-export type MerchantAvailability = "IN_STOCK" | "OUT_OF_STOCK" | "PREORDER" | "BACKORDER";
+export type MerchantAvailability =
+  | "IN_STOCK"
+  | "OUT_OF_STOCK"
+  | "PREORDER"
+  | "BACKORDER";
 
 /**
  * Merchant API condition values
@@ -86,7 +90,12 @@ export type MerchantGender = "MALE" | "FEMALE" | "UNISEX";
 /**
  * Merchant API age group values
  */
-export type MerchantAgeGroup = "NEWBORN" | "INFANT" | "TODDLER" | "KIDS" | "ADULT";
+export type MerchantAgeGroup =
+  | "NEWBORN"
+  | "INFANT"
+  | "TODDLER"
+  | "KIDS"
+  | "ADULT";
 
 /**
  * ProductInput for Merchant API

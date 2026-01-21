@@ -129,7 +129,11 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       { status: 200 }
     );
   } catch (error) {
-    logger.error("Failed to update size group", { error, adminId, sizeGroupId });
+    logger.error("Failed to update size group", {
+      error,
+      adminId,
+      sizeGroupId,
+    });
     throw data(
       {
         success: false,

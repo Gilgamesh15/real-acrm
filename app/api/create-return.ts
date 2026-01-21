@@ -22,7 +22,10 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!parsed.success) {
-    return data({ success: false, error: "Nieprawidłowe dane" }, { status: 400 });
+    return data(
+      { success: false, error: "Nieprawidłowe dane" },
+      { status: 400 }
+    );
   }
 
   const { orderId, orderItemIds, email } = parsed.data;

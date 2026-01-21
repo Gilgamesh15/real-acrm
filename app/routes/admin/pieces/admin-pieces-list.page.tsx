@@ -106,7 +106,11 @@ export async function action({ request, context }: Route.ActionArgs) {
     });
 
     if (!existingPiece) {
-      logger.warn("Piece action failed - not found", { adminId, pieceId, intent });
+      logger.warn("Piece action failed - not found", {
+        adminId,
+        pieceId,
+        intent,
+      });
       throw data(
         {
           success: false,
@@ -191,7 +195,11 @@ export async function action({ request, context }: Route.ActionArgs) {
         );
       }
       default:
-        logger.warn("Piece action failed - unknown intent", { adminId, pieceId, intent });
+        logger.warn("Piece action failed - unknown intent", {
+          adminId,
+          pieceId,
+          intent,
+        });
         throw data(
           {
             success: false,

@@ -1,6 +1,7 @@
-import { Fragment } from "react";
-import { cn } from "~/lib/utils";
 import { Check } from "lucide-react";
+import { Fragment } from "react";
+
+import { cn } from "~/lib/utils";
 
 interface StepIndicatorProps {
   steps: { label: string }[];

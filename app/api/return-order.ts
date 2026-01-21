@@ -1,8 +1,8 @@
 import * as schema from "db/schema";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { type LoaderFunctionArgs, data } from "react-router";
-import { loggerContext } from "~/context/logger-context.server";
 
+import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import { orderStatusFromOrder } from "~/lib/utils";
 
@@ -50,7 +50,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const status = orderStatusFromOrder(order);
   if (status === "pending" || status === "cancelled") {
-    logger.info("STATUS:"+status)
+    logger.info("STATUS:" + status);
     return data(
       {
         success: false,

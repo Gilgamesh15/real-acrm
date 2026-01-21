@@ -4,16 +4,15 @@
  * Transforms existing JSON-LD structured data (from seo.ts) to
  * Google Merchant API ProductInput format.
  */
-
-import type { ProductInput, MerchantShipping } from "./types";
 import {
   AVAILABILITY_MAP,
   CONDITION_MAP,
-  GENDER_MAP,
   DEFAULT_GOOGLE_PRODUCT_CATEGORY,
+  GENDER_MAP,
   MERCHANT_CONFIG,
   SHIPPING_CONFIG,
 } from "./constants";
+import type { MerchantShipping, ProductInput } from "./types";
 
 /**
  * Image type that can be either a string URL or an ImageObject
@@ -176,8 +175,7 @@ export function transformPieceToProductInput(
     AVAILABILITY_MAP[jsonLd.offers.availability] || "OUT_OF_STOCK";
 
   // Map condition (all items are used in this secondhand store)
-  const condition =
-    CONDITION_MAP[jsonLd.offers.itemCondition] || "USED";
+  const condition = CONDITION_MAP[jsonLd.offers.itemCondition] || "USED";
 
   // Extract gender
   const gender = extractGender(jsonLd.additionalProperty);

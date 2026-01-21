@@ -120,7 +120,8 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
   const price = (piece.priceInGrosz / 100).toFixed(2);
-  const availability = piece.status === "published" ? "in stock" : "out of stock";
+  const availability =
+    piece.status === "published" ? "in stock" : "out of stock";
 
   return (
     <>

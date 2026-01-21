@@ -81,7 +81,10 @@ export async function action({ request, context }: Route.ActionArgs) {
       where: eq(schema.categories.id, categoryId),
     });
     if (!existingCategory) {
-      logger.warn("Category delete failed - not found", { adminId, categoryId });
+      logger.warn("Category delete failed - not found", {
+        adminId,
+        categoryId,
+      });
       throw data(
         {
           success: false,

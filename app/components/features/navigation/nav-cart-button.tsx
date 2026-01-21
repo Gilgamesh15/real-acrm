@@ -22,10 +22,7 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 
-import {
-  calculateProductPrice,
-  priceFromGrosz,
-} from "~/lib/utils";
+import { calculateProductPrice, priceFromGrosz } from "~/lib/utils";
 
 import { PriceSummary } from "../price-summary/price-summary";
 import {

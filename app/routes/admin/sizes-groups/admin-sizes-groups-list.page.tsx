@@ -74,7 +74,9 @@ export async function action({ request, context }: Route.ActionArgs) {
     const sizeGroupId = formData.get("sizeGroupId") as string | undefined;
 
     if (!sizeGroupId) {
-      logger.warn("Size group delete failed - missing sizeGroupId", { adminId });
+      logger.warn("Size group delete failed - missing sizeGroupId", {
+        adminId,
+      });
       throw data(
         {
           success: false,
@@ -90,7 +92,10 @@ export async function action({ request, context }: Route.ActionArgs) {
       where: eq(schema.sizeGroups.id, sizeGroupId),
     });
     if (!existingSizeGroup) {
-      logger.warn("Size group delete failed - not found", { adminId, sizeGroupId });
+      logger.warn("Size group delete failed - not found", {
+        adminId,
+        sizeGroupId,
+      });
       throw data(
         {
           success: false,

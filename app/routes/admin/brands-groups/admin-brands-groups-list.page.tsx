@@ -70,7 +70,9 @@ export async function action({ request, context }: Route.ActionArgs) {
     const brandGroupId = formData.get("brandGroupId") as string | undefined;
 
     if (!brandGroupId) {
-      logger.warn("Brand group delete failed - missing brandGroupId", { adminId });
+      logger.warn("Brand group delete failed - missing brandGroupId", {
+        adminId,
+      });
       throw data(
         {
           success: false,
@@ -86,7 +88,10 @@ export async function action({ request, context }: Route.ActionArgs) {
       where: eq(schema.brandGroups.id, brandGroupId),
     });
     if (!existingBrandGroup) {
-      logger.warn("Brand group delete failed - not found", { adminId, brandGroupId });
+      logger.warn("Brand group delete failed - not found", {
+        adminId,
+        brandGroupId,
+      });
       throw data(
         {
           success: false,

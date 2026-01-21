@@ -27,9 +27,9 @@ import {
   ActionDialog,
   ConfirmActionDialogContent,
 } from "~/components/shared/action-dialog/action-dialog";
-import { useDialogState } from "~/hooks/use-dialog-state";
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
+import { useDialogState } from "~/hooks/use-dialog-state";
 import { auth } from "~/lib/auth";
 import { formatDate, returnDetailsFromReturn } from "~/lib/utils";
 import { cn } from "~/lib/utils";
@@ -206,7 +206,11 @@ export async function action({ request, context }: Route.ActionArgs) {
           );
         }
       default:
-        logger.warn("Return action failed - unknown intent", { adminId, returnId, intent });
+        logger.warn("Return action failed - unknown intent", {
+          adminId,
+          returnId,
+          intent,
+        });
         return data(
           {
             success: false,

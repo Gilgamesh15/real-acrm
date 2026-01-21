@@ -94,7 +94,10 @@ export async function action({ request, context }: Route.ActionArgs) {
     }
 
     if (!productId) {
-      logger.warn("Product action failed - missing productId", { adminId, intent });
+      logger.warn("Product action failed - missing productId", {
+        adminId,
+        intent,
+      });
       throw data(
         {
           success: false,
@@ -111,7 +114,11 @@ export async function action({ request, context }: Route.ActionArgs) {
     });
 
     if (!existingProduct) {
-      logger.warn("Product action failed - not found", { adminId, productId, intent });
+      logger.warn("Product action failed - not found", {
+        adminId,
+        productId,
+        intent,
+      });
       throw data(
         {
           success: false,
@@ -196,7 +203,11 @@ export async function action({ request, context }: Route.ActionArgs) {
         );
       }
       default: {
-        logger.warn("Product action failed - unknown intent", { adminId, productId, intent });
+        logger.warn("Product action failed - unknown intent", {
+          adminId,
+          productId,
+          intent,
+        });
         throw data(
           {
             success: false,

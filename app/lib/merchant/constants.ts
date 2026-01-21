@@ -3,7 +3,6 @@
  *
  * Maps JSON-LD/Schema.org values to Merchant API enum values
  */
-
 import type {
   MerchantAvailability,
   MerchantCondition,

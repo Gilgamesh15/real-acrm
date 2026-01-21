@@ -243,7 +243,9 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
                   <Checkbox
                     id="save-locker-mobile"
                     checked={saveLocker}
-                    onCheckedChange={(checked) => setSaveLocker(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setSaveLocker(checked === true)
+                    }
                   />
                   <Label
                     htmlFor="save-locker-mobile"
@@ -689,9 +691,7 @@ function MethodSelectionDialogContent({
           <div className="absolute inset-0 bg-linear-gradient-to-tr from-background/50 via-transparent to-transparent transition-opacity z-10" />
           <div className="flex flex-col text-left gap-4 absolute bottom-2 left-2 z-20">
             <div>
-              <h3 className="text-xl font-semibold mb-2">
-                Dostawa kurierem
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">Dostawa kurierem</h3>
               <p className="text-sm text-muted-foreground">
                 Dostawa bezpośrednio do twojego adresu
               </p>

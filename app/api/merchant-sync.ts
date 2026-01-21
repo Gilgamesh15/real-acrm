@@ -11,7 +11,6 @@
  * - { action: "fullSync" } - Sync all published items
  * - { action: "status" } - Get configuration status
  */
-
 import { merchantService } from "db/services/merchant.service";
 import { type ActionFunctionArgs, data } from "react-router";
 import z from "zod";
@@ -45,10 +44,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     logger.warn("Unauthorized merchant sync attempt", {
       userId: session.user.id,
     });
-    return data(
-      { success: false, error: "Unauthorized" },
-      { status: 403 }
-    );
+    return data({ success: false, error: "Unauthorized" }, { status: 403 });
   }
 
   try {

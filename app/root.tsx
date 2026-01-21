@@ -1,10 +1,10 @@
 import "@fontsource-variable/inter";
 import "@fontsource-variable/tektur";
 import "@fontsource/poiret-one";
-import { Analytics } from "@vercel/analytics/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Analytics } from "@vercel/analytics/react";
 import { AlertCircleIcon } from "lucide-react";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import {

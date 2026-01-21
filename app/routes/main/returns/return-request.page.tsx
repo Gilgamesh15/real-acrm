@@ -13,9 +13,15 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { StepIndicator } from "~/components/ui/step-indicator";
+
 import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
 
 const returnSchema = z.object({
@@ -23,7 +29,9 @@ const returnSchema = z.object({
     orderNumber: z.string().min(1, "Numer zamówienia jest wymagany"),
     email: z.string().email("Nieprawidłowy adres e-mail"),
   }),
-  orderItemIds: z.array(z.string()).min(1, "Wybierz przynajmniej jeden przedmiot"),
+  orderItemIds: z
+    .array(z.string())
+    .min(1, "Wybierz przynajmniej jeden przedmiot"),
   email: z.string().email("Nieprawidłowy adres e-mail"),
 });
 
@@ -90,7 +98,11 @@ export default function ReturnRequestPage() {
     if (orderFetcher.data?.success && orderFetcher.data.order) {
       setOrder(orderFetcher.data.order);
       setStep(2);
-    } else if (orderFetcher.data && !orderFetcher.data.success && orderFetcher.data.error) {
+    } else if (
+      orderFetcher.data &&
+      !orderFetcher.data.success &&
+      orderFetcher.data.error
+    ) {
       toast.error(orderFetcher.data.error);
     }
   }, [orderFetcher.data]);
@@ -100,7 +112,11 @@ export default function ReturnRequestPage() {
     if (submitFetcher.data?.success && submitFetcher.data.returnNumber) {
       toast.success("Wniosek o zwrot został utworzony");
       navigate(`/zwroty/sukces/${submitFetcher.data.returnNumber}`);
-    } else if (submitFetcher.data && !submitFetcher.data.success && submitFetcher.data.error) {
+    } else if (
+      submitFetcher.data &&
+      !submitFetcher.data.success &&
+      submitFetcher.data.error
+    ) {
       toast.error(submitFetcher.data.error);
     }
   }, [submitFetcher.data, navigate]);
@@ -243,8 +259,8 @@ export default function ReturnRequestPage() {
             <CardHeader>
               <CardTitle>Wybierz przedmioty do zwrotu</CardTitle>
               <CardDescription>
-                Zaznacz, które przedmioty z zamówienia {order.orderNumber} chcesz
-                zwrócić
+                Zaznacz, które przedmioty z zamówienia {order.orderNumber}{" "}
+                chcesz zwrócić
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -259,7 +275,9 @@ export default function ReturnRequestPage() {
                     <>
                       <FieldGroup data-slot="checkbox-group">
                         {order.items.map((item) => {
-                          const isSelected = field.state.value.includes(item.id);
+                          const isSelected = field.state.value.includes(
+                            item.id
+                          );
 
                           const handleToggle = () => {
                             if (isSelected) {
@@ -391,9 +409,13 @@ export default function ReturnRequestPage() {
                           alt={item.pieceName}
                           className="w-8 h-8 object-cover rounded"
                         />
-                        <span className="flex-1 truncate">{item.pieceName}</span>
+                        <span className="flex-1 truncate">
+                          {item.pieceName}
+                        </span>
                         <span className="font-medium">
-                          {formatCurrency(priceFromGrosz(item.lineTotalInGrosz))}
+                          {formatCurrency(
+                            priceFromGrosz(item.lineTotalInGrosz)
+                          )}
                         </span>
                       </div>
                     ))}

@@ -129,7 +129,11 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       { status: 200 }
     );
   } catch (error) {
-    logger.error("Failed to update brand group", { error, adminId, brandGroupId });
+    logger.error("Failed to update brand group", {
+      error,
+      adminId,
+      brandGroupId,
+    });
     throw data(
       {
         success: false,

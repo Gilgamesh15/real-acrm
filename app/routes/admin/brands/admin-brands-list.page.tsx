@@ -82,7 +82,10 @@ export async function action({ request, context }: Route.ActionArgs) {
     });
 
     if (!existingBrand) {
-      logger.warn("Brand delete failed - brand not found", { adminId, brandId });
+      logger.warn("Brand delete failed - brand not found", {
+        adminId,
+        brandId,
+      });
       throw data(
         {
           success: false,

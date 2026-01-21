@@ -6,18 +6,13 @@
  *
  * @see https://developers.google.com/merchant/api
  */
-
 import { google } from "googleapis";
 
 import type { Logger } from "~/lib/logger.server";
 import { logger as rootLogger } from "~/lib/logger.server";
 
-import type {
-  ProductInput,
-  BatchResult,
-  ProductListResponse,
-} from "./types";
 import { MERCHANT_CONFIG } from "./constants";
+import type { BatchResult, ProductInput, ProductListResponse } from "./types";
 
 /**
  * Environment variables for Google Merchant API authentication
@@ -72,9 +67,7 @@ class MerchantApiClient {
    */
   private getAccountName(): string {
     if (!MERCHANT_ID) {
-      throw new Error(
-        "Missing GOOGLE_MERCHANT_ID environment variable."
-      );
+      throw new Error("Missing GOOGLE_MERCHANT_ID environment variable.");
     }
     return `accounts/${MERCHANT_ID}`;
   }
@@ -133,7 +126,10 @@ class MerchantApiClient {
     }
 
     // DELETE requests may return empty response
-    if (response.status === 204 || response.headers.get("content-length") === "0") {
+    if (
+      response.status === 204 ||
+      response.headers.get("content-length") === "0"
+    ) {
       return {} as T;
     }
 

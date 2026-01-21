@@ -513,208 +513,213 @@ class OrderService {
     }
   }
 
-// ========================== CANCEL ORDER ==========================
-async cancelOrder(orderId: string) {
-  try {
-    this.logger.info("Starting order cancellation", { orderId });
+  // ========================== CANCEL ORDER ==========================
+  async cancelOrder(orderId: string) {
+    try {
+      this.logger.info("Starting order cancellation", { orderId });
 
-    await db.transaction(async (tx) => {
-      this.logger.debug("Starting order cancellation transaction", {
-        orderId,
-      });
+      await db.transaction(async (tx) => {
+        this.logger.debug("Starting order cancellation transaction", {
+          orderId,
+        });
 
-      // 1. Get the order with its items
-      const order = await tx.query.orders.findFirst({
-        where: eq(schema.orders.id, orderId),
-        with: {
-          items: {
-            with: {
-              piece: true,
-              product: {
-                with: {
-                  pieces: true,
+        // 1. Get the order with its items
+        const order = await tx.query.orders.findFirst({
+          where: eq(schema.orders.id, orderId),
+          with: {
+            items: {
+              with: {
+                piece: true,
+                product: {
+                  with: {
+                    pieces: true,
+                  },
                 },
               },
             },
+            events: {
+              orderBy: desc(schema.orderTimelineEvents.timestamp),
+            },
           },
-          events: {
-            orderBy: desc(schema.orderTimelineEvents.timestamp),
-          },
-        },
-      });
-
-      if (!order) {
-        this.logger.error("Order not found for cancellation", { orderId });
-        throw data(
-          {
-            success: false,
-            order: null,
-            issues: null,
-            message: "Order not found",
-          },
-          { status: 404 }
-        );
-      }
-
-      this.logger.debug("Order found", {
-        orderId,
-        itemCount: order.items.length,
-      });
-
-      const orderStatus = orderStatusFromOrder(order);
-
-      // 2. Check if order is already cancelled or completed
-      if (orderStatus !== "pending") {
-        this.logger.error("Cannot cancel order - not in pending status", {
-          orderId,
-          orderStatus,
         });
-        throw data(
-          {
-            success: false,
-            order: null,
-            issues: null,
-            message: `Order is not pending (current status: ${orderStatus})`,
-          },
-          { status: 400 }
-        );
-      }
 
-      // 3. Check if the Stripe session was paid
-      if (order.stripeCheckoutSessionId) {
-        try {
-          const stripeSession = await stripe.checkout.sessions.retrieve(
-            order.stripeCheckoutSessionId
-          );
-
-          if (stripeSession.payment_status === "paid") {
-            this.logger.error(
-              "Cannot cancel order - Stripe session is already paid",
-              {
-                orderId,
-                stripeCheckoutSessionId: order.stripeCheckoutSessionId,
-                paymentStatus: stripeSession.payment_status,
-              }
-            );
-            throw data(
-              {
-                success: false,
-                order: null,
-                issues: null,
-                message: "Cannot cancel order - payment has already been processed",
-              },
-              { status: 403 }
-            );
-          }
-        } catch (stripeError) {
-          // If it's already a data() response (our custom error), re-throw it
-          if (stripeError && typeof stripeError === "object" && "status" in stripeError) {
-            throw stripeError;
-          }
-
-          // Log Stripe API errors but continue with cancellation
-          // The session might be expired or invalid, which is fine for cancellation
-          this.logger.warn(
-            "Failed to retrieve Stripe session during cancellation",
+        if (!order) {
+          this.logger.error("Order not found for cancellation", { orderId });
+          throw data(
             {
-              stripeError,
-              orderId,
-              stripeCheckoutSessionId: order.stripeCheckoutSessionId,
-            }
+              success: false,
+              order: null,
+              issues: null,
+              message: "Order not found",
+            },
+            { status: 404 }
           );
         }
-      }
 
-      // 4. Get all piece IDs from order items
-      const pieceIds = order.items
-        .map((item) => item.pieceId)
-        .filter((id): id is string => id !== null && id !== undefined);
-      const productIds = order.items
-        .map((item) => item.productId)
-        .filter((id): id is string => id !== null && id !== undefined);
+        this.logger.debug("Order found", {
+          orderId,
+          itemCount: order.items.length,
+        });
 
-      this.logger.debug("Releasing order items", {
-        orderId,
-        pieceCount: pieceIds.length,
-        productCount: productIds.length,
-      });
+        const orderStatus = orderStatusFromOrder(order);
 
-      // 5. Release all reserved pieces
-      if (pieceIds.length > 0) {
-        await tx
-          .update(schema.pieces)
-          .set({
-            reservedUntil: null,
-            reservedByUserId: null,
-            status: "published",
-          })
-          .where(
-            and(
-              inArray(schema.pieces.id, pieceIds),
-              eq(schema.pieces.status, "in_checkout")
-            )
+        // 2. Check if order is already cancelled or completed
+        if (orderStatus !== "pending") {
+          this.logger.error("Cannot cancel order - not in pending status", {
+            orderId,
+            orderStatus,
+          });
+          throw data(
+            {
+              success: false,
+              order: null,
+              issues: null,
+              message: `Order is not pending (current status: ${orderStatus})`,
+            },
+            { status: 400 }
           );
+        }
 
-        this.logger.info("Pieces released and status reset to published", {
+        // 3. Check if the Stripe session was paid
+        if (order.stripeCheckoutSessionId) {
+          try {
+            const stripeSession = await stripe.checkout.sessions.retrieve(
+              order.stripeCheckoutSessionId
+            );
+
+            if (stripeSession.payment_status === "paid") {
+              this.logger.error(
+                "Cannot cancel order - Stripe session is already paid",
+                {
+                  orderId,
+                  stripeCheckoutSessionId: order.stripeCheckoutSessionId,
+                  paymentStatus: stripeSession.payment_status,
+                }
+              );
+              throw data(
+                {
+                  success: false,
+                  order: null,
+                  issues: null,
+                  message:
+                    "Cannot cancel order - payment has already been processed",
+                },
+                { status: 403 }
+              );
+            }
+          } catch (stripeError) {
+            // If it's already a data() response (our custom error), re-throw it
+            if (
+              stripeError &&
+              typeof stripeError === "object" &&
+              "status" in stripeError
+            ) {
+              throw stripeError;
+            }
+
+            // Log Stripe API errors but continue with cancellation
+            // The session might be expired or invalid, which is fine for cancellation
+            this.logger.warn(
+              "Failed to retrieve Stripe session during cancellation",
+              {
+                stripeError,
+                orderId,
+                stripeCheckoutSessionId: order.stripeCheckoutSessionId,
+              }
+            );
+          }
+        }
+
+        // 4. Get all piece IDs from order items
+        const pieceIds = order.items
+          .map((item) => item.pieceId)
+          .filter((id): id is string => id !== null && id !== undefined);
+        const productIds = order.items
+          .map((item) => item.productId)
+          .filter((id): id is string => id !== null && id !== undefined);
+
+        this.logger.debug("Releasing order items", {
+          orderId,
+          pieceCount: pieceIds.length,
+          productCount: productIds.length,
+        });
+
+        // 5. Release all reserved pieces
+        if (pieceIds.length > 0) {
+          await tx
+            .update(schema.pieces)
+            .set({
+              reservedUntil: null,
+              reservedByUserId: null,
+              status: "published",
+            })
+            .where(
+              and(
+                inArray(schema.pieces.id, pieceIds),
+                eq(schema.pieces.status, "in_checkout")
+              )
+            );
+
+          this.logger.info("Pieces released and status reset to published", {
+            orderId,
+            pieceIds,
+          });
+        }
+
+        // 6. If implementing one-time product purchases, release products too
+        if (productIds.length > 0) {
+          await tx
+            .update(schema.products)
+            .set({
+              status: "published",
+            })
+            .where(
+              and(
+                inArray(schema.products.id, productIds),
+                eq(schema.products.status, "in_checkout")
+              )
+            );
+
+          this.logger.info("Products released and status reset to published", {
+            orderId,
+            productIds,
+          });
+        }
+
+        // 7. Create cancellation timeline event
+        await tx.insert(schema.orderTimelineEvents).values({
+          orderId: order.id,
+          status: "cancelled",
+        });
+
+        this.logger.info("Order cancelled and items released", {
           orderId,
           pieceIds,
-        });
-      }
-
-      // 6. If implementing one-time product purchases, release products too
-      if (productIds.length > 0) {
-        await tx
-          .update(schema.products)
-          .set({
-            status: "published",
-          })
-          .where(
-            and(
-              inArray(schema.products.id, productIds),
-              eq(schema.products.status, "in_checkout")
-            )
-          );
-
-        this.logger.info("Products released and status reset to published", {
-          orderId,
           productIds,
         });
+      });
+
+      this.logger.info("Order cancellation completed successfully", {
+        orderId,
+      });
+    } catch (err) {
+      // Re-throw if already a data() response
+      if (err && typeof err === "object" && "status" in err) {
+        throw err;
       }
 
-      // 7. Create cancellation timeline event
-      await tx.insert(schema.orderTimelineEvents).values({
-        orderId: order.id,
-        status: "cancelled",
-      });
-
-      this.logger.info("Order cancelled and items released", {
-        orderId,
-        pieceIds,
-        productIds,
-      });
-    });
-
-    this.logger.info("Order cancellation completed successfully", {
-      orderId,
-    });
-  } catch (err) {
-    // Re-throw if already a data() response
-    if (err && typeof err === "object" && "status" in err) {
-      throw err;
+      this.logger.error("Failed to cancel order", { err, orderId });
+      throw data(
+        {
+          success: false,
+          order: null,
+          issues: null,
+          message: "Failed to cancel order",
+        },
+        { status: 500 }
+      );
     }
-
-    this.logger.error("Failed to cancel order", { err, orderId });
-    throw data(
-      {
-        success: false,
-        order: null,
-        issues: null,
-        message: "Failed to cancel order",
-      },
-      { status: 500 }
-    );
   }
-}
   // ========================== CREATE ORDER ==========================
 
   async createOrder(args: CreateOrderSchemaType, userId: string) {

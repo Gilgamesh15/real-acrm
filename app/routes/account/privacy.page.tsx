@@ -61,7 +61,6 @@ export async function action({ request, context }: Route.ActionArgs) {
   const userId = session.user.id;
 
   try {
-
     const intent = (await request.formData()).get("intent") as
       | Intent
       | undefined;

@@ -5,8 +5,6 @@ import { FilterIcon } from "lucide-react";
 import React from "react";
 import { Await } from "react-router";
 
-const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
-
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
 import {
@@ -45,6 +43,8 @@ import { sortFilterOptions } from "~/lib/utils";
 import { filterSearchParamsCache } from "~/lib/utils.server";
 
 import type { Route } from "./+types/products-browse.page";
+
+const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -140,114 +140,35 @@ export default function ProductsBrowsePage({
       <link rel="canonical" href={pageUrl} />
 
       <FiltersProvider
-      priceMin={priceRange.min}
-      priceMax={priceRange.max}
-      tags={tags}
-      sizes={sizeGroups}
-      brands={brandGroups}
-    >
-      <div className="flex flex-col gap-4">
-        <Drawer>
-          <Section padding="xs" className="flex flex-col gap-2">
-            <div className="px-2">
-              <FilterSearchBar />
-            </div>
-
-            <div className="w-full overflow-x-auto flex items-center">
-              <div className="w-fit mx-auto flex gap-2 px-2">
-                <DrawerTrigger asChild>
-                  <Button variant="outline" size="icon-sm">
-                    <FilterIcon />
-                  </Button>
-                </DrawerTrigger>
-                <MultiSelectFilter
-                  label="Tagi"
-                  options={tags.map((tag) => ({
-                    value: tag.slug,
-                    label: tag.name,
-                  }))}
-                  param="tags"
-                />
-                <MultiSelectFilter
-                  label="Rozmiary"
-                  options={sizeGroups.map((size) => ({
-                    value: size.slug,
-                    label: size.name,
-                  }))}
-                  param="sizes"
-                />
-                <MultiSelectFilter
-                  label="Marki"
-                  options={brandGroups.map((brand) => ({
-                    value: brand.slug,
-                    label: brand.name,
-                  }))}
-                  param="brands"
-                />
-                <RangeFilter
-                  label="Cena"
-                  min={0}
-                  max={500}
-                  paramMin="priceMin"
-                  paramMax="priceMax"
-                />
-                <OptionalSingleSelectFilter
-                  label="Płeć"
-                  options={[
-                    { value: "male", label: "Men" },
-                    { value: "female", label: "Women" },
-                    { value: "unisex", label: "Unisex" },
-                  ]}
-                  param="gender"
-                />
-                <SingleSelectFilter
-                  label="Sortuj według"
-                  options={sortFilterOptions}
-                  param="sortBy"
-                />
+        priceMin={priceRange.min}
+        priceMax={priceRange.max}
+        tags={tags}
+        sizes={sizeGroups}
+        brands={brandGroups}
+      >
+        <div className="flex flex-col gap-4">
+          <Drawer>
+            <Section padding="xs" className="flex flex-col gap-2">
+              <div className="px-2">
+                <FilterSearchBar />
               </div>
-            </div>
 
-            <div className="w-full flex flex-wrap items-center justify-center gap-2">
-              <FilterValues>
-                {(filterValues) =>
-                  filterValues.map((filter, i) => (
-                    <FilterValue
-                      key={i}
-                      label={filter.label}
-                      param={filter.param}
-                      value={filter.value}
-                    />
-                  ))
-                }
-              </FilterValues>
-            </div>
-          </Section>
-
-          <DrawerContent className="font-secondary">
-            <DrawerHeader className="border-b pb-4">
-              <DrawerTitle>Filtry</DrawerTitle>
-              <DrawerDescription>
-                Dostosuj wyszukiwanie za pomocą filtrów
-              </DrawerDescription>
-            </DrawerHeader>
-            <ScrollArea className="h-[60vh] px-4 py-2">
-              <div
-                style={{
-                  display: "table",
-                  minWidth: "100%",
-                }}
-              >
-                <Accordion type="single" collapsible className="w-full">
-                  <DrawerMultiSelectFilter
-                    label="Tags"
+              <div className="w-full overflow-x-auto flex items-center">
+                <div className="w-fit mx-auto flex gap-2 px-2">
+                  <DrawerTrigger asChild>
+                    <Button variant="outline" size="icon-sm">
+                      <FilterIcon />
+                    </Button>
+                  </DrawerTrigger>
+                  <MultiSelectFilter
+                    label="Tagi"
                     options={tags.map((tag) => ({
                       value: tag.slug,
                       label: tag.name,
                     }))}
                     param="tags"
                   />
-                  <DrawerMultiSelectFilter
+                  <MultiSelectFilter
                     label="Rozmiary"
                     options={sizeGroups.map((size) => ({
                       value: size.slug,
@@ -255,7 +176,7 @@ export default function ProductsBrowsePage({
                     }))}
                     param="sizes"
                   />
-                  <DrawerMultiSelectFilter
+                  <MultiSelectFilter
                     label="Marki"
                     options={brandGroups.map((brand) => ({
                       value: brand.slug,
@@ -263,88 +184,167 @@ export default function ProductsBrowsePage({
                     }))}
                     param="brands"
                   />
-                  <DrawerOptionalSingleSelectFilter
-                    label="Płeć"
-                    options={[
-                      { value: "male", label: "Mężczyzna" },
-                      { value: "female", label: "Kobieta" },
-                      { value: "unisex", label: "Unisex" },
-                    ]}
-                    param="gender"
-                  />
-                  <DrawerRangeFilter
+                  <RangeFilter
                     label="Cena"
                     min={0}
                     max={500}
                     paramMin="priceMin"
                     paramMax="priceMax"
                   />
-                </Accordion>
-              </div>
-            </ScrollArea>
-            <DrawerFooter className="border-t pt-4">
-              <div className="flex w-full items-center justify-between">
-                <Button variant="outline" size="sm">
-                  Wyczyść filtry
-                </Button>
-                <DrawerClose asChild>
-                  <Button size="sm" variant="default">
-                    Zastosuj filtry
-                  </Button>
-                </DrawerClose>
-              </div>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-
-        <React.Suspense
-          fallback={
-            <Container>
-              <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
-                {Array.from({ length: 10 }).map((_, index) => (
-                  <Skeleton
-                    key={index}
-                    className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] aspect-5/8"
+                  <OptionalSingleSelectFilter
+                    label="Płeć"
+                    options={[
+                      { value: "male", label: "Men" },
+                      { value: "female", label: "Women" },
+                      { value: "unisex", label: "Unisex" },
+                    ]}
+                    param="gender"
                   />
-                ))}
-              </Section>
-            </Container>
-          }
-        >
-          <Await resolve={productsPromise}>
-            {({ products, total }) => (
-              <Container>
-                <section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
-                  {products.map((product) => (
-                    <MainProductCard
-                      product={product}
-                      href={`/projekty/${product.slug}`}
-                      key={product.id}
-                      isInCart={isInCart(product.id)}
-                      onBuyNow={() => onProductBuyNow(product)}
-                      onToggleCart={() => {
-                        if (isInCart(product.id)) {
-                          removeProduct(product.id);
-                        } else {
-                          addProduct(product);
-                        }
-                      }}
-                    />
-                  ))}
-                </section>
-                <div>
-                  <FilterPagination
-                    totalPages={Math.ceil(
-                      Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
-                    )}
+                  <SingleSelectFilter
+                    label="Sortuj według"
+                    options={sortFilterOptions}
+                    param="sortBy"
                   />
                 </div>
+              </div>
+
+              <div className="w-full flex flex-wrap items-center justify-center gap-2">
+                <FilterValues>
+                  {(filterValues) =>
+                    filterValues.map((filter, i) => (
+                      <FilterValue
+                        key={i}
+                        label={filter.label}
+                        param={filter.param}
+                        value={filter.value}
+                      />
+                    ))
+                  }
+                </FilterValues>
+              </div>
+            </Section>
+
+            <DrawerContent className="font-secondary">
+              <DrawerHeader className="border-b pb-4">
+                <DrawerTitle>Filtry</DrawerTitle>
+                <DrawerDescription>
+                  Dostosuj wyszukiwanie za pomocą filtrów
+                </DrawerDescription>
+              </DrawerHeader>
+              <ScrollArea className="h-[60vh] px-4 py-2">
+                <div
+                  style={{
+                    display: "table",
+                    minWidth: "100%",
+                  }}
+                >
+                  <Accordion type="single" collapsible className="w-full">
+                    <DrawerMultiSelectFilter
+                      label="Tags"
+                      options={tags.map((tag) => ({
+                        value: tag.slug,
+                        label: tag.name,
+                      }))}
+                      param="tags"
+                    />
+                    <DrawerMultiSelectFilter
+                      label="Rozmiary"
+                      options={sizeGroups.map((size) => ({
+                        value: size.slug,
+                        label: size.name,
+                      }))}
+                      param="sizes"
+                    />
+                    <DrawerMultiSelectFilter
+                      label="Marki"
+                      options={brandGroups.map((brand) => ({
+                        value: brand.slug,
+                        label: brand.name,
+                      }))}
+                      param="brands"
+                    />
+                    <DrawerOptionalSingleSelectFilter
+                      label="Płeć"
+                      options={[
+                        { value: "male", label: "Mężczyzna" },
+                        { value: "female", label: "Kobieta" },
+                        { value: "unisex", label: "Unisex" },
+                      ]}
+                      param="gender"
+                    />
+                    <DrawerRangeFilter
+                      label="Cena"
+                      min={0}
+                      max={500}
+                      paramMin="priceMin"
+                      paramMax="priceMax"
+                    />
+                  </Accordion>
+                </div>
+              </ScrollArea>
+              <DrawerFooter className="border-t pt-4">
+                <div className="flex w-full items-center justify-between">
+                  <Button variant="outline" size="sm">
+                    Wyczyść filtry
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button size="sm" variant="default">
+                      Zastosuj filtry
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          <React.Suspense
+            fallback={
+              <Container>
+                <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] aspect-5/8"
+                    />
+                  ))}
+                </Section>
               </Container>
-            )}
-          </Await>
-        </React.Suspense>
-      </div>
-    </FiltersProvider>
+            }
+          >
+            <Await resolve={productsPromise}>
+              {({ products, total }) => (
+                <Container>
+                  <section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+                    {products.map((product) => (
+                      <MainProductCard
+                        product={product}
+                        href={`/projekty/${product.slug}`}
+                        key={product.id}
+                        isInCart={isInCart(product.id)}
+                        onBuyNow={() => onProductBuyNow(product)}
+                        onToggleCart={() => {
+                          if (isInCart(product.id)) {
+                            removeProduct(product.id);
+                          } else {
+                            addProduct(product);
+                          }
+                        }}
+                      />
+                    ))}
+                  </section>
+                  <div>
+                    <FilterPagination
+                      totalPages={Math.ceil(
+                        Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
+                      )}
+                    />
+                  </div>
+                </Container>
+              )}
+            </Await>
+          </React.Suspense>
+        </div>
+      </FiltersProvider>
     </>
   );
 }

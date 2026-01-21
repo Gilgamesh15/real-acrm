@@ -116,7 +116,10 @@ export async function action({ request, context }: Route.ActionArgs) {
       }
     });
 
-    logger.info("Home featured products updated", { adminId, count: args.length });
+    logger.info("Home featured products updated", {
+      adminId,
+      count: args.length,
+    });
 
     return data(
       {

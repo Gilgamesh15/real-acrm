@@ -1,6 +1,10 @@
 import type { SQL } from "drizzle-orm";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsRightIcon,
+} from "lucide-react";
 import React from "react";
 
 import { Button } from "~/components/ui/button";
@@ -54,13 +58,15 @@ function MobileSidebarCategories({
           transition={{ duration: 0.2, ease: [0, 0, 1, 1] }}
           className="divide-y"
         >
-           {current && (
+          {current && (
             <Button
               variant="ghost"
               size="lg"
               className="w-full justify-start h-14 relative font-secondary text-xl tracking-wide"
               onClick={() => {
-                const parent = categories.find((category) => category.id === current.parentId);
+                const parent = categories.find(
+                  (category) => category.id === current.parentId
+                );
                 if (parent) {
                   setSelectedCategory(parent.id);
                 } else {
@@ -68,11 +74,8 @@ function MobileSidebarCategories({
                 }
               }}
             >
-           
               <ChevronLeftIcon className="size-4 relative z-20" />
-              <span className="relative z-20 text-sm">
-                Powrót
-              </span>
+              <span className="relative z-20 text-sm">Powrót</span>
             </Button>
           )}
           {current && (

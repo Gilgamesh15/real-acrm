@@ -37,9 +37,9 @@ import {
   ActionDialogTrigger,
   ConfirmActionDialogContent,
 } from "~/components/shared/action-dialog/action-dialog";
-import { useDialogState } from "~/hooks/use-dialog-state";
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
+import { useDialogState } from "~/hooks/use-dialog-state";
 import { auth } from "~/lib/auth";
 import { db } from "~/lib/db";
 import { calculateProductPrice, formatDate, priceFromGrosz } from "~/lib/utils";
@@ -131,7 +131,10 @@ export async function action({ request, context }: Route.ActionArgs) {
         });
 
         if (!order) {
-          logger.warn("Order status update failed - not found", { adminId, orderId });
+          logger.warn("Order status update failed - not found", {
+            adminId,
+            orderId,
+          });
           return data(
             { success: false, message: "Zamówienie nie znalezione" },
             { status: 404 }
@@ -177,7 +180,10 @@ export async function action({ request, context }: Route.ActionArgs) {
         });
 
         if (!order) {
-          logger.warn("Order status update failed - not found", { adminId, orderId });
+          logger.warn("Order status update failed - not found", {
+            adminId,
+            orderId,
+          });
           return data(
             { success: false, message: "Zamówienie nie znalezione" },
             { status: 404 }
@@ -212,7 +218,11 @@ export async function action({ request, context }: Route.ActionArgs) {
         );
       }
       default:
-        logger.warn("Order action failed - unknown intent", { adminId, orderId, intent });
+        logger.warn("Order action failed - unknown intent", {
+          adminId,
+          orderId,
+          intent,
+        });
         return data(
           { success: false, message: "Nieznana akcja" },
           { status: 400 }
