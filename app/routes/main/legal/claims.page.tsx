@@ -69,14 +69,14 @@ export default function ClaimsPage() {
                                 {
                                   type: "link",
                                   attrs: {
-                                    href: "mailto:pomoc@acrm.pl",
+                                    href: "mailto:kontakt@acrm.pl",
                                     target: "_blank",
                                     rel: "noopener noreferrer nofollow",
                                     class: null,
                                   },
                                 },
                               ],
-                              text: "pomoc@acrm.pl.",
+                              text: "kontakt@acrm.pl.",
                             },
                           ],
                         },

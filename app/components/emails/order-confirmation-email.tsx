@@ -14,7 +14,7 @@ import { EmailBase, colors, fonts } from "./email-base";
 
 const APP_URL = import.meta.env.VITE_APP_URL;
 const ORDER_CONFIRMATION_ICON_URL =
-"https://res.cloudinary.com/dbpz6wtou/image/upload/v1768639124/Adobe_Express_-_file_qtvusb.png"
+  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1768639124/Adobe_Express_-_file_qtvusb.png";
 const ORDER_CONFIRMATION_TITLE = "Potwierdzenie zamówienia";
 
 interface OrderConfirmationEmailProps {
@@ -347,7 +347,7 @@ const OrderConfirmationEmail = ({
             fontSize: fonts["paragraph-small"].fontSize,
           }}
         >
-          pomoc@acrm.pl
+          kontakt@acrm.pl
         </Link>{" "}
         lub złóż oświadczenie poprzez formularz dostępny na
         <Link

@@ -333,14 +333,14 @@ export default function TermsOfServicePage() {
                                         {
                                           type: "link",
                                           attrs: {
-                                            href: "mailto:pomoc@acrm.pl",
+                                            href: "mailto:kontakt@acrm.pl",
                                             target: "_blank",
                                             rel: "noopener noreferrer nofollow",
                                             class: null,
                                           },
                                         },
                                       ],
-                                      text: "pomoc@acrm.pl",
+                                      text: "kontakt@acrm.pl",
                                     },
                                     {
                                       type: "text",
@@ -693,14 +693,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:pomoc@acrm.pl",
+                                                    href: "mailto:kontakt@acrm.pl",
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "pomoc@acrm.pl",
+                                              text: "kontakt@acrm.pl",
                                             },
                                             {
                                               type: "text",
@@ -1001,14 +1001,14 @@ export default function TermsOfServicePage() {
                                                         {
                                                           type: "link",
                                                           attrs: {
-                                                            href: "mailto:pomoc@acrm.pl",
+                                                            href: "mailto:kontakt@acrm.pl",
                                                             target: "_blank",
                                                             rel: "noopener noreferrer nofollow",
                                                             class: null,
                                                           },
                                                         },
                                                       ],
-                                                      text: "pomoc@acrm.pl",
+                                                      text: "kontakt@acrm.pl",
                                                     },
                                                     {
                                                       type: "text",
@@ -1061,14 +1061,14 @@ export default function TermsOfServicePage() {
                                                         {
                                                           type: "link",
                                                           attrs: {
-                                                            href: "mailto:pomoc@acrm.pl",
+                                                            href: "mailto:kontakt@acrm.pl",
                                                             target: "_blank",
                                                             rel: "noopener noreferrer nofollow",
                                                             class: null,
                                                           },
                                                         },
                                                       ],
-                                                      text: "pomoc@acrm.pl",
+                                                      text: "kontakt@acrm.pl",
                                                     },
                                                     {
                                                       type: "text",
@@ -1637,14 +1637,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:pomoc@acrm.pl",
+                                                    href: "mailto:kontakt@acrm.pl",
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "pomoc@acrm.pl",
+                                              text: "kontakt@acrm.pl",
                                             },
                                             { type: "text", text: "." },
                                           ],
@@ -1983,14 +1983,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:pomoc@acrm.pl",
+                                                    href: "mailto:kontakt@acrm.pl",
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "pomoc@acrm.pl",
+                                              text: "kontakt@acrm.pl",
                                             },
                                             { type: "text", text: "." },
                                           ],
@@ -2377,14 +2377,14 @@ export default function TermsOfServicePage() {
                                         {
                                           type: "link",
                                           attrs: {
-                                            href: "mailto:pomoc@acrm.pl",
+                                            href: "mailto:kontakt@acrm.pl",
                                             target: "_blank",
                                             rel: "noopener noreferrer nofollow",
                                             class: null,
                                           },
                                         },
                                       ],
-                                      text: "pomoc@acrm.pl",
+                                      text: "kontakt@acrm.pl",
                                     },
                                     {
                                       type: "text",
@@ -2429,14 +2429,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:pomoc@acrm.pl",
+                                                    href: "mailto:kontakt@acrm.pl",
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "pomoc@acrm.pl",
+                                              text: "kontakt@acrm.pl",
                                             },
                                             {
                                               type: "text",
@@ -2986,14 +2986,14 @@ export default function TermsOfServicePage() {
                         {
                           type: "link",
                           attrs: {
-                            href: "mailto:pomoc@acrm.pl",
+                            href: "mailto:kontakt@acrm.pl",
                             target: "_blank",
                             rel: "noopener noreferrer nofollow",
                             class: null,
                           },
                         },
                       ],
-                      text: "pomoc@acrm.pl",
+                      text: "kontakt@acrm.pl",
                     },
                   ],
                 },

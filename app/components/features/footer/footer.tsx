@@ -45,6 +45,7 @@ const FOOTER_LINKS = [
       { label: "Projekty", href: "/projekty" },
       { label: "Ubrania", href: "/kategorie" },
       { label: "O nas", href: "/o-nas" },
+      { label: "Zwroty", href: "/zwroty" },
     ],
   },
   {
@@ -78,7 +79,7 @@ const COMPANY_INFO = {
   nip: "9452316835",
   krs: "0001193211", // np. "0000123456"
   regon: "542680140", // np. "12345678901234"
-  email: "pomoc@acrm.pl", // lub inny email kontaktowy
+  email: "kontakt@acrm.pl", // lub inny email kontaktowy
   phone: "+48 453-450-597", // np. "+48 123 456 789"
 };
 

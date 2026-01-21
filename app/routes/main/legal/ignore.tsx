@@ -912,7 +912,7 @@ export default function PrivacyPolicyPage() {
                                                   content: [
                                                     {
                                                       type: "text",
-                                                      text: "Prowadzenie statystyk i analiza ruchu w Sklepie Internetowym",
+                                                      text: "Prowadzenie statystyk i analiza ruchu w Sklepie Internetowym przy użyciu narzędzia Google Analytics (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA)",
                                                     },
                                                   ],
                                                 },
@@ -932,7 +932,7 @@ export default function PrivacyPolicyPage() {
                                                   content: [
                                                     {
                                                       type: "text",
-                                                      text: "Artykuł 6 ust. 1 lit. f) Rozporządzenia RODO (prawnie uzasadniony interes administratora) – przetwarzanie jest niezbędne do celów wynikających z prawnie uzasadnionych interesów Administratora – polegających na prowadzeniu statystyk i analizie ruchu w Sklepie Internetowym celem poprawy funkcjonowania Sklepu Internetowego i zwiększenia sprzedaży Produktów",
+                                                      text: "Artykuł 6 ust. 1 lit. a) Rozporządzenia RODO (zgoda) – przetwarzanie odbywa się na podstawie zgody wyrażonej przez osobę, której dane dotyczą, na przesyłanie lub przechowywanie plików cookies analitycznych na urządzeniu końcowym",
                                                     },
                                                   ],
                                                 },
@@ -952,7 +952,7 @@ export default function PrivacyPolicyPage() {
                                                   content: [
                                                     {
                                                       type: "text",
-                                                      text: "Dane są przechowywane przez okres istnienia prawnie uzasadnionego interesu realizowanego przez Administratora, nie dłużej jednak niż przez okres przedawnienia roszczeń Administratora w stosunku do osoby, której dane dotyczą, z tytułu prowadzonej  przez Administratora działalności gospodarczej. Okres przedawnienia określają przepisy prawa, w szczególności Kodeksu Cywilnego (podstawowy termin przedawnienia dla roszczeń związanych z prowadzeniem działalności gospodarczej wynosi trzy lata, a dla Umowy Sprzedaży dwa lata)",
+                                                      text: "Dane są przechowywane do momentu wycofania zgody przez osobę, której dane dotyczą, na dalsze przetwarzanie jej danych w tym celu, lecz nie dłużej niż przez okres określony w ustawieniach Google Analytics (standardowo 14 miesięcy od ostatniej aktywności użytkownika). Wycofanie zgody nie ma wpływu na zgodność z prawem przetwarzania, którego dokonano na podstawie zgody przed jej wycofaniem.",
                                                     },
                                                   ],
                                                 },
@@ -1012,6 +1012,51 @@ export default function PrivacyPolicyPage() {
                                     {
                                       type: "text",
                                       text: "Przekazanie danych przez Administratora nie następuje w każdym wypadku i nie do wszystkich wskazanych w polityce prywatności odbiorców lub kategorii odbiorców – Administrator przekazuje dane wyłącznie wtedy, gdy jest to niezbędne do realizacji danego celu przetwarzania danych osobowych i tylko w zakresie niezbędnym do jego zrealizowania. Przykładowo, jeżeli Klient korzysta z odbioru osobistego, to jego dane nie będą przekazywane przewoźnikowi współpracującemu z Administratorem. Dane osobowe mogą być przekazywane przez Administratora do państwa trzeciego, przy czym Administrator zapewnia, że w takim przypadku odbywać się to będzie w stosunku do państwa zapewniającego odpowiedni stopień ochrony – zgodny z Rozporządzeniem RODO, a osoba której dane dotyczą ma możliwość uzyskania kopii swoich danych. Administrator przekazuje zebrane dane osobowe jedynie w przypadku oraz w zakresie niezbędnym do zrealizowania danego celu przetwarzania danych zgodnego z niniejszą polityką prywatności.",
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              type: "listItem",
+                              content: [
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "Administrator może przekazywać dane osobowe do państw trzecich (poza Europejski Obszar Gospodarczy), w szczególności do Stanów Zjednoczonych Ameryki w przypadku korzystania z narzędzi analitycznych Google Analytics świadczonych przez Google LLC. Przekazywanie danych odbywa się na podstawie:",
+                                    },
+                                  ],
+                                },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "Standardowych Klauzul Umownych zatwierdzonych przez Komisję Europejską zgodnie z art. 46 ust. 2 lit. c) Rozporządzenia RODO, które zapewniają odpowiedni poziom ochrony danych osobowych zgodny z wymogami RODO, oraz",
+                                    },
+                                  ],
+                                },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: 'Zasad Przetwarzania Danych Google ("Google Ads Data Processing Terms"), dostępnych pod adresem: https://privacy.google.com/businesses/processorterms/',
+                                    },
+                                  ],
+                                },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "Osoba, której dane dotyczą, ma prawo do uzyskania kopii danych przekazywanych do państwa trzeciego. W celu uzyskania kopii można skontaktować się z Administratorem.",
                                     },
                                   ],
                                 },
@@ -1109,6 +1154,26 @@ export default function PrivacyPolicyPage() {
                                             {
                                               type: "text",
                                               text: " (w szczególności biuro księgowe, kancelaria prawna lub firma windykacyjna) – Administrator udostępnia zebrane dane osobowe Klienta wybranemu dostawcy działającemu na jego zlecenie jedynie w przypadku oraz w zakresie niezbędnym do zrealizowania danego celu przetwarzania danych zgodnego z niniejszą polityką prywatności.",
+                                            },
+                                          ],
+                                        },
+                                      ],
+                                    },
+                                    {
+                                      type: "listItem",
+                                      content: [
+                                        {
+                                          type: "paragraph",
+                                          attrs: { textAlign: null },
+                                          content: [
+                                            {
+                                              type: "text",
+                                              marks: [{ type: "bold" }],
+                                              text: "Google LLC (1600 Amphitheatre Parkway, Mountain View, CA 94043, Stany Zjednoczone Ameryki)",
+                                            },
+                                            {
+                                              type: "text",
+                                              text: " – dostawca narzędzi analitycznych Google Analytics służących do analizy ruchu na stronie internetowej Sklepu Internetowego oraz sposobu korzystania ze Sklepu Internetowego przez Użytkowników i Klientów. Administrator udostępnia zebrane dane osobowe (w tym adresy IP, dane dotyczące aktywności użytkownika, informacje o urządzeniu i przeglądarce) firmie Google działającej na jego zlecenie jako podmiot przetwarzający wyłącznie w przypadku oraz w zakresie niezbędnym do realizacji celów analitycznych określonych w niniejszej polityce prywatności. Dane są przekazywane do Stanów Zjednoczonych na podstawie Standardowych Klauzul Umownych zatwierdzonych przez Komisję Europejską.",
                                             },
                                           ],
                                         },
@@ -1328,6 +1393,36 @@ export default function PrivacyPolicyPage() {
                                     },
                                   ],
                                 },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "Użytkownik może w każdej chwili zrezygnować ze śledzenia przez Google Analytics poprzez:",
+                                    },
+                                  ],
+                                },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "wycofanie zgody na pliki cookies analityczne w narzędziu do zarządzania zgodami dostępnym na stronie Sklepu Internetowego, lub",
+                                    },
+                                  ],
+                                },
+                                {
+                                  type: "paragraph",
+                                  attrs: { textAlign: null },
+                                  content: [
+                                    {
+                                      type: "text",
+                                      text: "instalację dodatku do przeglądarki blokującego Google Analytics, dostępnego pod adresem: https://tools.google.com/dlpage/gaoptout/",
+                                    },
+                                  ],
+                                },
                               ],
                             },
                           ],
@@ -1391,7 +1486,7 @@ export default function PrivacyPolicyPage() {
                                   content: [
                                     {
                                       type: "text",
-                                      text: "Administrator może udostępnić na Stronie narzędzie do łatwego i aktywnego zarządzania plikami Cookies - dostępne po pierwszym wejściu na Stronę, a następnie dostępne w stopce Strony. Aktywne zarządzanie pozwala między innymi na sprawdzenie jakie pliki Cookies są lub mogą być zapisywane podczas korzystania ze Strony, a także na wybór i późniejszą zmianę zakresu i celów stosowania plików Cookies w odniesieniu do urządzenia i osoby odwiedzającej Stronę. Rozpoczynając korzystanie ze Strony osoba odwiedzająca zostanie poproszona o wybór ustawień dotyczących plików Cookies. Możliwa jest późniejsza ich zmiana poprzez zmianę ustawień w ramach tego narzędzia dostępnego na stronie.",
+                                      text: "Administrator udostępnia na Stronie narzędzie do łatwego i aktywnego zarządzania plikami Cookies - dostępne po pierwszym wejściu na Stronę, a następnie dostępne w stopce Strony. Aktywne zarządzanie pozwala między innymi na sprawdzenie jakie pliki Cookies są lub mogą być umieszczane ze Strony, a także na wybór i późniejszą zmianę zakresu i celów stosowania plików Cookies w odniesieniu do urządzenia i osoby odwiedzającej Stronę.\nRozpoczynając korzystanie ze Strony osoba odwiedzająca zostanie poproszona o wybór ustawień dotyczących plików Cookies. Użytkownik ma możliwość:\n\nZaakceptowania wszystkich plików Cookies (w tym cookies analitycznych, marketingowych i funkcjonalnych),\nOdrzucenia plików Cookies opcjonalnych (z wyjątkiem plików Cookies niezbędnych do funkcjonowania Sklepu Internetowego),\nZarządzania preferencjami poprzez wybór poszczególnych kategorii Cookies.\n\nZgoda na pliki Cookies może zostać w każdym momencie wycofana poprzez zmianę ustawień w narzędziu dostępnym w stopce strony. Możliwa jest późniejsza ich zmiana poprzez zmianę ustawień w ramach tego narzędzia dostępnego na stronie.",
                                     },
                                   ],
                                 },
@@ -1740,7 +1835,7 @@ export default function PrivacyPolicyPage() {
                                                   content: [
                                                     {
                                                       type: "text",
-                                                      text: "prowadzenia anonimowych statystyk przedstawiających sposób korzystania ze strony Sklepu Internetowego (pliki Cookies analityczne i wydajnościowe)",
+                                                      text: "Prowadzenia anonimowych statystyk przedstawiających sposób korzystania ze strony Sklepu Internetowego przy użyciu narzędzia Google Analytics (pliki Cookies analityczne i wydajnościowe od Google LLC)",
                                                     },
                                                   ],
                                                 },
@@ -1992,6 +2087,121 @@ export default function PrivacyPolicyPage() {
                                   ],
                                 },
                               ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: "listItem",
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Administrator wykorzystuje w Sklepie Internetowym narzędzie analityczne Google Analytics, świadczone przez Google LLC (1600 Amphitheatre Parkway, Mountain View, CA 94043, Stany Zjednoczone Ameryki).",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Google Analytics używa plików cookies (w szczególności plików _ga, _gid, _gat) do analizy sposobu korzystania ze strony Sklepu Internetowego przez Użytkowników i Klientów. Informacje wygenerowane przez pliki cookies dotyczące korzystania ze Sklepu Internetowego (w tym zanonimizowany adres IP użytkownika, informacje o urządzeniu oraz zachowaniach na stronie) są przekazywane i przechowywane przez Google na serwerach znajdujących się w Stanach Zjednoczonych.",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Przekazywanie danych osobowych do USA odbywa się na podstawie Standardowych Klauzul Umownych zatwierdzonych przez Komisję Europejską oraz Zasad Przetwarzania Danych Google, które zapewniają odpowiedni poziom ochrony danych osobowych zgodny z wymogami Rozporządzenia RODO.",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Google wykorzystuje zebrane informacje w celu oceny korzystania ze Sklepu Internetowego przez Użytkowników i Klientów, tworzenia raportów dotyczących aktywności w Sklepie Internetowym oraz świadczenia innych usług związanych z aktywnością w Sklepie Internetowym i korzystaniem z internetu. Google może również przekazywać te informacje osobom trzecim, jeżeli wymaga tego prawo lub jeżeli osoby te przetwarzają takie informacje w imieniu Google.",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Użytkownicy mogą zapobiec gromadzeniu i przetwarzaniu danych przez Google Analytics poprzez:",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "wycofanie zgody na stosowanie plików cookies analitycznych w narzędziu do zarządzania plikami Cookies dostępnym w Sklepie Internetowym,",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "instalację dodatku do przeglądarki blokującego Google Analytics, dostępnego pod adresem: https://tools.google.com/dlpage/gaoptout/",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Więcej informacji o przetwarzaniu danych przez Google Analytics oraz o polityce prywatności Google można znaleźć pod następującymi adresami:",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Jak Google wykorzystuje dane: https://policies.google.com/technologies/partner-sites?hl=pl",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Polityka prywatności Google: https://policies.google.com/privacy?hl=pl",
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null },
+                          content: [
+                            {
+                              type: "text",
+                              text: "Bezpieczeństwo danych w Google Analytics: https://support.google.com/analytics/answer/6004245?hl=pl",
                             },
                           ],
                         },

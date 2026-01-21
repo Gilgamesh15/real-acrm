@@ -28,13 +28,10 @@ const YOUTUBE_URL = import.meta.env.VITE_YOUTUBE_URL;
 function toTitleCase(str: string): string {
   return str
     .toLowerCase()
-    .split(' ')
-    .map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
-
 
 // ============================================================================
 // Type Definitions (Google-compliant JSON-LD structures)
@@ -706,7 +703,7 @@ export function generateProductGroupStructuredData(
 
       brand: {
         "@type": "Brand",
-        name:  piece.brand.name,
+        name: piece.brand.name,
       },
 
       size: piece.size.name,
@@ -819,7 +816,7 @@ export function generateOrganizationStructuredData(): Organization {
       {
         "@type": "ContactPoint",
         contactType: "customer service",
-        email: "pomoc@acrm.pl",
+        email: "kontakt@acrm.pl",
         availableLanguage: ["Polish", "English"],
         areaServed: "PL",
       },
