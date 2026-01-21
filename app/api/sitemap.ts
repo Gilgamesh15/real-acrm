@@ -51,7 +51,7 @@ export async function loader({}: LoaderFunctionArgs) {
     "/regulamin/reklamacje",
     "/regulamin/odstapienie-od-umowy",
     "/regulamin/polityka-prywatnosci",
-    "/regulamin/o-nas",
+    "/o-nas",
   ];
 
   for (const page of legalPages) {

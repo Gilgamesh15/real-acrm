@@ -18,7 +18,7 @@ export default [
   route("/api/webhooks/stripe", "./api/stripe-webhook.ts"),
   route("/api/create-order", "./api/create-order.ts"),
   route("/api/sitemap.xml", "./api/sitemap.ts"),
-  route("/api/robots.txt", "./api/robots.ts"),
+  route("/robots.txt", "./api/robots.ts"),
   route("/site.webmanifest", "./api/webmanifest.ts"),
   route("/api/cancel-order", "./api/cancel-order.ts"),
   route("/api/pending-order", "./api/pending-order.ts"),

@@ -140,7 +140,7 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
               </Column>
               <Column style={{ backgroundColor: colors.background }}>
                 <Link
-                  href={`${APP_URL}/regulamin/o-nas`}
+                  href={`${APP_URL}/o-nas`}
                   target="_blank"
                   style={{
                     padding: "5px 10px",
@@ -385,40 +385,6 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
               </Column>
             </Row>
           </Section>
-        </Container>
-
-        <Container
-          style={{
-            maxWidth: "600px",
-            margin: "0 auto",
-            padding: "20px",
-            backgroundColor: colors.background,
-          }}
-        >
-          <Text
-            style={{
-              padding: "0px",
-              margin: "0px",
-              color: colors.secondary,
-              fontSize: fonts["paragraph-small"].fontSize,
-              backgroundColor: colors.background,
-            }}
-          >
-            Nie chcesz już otrzymywać tych wiadomości?{" "}
-            <Link
-              href={`${APP_URL}/anuluj-subskrybcje`}
-              target="_blank"
-              style={{
-                textDecoration: "underline",
-                color: colors.primary,
-                fontSize: fonts["paragraph-small"].fontSize,
-                cursor: "pointer",
-              }}
-            >
-              Wypisz się
-            </Link>
-            .
-          </Text>
         </Container>
       </Body>
     </Html>

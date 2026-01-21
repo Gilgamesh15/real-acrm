@@ -13,6 +13,7 @@ import {
 import { EmailBase, colors, fonts } from "./email-base";
 
 const APP_URL = import.meta.env.VITE_APP_URL;
+const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 const ORDER_CONFIRMATION_ICON_URL =
   "https://res.cloudinary.com/dbpz6wtou/image/upload/v1768639124/Adobe_Express_-_file_qtvusb.png";
 const ORDER_CONFIRMATION_TITLE = "Potwierdzenie zamówienia";
@@ -339,7 +340,7 @@ const OrderConfirmationEmail = ({
         otrzymania towaru, bez podawania przyczyny. <br />
         Aby skorzystać z tego prawa, wyślij nam informację o rezygnacji na adres
         <Link
-          href={`mailto:${APP_URL}/anuluj-subskrybcje`}
+          href={`mailto:${CONTACT_EMAIL}`}
           target="_blank"
           style={{
             color: colors.primary,
@@ -347,7 +348,7 @@ const OrderConfirmationEmail = ({
             fontSize: fonts["paragraph-small"].fontSize,
           }}
         >
-          kontakt@acrm.pl
+          {CONTACT_EMAIL}
         </Link>{" "}
         lub złóż oświadczenie poprzez formularz dostępny na
         <Link
@@ -359,7 +360,7 @@ const OrderConfirmationEmail = ({
             fontSize: fonts["paragraph-small"].fontSize,
           }}
         >
-          www.acrm.pl/zwroty
+          {APP_URL}/zwroty
         </Link>
         . <br />
         Towar należy odesłać na adres: ul. Nad Sudołem 24/22, 31-228 Kraków w

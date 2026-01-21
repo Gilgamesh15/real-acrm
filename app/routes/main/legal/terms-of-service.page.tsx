@@ -2,6 +2,9 @@ import { Container, Section } from "~/components/ui/layout";
 
 import { RichText } from "~/components/shared/rich-text/rich-text";
 
+const APP_URL = import.meta.env.VITE_APP_URL;
+const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL
+
 export default function TermsOfServicePage() {
   return (
     <main>
@@ -23,7 +26,7 @@ export default function TermsOfServicePage() {
                         {
                           type: "link",
                           attrs: {
-                            href: "http://ACRM.PL",
+                            href: APP_URL,
                             target: "_blank",
                             rel: "noopener noreferrer nofollow",
                             class: null,
@@ -258,7 +261,7 @@ export default function TermsOfServicePage() {
                         {
                           type: "link",
                           attrs: {
-                            href: "http://www.acrm.pl",
+                            href: APP_URL,
                             target: "_blank",
                             rel: "noopener noreferrer nofollow",
                             class: null,
@@ -314,7 +317,7 @@ export default function TermsOfServicePage() {
                                         {
                                           type: "link",
                                           attrs: {
-                                            href: "http://www.acrm.pl",
+                                            href: APP_URL,
                                             target: "_blank",
                                             rel: "noopener noreferrer nofollow",
                                             class: null,
@@ -333,14 +336,14 @@ export default function TermsOfServicePage() {
                                         {
                                           type: "link",
                                           attrs: {
-                                            href: "mailto:kontakt@acrm.pl",
+                                            href: `mailto:${CONTACT_EMAIL}`,
                                             target: "_blank",
                                             rel: "noopener noreferrer nofollow",
                                             class: null,
                                           },
                                         },
                                       ],
-                                      text: "kontakt@acrm.pl",
+                                      text: `${CONTACT_EMAIL}`,
                                     },
                                     {
                                       type: "text",
@@ -656,7 +659,7 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "http://www.acrm.pl",
+                                                    href: APP_URL,
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
@@ -693,14 +696,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:kontakt@acrm.pl",
+                                                    href: `mailto:${CONTACT_EMAIL}`,
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "kontakt@acrm.pl",
+                                              text: `${CONTACT_EMAIL}`,
                                             },
                                             {
                                               type: "text",
@@ -1001,14 +1004,14 @@ export default function TermsOfServicePage() {
                                                         {
                                                           type: "link",
                                                           attrs: {
-                                                            href: "mailto:kontakt@acrm.pl",
+                                                            href: `mailto:${CONTACT_EMAIL}`,
                                                             target: "_blank",
                                                             rel: "noopener noreferrer nofollow",
                                                             class: null,
                                                           },
                                                         },
                                                       ],
-                                                      text: "kontakt@acrm.pl",
+                                                      text: `${CONTACT_EMAIL}`,
                                                     },
                                                     {
                                                       type: "text",
@@ -1061,14 +1064,14 @@ export default function TermsOfServicePage() {
                                                         {
                                                           type: "link",
                                                           attrs: {
-                                                            href: "mailto:kontakt@acrm.pl",
+                                                            href: `mailto:${CONTACT_EMAIL}`,
                                                             target: "_blank",
                                                             rel: "noopener noreferrer nofollow",
                                                             class: null,
                                                           },
                                                         },
                                                       ],
-                                                      text: "kontakt@acrm.pl",
+                                                      text: `${CONTACT_EMAIL}`,
                                                     },
                                                     {
                                                       type: "text",
@@ -1637,14 +1640,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:kontakt@acrm.pl",
+                                                    href: `mailto:${CONTACT_EMAIL}`,
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "kontakt@acrm.pl",
+                                              text: `${CONTACT_EMAIL}`,
                                             },
                                             { type: "text", text: "." },
                                           ],
@@ -1983,14 +1986,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:kontakt@acrm.pl",
+                                                    href: `mailto:${CONTACT_EMAIL}`,
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "kontakt@acrm.pl",
+                                              text: `${CONTACT_EMAIL}`,
                                             },
                                             { type: "text", text: "." },
                                           ],
@@ -2377,14 +2380,14 @@ export default function TermsOfServicePage() {
                                         {
                                           type: "link",
                                           attrs: {
-                                            href: "mailto:kontakt@acrm.pl",
+                                            href: `mailto:${CONTACT_EMAIL}`,
                                             target: "_blank",
                                             rel: "noopener noreferrer nofollow",
                                             class: null,
                                           },
                                         },
                                       ],
-                                      text: "kontakt@acrm.pl",
+                                      text: `${CONTACT_EMAIL}`,
                                     },
                                     {
                                       type: "text",
@@ -2429,14 +2432,14 @@ export default function TermsOfServicePage() {
                                                 {
                                                   type: "link",
                                                   attrs: {
-                                                    href: "mailto:kontakt@acrm.pl",
+                                                    href: `mailto:${CONTACT_EMAIL}`,
                                                     target: "_blank",
                                                     rel: "noopener noreferrer nofollow",
                                                     class: null,
                                                   },
                                                 },
                                               ],
-                                              text: "kontakt@acrm.pl",
+                                              text: `${CONTACT_EMAIL}`,
                                             },
                                             {
                                               type: "text",
@@ -2965,7 +2968,7 @@ export default function TermsOfServicePage() {
                         {
                           type: "link",
                           attrs: {
-                            href: "http://acrm.pl",
+                            href: APP_URL,
                             target: "_blank",
                             rel: "noopener noreferrer nofollow",
                             class: null,
@@ -2986,14 +2989,14 @@ export default function TermsOfServicePage() {
                         {
                           type: "link",
                           attrs: {
-                            href: "mailto:kontakt@acrm.pl",
+                            href: `mailto:${CONTACT_EMAIL}`,
                             target: "_blank",
                             rel: "noopener noreferrer nofollow",
                             class: null,
                           },
                         },
                       ],
-                      text: "kontakt@acrm.pl",
+                      text: `${CONTACT_EMAIL}`,
                     },
                   ],
                 },

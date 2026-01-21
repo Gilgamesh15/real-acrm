@@ -2,6 +2,8 @@ import { Container, Section } from "~/components/ui/layout";
 
 import { RichText } from "~/components/shared/rich-text/rich-text";
 
+const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
+
 export default function RightOfWithdrawalPage() {
   return (
     <main>
@@ -67,14 +69,14 @@ export default function RightOfWithdrawalPage() {
                                 {
                                   type: "link",
                                   attrs: {
-                                    href: "mailto:kontakt@acrm.pl",
+                                    href: `mailto:${CONTACT_EMAIL}`,
                                     target: "_blank",
                                     rel: "noopener noreferrer nofollow",
                                     class: null,
                                   },
                                 },
                               ],
-                              text: "kontakt@acrm.pl",
+                              text: `${CONTACT_EMAIL}`,
                             },
                           ],
                         },
