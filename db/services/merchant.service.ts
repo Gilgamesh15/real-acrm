@@ -4,7 +4,6 @@
  * Business logic for syncing products to Google Merchant Center.
  * Uses existing JSON-LD generation as the source of truth.
  */
-
 import * as schema from "db/schema";
 import { eq } from "drizzle-orm";
 import z from "zod";
@@ -19,8 +18,8 @@ import {
 } from "~/lib/merchant/transformer";
 import type { SyncResult } from "~/lib/merchant/types";
 import {
-  generateProductStructuredData,
   generateProductGroupStructuredData,
+  generateProductStructuredData,
 } from "~/lib/seo";
 
 class MerchantService {
@@ -68,7 +67,9 @@ class MerchantService {
           },
           size: true,
           measurements: {
-            orderBy: (measurements, { asc }) => [asc(measurements.displayOrder)],
+            orderBy: (measurements, { asc }) => [
+              asc(measurements.displayOrder),
+            ],
           },
           piecesToTags: {
             with: {
@@ -97,9 +98,12 @@ class MerchantService {
         if (piece.status === "sold" || piece.status === "draft") {
           try {
             await merchantApiClient.deleteProduct(piece.id);
-            this.logger.info("Deleted non-published piece from Merchant Center", {
-              pieceId,
-            });
+            this.logger.info(
+              "Deleted non-published piece from Merchant Center",
+              {
+                pieceId,
+              }
+            );
           } catch (deleteError) {
             // Ignore errors when deleting (product might not exist)
             this.logger.debug("Could not delete piece (may not exist)", {
@@ -207,7 +211,8 @@ class MerchantService {
       const productInputs = transformProductGroupToProductInputs(jsonLd);
 
       // Batch submit to Merchant Center
-      const batchResult = await merchantApiClient.batchUpsertProducts(productInputs);
+      const batchResult =
+        await merchantApiClient.batchUpsertProducts(productInputs);
 
       if (batchResult.failed > 0) {
         this.logger.warn("Some pieces failed to sync", {
@@ -268,7 +273,7 @@ class MerchantService {
       this.logger.info("Starting full sync");
 
       // Sync all published standalone pieces (pieces not in a product)
-      const standalonePieces = await db.query.pieces.findMany({
+      const pieces = await db.query.pieces.findMany({
         where: eq(schema.pieces.status, "published"),
         columns: {
           id: true,
@@ -276,13 +281,11 @@ class MerchantService {
         },
       });
 
-      const piecesWithoutProduct = standalonePieces.filter((p) => !p.productId);
-
       this.logger.info("Syncing standalone pieces", {
-        count: piecesWithoutProduct.length,
+        count: pieces.length,
       });
 
-      for (const piece of piecesWithoutProduct) {
+      for (const piece of pieces) {
         const pieceResult = await this.syncPiece(piece.id);
         if (pieceResult.success) {
           result.syncedCount++;
@@ -351,13 +354,12 @@ class MerchantService {
    * @param pieceId - The ID of the piece
    * @param newStatus - The new status of the piece
    */
-  async onPieceStatusChange(
-    pieceId: string,
-    newStatus: string
-  ): Promise<void> {
+  async onPieceStatusChange(pieceId: string, newStatus: string): Promise<void> {
     try {
       if (!this.isConfigured()) {
-        this.logger.debug("Merchant API not configured, skipping status change handler");
+        this.logger.debug(
+          "Merchant API not configured, skipping status change handler"
+        );
         return;
       }
 
