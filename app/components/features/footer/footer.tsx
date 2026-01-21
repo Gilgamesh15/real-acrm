@@ -68,6 +68,20 @@ const FOOTER_LINKS = [
   },
 ];
 
+// DANE FIRMY - UZUPEŁNIJ PONIŻSZE INFORMACJE
+const COMPANY_INFO = {
+  tradeName: "ACRM Fashion Projects",
+  legalName: "ACRM SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ",
+  address: "ul. Nad Sudołem 24/22", // np. "ul. Przykładowa 123"
+  postalCode: "31-228", // np. "00-001"
+  city: "Kraków", // np. "Warszawa"
+  nip: "9452316835",
+  krs: "0001193211", // np. "0000123456"
+  regon: "542680140", // np. "12345678901234"
+  email: "pomoc@acrm.pl", // lub inny email kontaktowy
+  phone: "+48 453-450-597", // np. "+48 123 456 789"
+};
+
 function Footer({
   categoriesPromise,
 }: {
@@ -177,6 +191,58 @@ function Footer({
           </div>
         </div>
       </div>
+
+      {/* NOWA SEKCJA: DANE FIRMY */}
+      <div className="border-t border-muted-foreground/20 mt-8 pt-8 pb-6">
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Kolumna 1: Dane rejestrowe */}
+          <div className="text-sm text-muted-foreground space-y-2">
+            <h3 className="font-semibold text-foreground mb-3">
+              Informacje o firmie
+            </h3>
+            <p className="font-medium text-foreground">
+              {COMPANY_INFO.tradeName}
+            </p>
+            <p>{COMPANY_INFO.legalName}</p>
+            <p>
+              {COMPANY_INFO.address}
+              <br />
+              {COMPANY_INFO.postalCode} {COMPANY_INFO.city}
+            </p>
+            <div className="pt-2 space-y-1">
+              <p>NIP: {COMPANY_INFO.nip}</p>
+              <p>KRS: {COMPANY_INFO.krs}</p>
+              <p>REGON: {COMPANY_INFO.regon}</p>
+            </div>
+          </div>
+
+          {/* Kolumna 2: Dane kontaktowe */}
+          <div className="text-sm text-muted-foreground space-y-2">
+            <h3 className="font-semibold text-foreground mb-3">Kontakt</h3>
+            <div className="space-y-2">
+              <p>
+                <span className="font-medium">Email:</span>{" "}
+                <a
+                  href={`mailto:${COMPANY_INFO.email}`}
+                  className="hover:text-foreground transition-colors underline"
+                >
+                  {COMPANY_INFO.email}
+                </a>
+              </p>
+              <p>
+                <span className="font-medium">Telefon:</span>{" "}
+                <a
+                  href={`tel:${COMPANY_INFO.phone.replace(/\s/g, "")}`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {COMPANY_INFO.phone}
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="overflow-hidden h-22 opacity-10">
         <img src={LogoSmallPng} alt="Logo" />
       </div>
