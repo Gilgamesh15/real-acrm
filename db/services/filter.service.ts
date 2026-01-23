@@ -951,6 +951,7 @@ class FilterService {
               ORDER BY display_order ASC 
               LIMIT 1
             )`.as("image"),
+            updatedAt: schema.categories.updatedAt,
           })
           .from(schema.categories)
           .innerJoin(
