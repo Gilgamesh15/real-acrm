@@ -24,6 +24,8 @@ export default [
   route("/api/pending-order", "./api/pending-order.ts"),
   route("/api/return-order", "./api/return-order.ts"),
   route("/api/create-return", "./api/create-return.ts"),
+  route("/produkt/*", "./legacy-product-detail-redirect.page.tsx"),
+  route("/produkty/*", "./legacy-product-browse-redirect.page.tsx"),
 
   // Account
   ...prefix("/konto", [

@@ -13,6 +13,7 @@ import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carous
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { RichText } from "~/components/shared/rich-text/rich-text";
+import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generateProductStructuredData } from "~/lib/seo";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
@@ -110,7 +111,6 @@ export const meta: Route.MetaFunction = ({ data }) => {
     { name: "twitter:description", content: pageDescription },
     { name: "twitter:image", content: pageImage },
     { tagName: "link", rel: "canonical", href: pageUrl },
-    { "script:ld+json": generateProductStructuredData(product) },
   ];
 };
 
@@ -130,6 +130,11 @@ export default function ProductDetailPage({
   >(null);
 
   const { onProductBuyNow } = useCheckoutDialog();
+
+  useStructuredData(
+    generateProductStructuredData(product),
+    "product-structured-data"
+  );
 
   return (
     <>

@@ -38,6 +38,8 @@ import {
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
+import { useStructuredData } from "~/hooks/use-structured-data";
+import { generateBreadcrumbListStructuredData } from "~/lib/seo";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
 import { cn, getSlugPath, sortFilterOptions } from "~/lib/utils";
 import { filterSearchParamsCache } from "~/lib/utils.server";
@@ -100,6 +102,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function ProductsBrowsePage({
   loaderData,
+  params,
 }: Route.ComponentProps) {
   const {
     filterData: { brandGroups, sizeGroups, categories, tags, priceRange },
@@ -125,6 +128,16 @@ export default function ProductsBrowsePage({
     : `${categoryName} | Ubrania | ACRM`;
   const pageDescription = `Przeglądaj ${categoryName.toLowerCase()}. Marki premium w przystępnych cenach. Darmowa dostawa. Zwroty do 14 dni.`;
   const pageUrl = `${BASE_URL}${location.pathname}`;
+
+  const catSlug = params["*"].split("/").pop();
+  const category = catSlug
+    ? categories.find((category) => category.slug === catSlug)
+    : undefined;
+
+  useStructuredData(
+    category ? generateBreadcrumbListStructuredData(category) : undefined,
+    "breadcrumb-list-structured-data"
+  );
 
   return (
     <>

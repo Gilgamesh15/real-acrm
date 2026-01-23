@@ -247,7 +247,14 @@ type BreadcrumbList = {
 };
 
 function generateBreadcrumbListStructuredData(
-  category: DBQueryResult<"categories", {}>
+  category: DBQueryResult<
+    "categories",
+    {
+      columns: {
+        path: true;
+      };
+    }
+  >
 ): BreadcrumbList {
   const itemListElement: BreadcrumbListItem[] = [];
 

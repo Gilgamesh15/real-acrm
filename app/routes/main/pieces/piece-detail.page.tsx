@@ -24,6 +24,7 @@ import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carous
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
+import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generatePieceStructuredData } from "~/lib/seo";
 import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
@@ -136,12 +137,13 @@ export const meta: Route.MetaFunction = ({ data }) => {
     { name: "twitter:description", content: pageDescription },
     { name: "twitter:image", content: pageImage },
     { tagName: "link", rel: "canonical", href: pageUrl },
-    { "script:ld+json": generatePieceStructuredData(piece) },
   ];
 };
 
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const { piece, similarPiecesPromise } = loaderData;
+
+  useStructuredData(generatePieceStructuredData(piece), "piece-structured-data");
 
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();
