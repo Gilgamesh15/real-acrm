@@ -27,10 +27,6 @@ import { MainProductCard } from "~/components/features/product-card/main-product
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { db } from "~/lib/db";
-import {
-  generateWebPageStructuredData,
-  generateWebSiteStructuredData,
-} from "~/lib/seo";
 import type { DBQueryResult } from "~/lib/types";
 import {
   calculateProductPrice,
@@ -251,6 +247,42 @@ export async function loader() {
   };
 }
 
+export const meta: Route.MetaFunction = () => [
+  { title: "ACRM | Fashion Projects" },
+  {
+    name: "description",
+    content:
+      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+  },
+  { name: "robots", content: "index, follow" },
+  { property: "og:title", content: "ACRM | Fashion Projects" },
+  {
+    property: "og:description",
+    content:
+      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+  },
+  { property: "og:image", content: "https://acrm.pl/og-image-home.jpg" },
+  { property: "og:url", content: "https://acrm.pl" },
+  { property: "og:type", content: "website" },
+  { property: "og:locale", content: "pl_PL" },
+  { property: "og:site_name", content: "ACRM | Fashion Projects" },
+  { property: "og:image:width", content: "1200" },
+  { property: "og:image:height", content: "630" },
+  {
+    property: "og:image:alt",
+    content: "ACRM Fashion Projects - Sklep z odzieżą vintage",
+  },
+  { name: "twitter:card", content: "summary_large_image" },
+  { name: "twitter:title", content: "ACRM | Fashion Projects" },
+  {
+    name: "twitter:description",
+    content:
+      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach.",
+  },
+  { name: "twitter:image", content: "https://acrm.pl/og-image-home.jpg" },
+  { tagName: "link", rel: "canonical", href: "https://acrm.pl" },
+];
+
 export default function Home({ loaderData }: Route.ComponentProps) {
   const {
     categoriesPromise,
@@ -261,79 +293,31 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   } = loaderData;
 
   return (
-    <>
-      <title>ACRM | Fashion Projects</title>
-      <meta
-        name="description"
-        content="Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni."
-      />
-      <meta name="robots" content="index, follow" />
+    <main>
+      <HeroSection />
 
-      <meta property="og:title" content="ACRM | Fashion Projects" />
-      <meta
-        property="og:description"
-        content="Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni."
-      />
-      <meta property="og:image" content="https://acrm.pl/og-image-home.jpg" />
-      <meta property="og:url" content="https://acrm.pl" />
-      <meta property="og:type" content="website" />
-      <meta property="og:locale" content="pl_PL" />
-      <meta property="og:site_name" content="ACRM | Fashion Projects" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta
-        property="og:image:alt"
-        content="ACRM Fashion Projects - Sklep z odzieżą vintage"
+      <TopFeaturedSection
+        title="Nowe ubrania"
+        href="/kategorie"
+        promise={topPiecesPromise}
+        className="pt-14 pb-8"
       />
 
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="ACRM | Fashion Projects" />
-      <meta
-        name="twitter:description"
-        content="Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach."
+      <CategoriesSection categoriesPromise={categoriesPromise} />
+      <TopFeaturedSection
+        title="Nowe projekty"
+        href="/projekty"
+        promise={topProductsPromise}
+        className="pt-8 pb-16"
       />
-      <meta name="twitter:image" content="https://acrm.pl/og-image-home.jpg" />
 
-      <link rel="canonical" href="https://acrm.pl" />
+      <TagsSection tagsPromise={tagsPromise} />
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateWebSiteStructuredData()),
-        }}
+      {/* Featured products */}
+      <FeaturedProductsSection
+        featuredProductsPromise={featuredProductsPromise}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateWebPageStructuredData()),
-        }}
-      />
-      <main>
-        <HeroSection />
-
-        <TopFeaturedSection
-          title="Nowe ubrania"
-          href="/kategorie"
-          promise={topPiecesPromise}
-          className="pt-14 pb-8"
-        />
-
-        <CategoriesSection categoriesPromise={categoriesPromise} />
-        <TopFeaturedSection
-          title="Nowe projekty"
-          href="/projekty"
-          promise={topProductsPromise}
-          className="pt-8 pb-16"
-        />
-
-        <TagsSection tagsPromise={tagsPromise} />
-
-        {/* Featured products */}
-        <FeaturedProductsSection
-          featuredProductsPromise={featuredProductsPromise}
-        />
-      </main>
-    </>
+    </main>
   );
 }
 

@@ -24,7 +24,6 @@ export default [
   route("/api/pending-order", "./api/pending-order.ts"),
   route("/api/return-order", "./api/return-order.ts"),
   route("/api/create-return", "./api/create-return.ts"),
-  route("/api/merchant-sync", "./api/merchant-sync.ts"),
 
   // Account
   ...prefix("/konto", [

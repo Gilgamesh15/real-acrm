@@ -9,7 +9,6 @@ import { CheckoutDialogProvider } from "~/components/features/providers/checkout
 import { CheckoutProvider } from "~/components/features/providers/checkout-provider";
 import { CheckoutRecoveryDialogProvider } from "~/components/features/providers/checkout-recovery-dialog-provider";
 import { db } from "~/lib/db";
-import { generateOrganizationStructuredData } from "~/lib/seo";
 
 import type { Route } from "./+types/main.layout";
 
@@ -56,12 +55,6 @@ export default function MainLayout() {
       <CheckoutProvider>
         <CheckoutDialogProvider>
           <CheckoutRecoveryDialogProvider>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(generateOrganizationStructuredData()),
-              }}
-            />
             <Navbar
               categoriesPromise={categoriesPromise}
               tagsPromise={tagsPromise}

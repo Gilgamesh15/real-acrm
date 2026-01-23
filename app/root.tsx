@@ -30,6 +30,7 @@ import {
 } from "./components/ui/error";
 import { Toaster } from "./components/ui/sonner";
 import { cookieConsent } from "./cookies.server";
+import { generateOrganizationStructuredData } from "./lib/seo";
 import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
@@ -41,6 +42,7 @@ export const meta: Route.MetaFunction = () => [
   { property: "og:site_name", content: "ACRM | Fashion Projects" },
   { property: "og:locale", content: "pl_PL" },
   { name: "twitter:card", content: "summary_large_image" },
+  { "script:ld+json": generateOrganizationStructuredData() },
 ];
 
 export const middleware: MiddlewareFunction[] = [

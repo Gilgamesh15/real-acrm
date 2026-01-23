@@ -25,7 +25,7 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { db } from "~/lib/db";
-import { generateProductStructuredData } from "~/lib/seo";
+import { generatePieceStructuredData } from "~/lib/seo";
 import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
 
 import type { Route } from "./+types/piece-detail.page";
@@ -103,6 +103,43 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { piece, similarPiecesPromise };
 }
 
+export const meta: Route.MetaFunction = ({ data }) => {
+  if (!data) return [];
+
+  const { piece } = data;
+  const pageTitle = `${piece.name} | ${piece.brand.name} | ACRM`;
+  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${(piece.priceInGrosz / 100).toFixed(2)} zł. Darmowa dostawa InPost.`;
+  const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
+  const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
+  const price = (piece.priceInGrosz / 100).toFixed(2);
+  const availability =
+    piece.status === "published" ? "in stock" : "out of stock";
+
+  return [
+    { title: pageTitle },
+    { name: "description", content: pageDescription },
+    { name: "robots", content: "index, follow" },
+    { property: "og:type", content: "product" },
+    { property: "og:title", content: pageTitle },
+    { property: "og:description", content: pageDescription },
+    { property: "og:url", content: pageUrl },
+    { property: "og:image", content: pageImage },
+    { property: "og:site_name", content: "ACRM | Fashion Projects" },
+    { property: "og:locale", content: "pl_PL" },
+    { property: "product:price:amount", content: price },
+    { property: "product:price:currency", content: "PLN" },
+    { property: "product:availability", content: availability },
+    { property: "product:brand", content: piece.brand.name },
+    { property: "product:condition", content: "used" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: pageTitle },
+    { name: "twitter:description", content: pageDescription },
+    { name: "twitter:image", content: pageImage },
+    { tagName: "link", rel: "canonical", href: pageUrl },
+    { "script:ld+json": generatePieceStructuredData(piece) },
+  ];
+};
+
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const { piece, similarPiecesPromise } = loaderData;
 
@@ -115,48 +152,8 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
 
   const thumbsImages = piece.images.concat(piece.images);
 
-  const pageTitle = `${piece.name} | ${piece.brand.name} | ACRM`;
-  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${(piece.priceInGrosz / 100).toFixed(2)} zł. Darmowa dostawa InPost.`;
-  const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
-  const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
-  const price = (piece.priceInGrosz / 100).toFixed(2);
-  const availability =
-    piece.status === "published" ? "in stock" : "out of stock";
-
   return (
     <>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      <meta name="robots" content="index, follow" />
-
-      <meta property="og:type" content="product" />
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:url" content={pageUrl} />
-      <meta property="og:image" content={pageImage} />
-      <meta property="og:site_name" content="ACRM | Fashion Projects" />
-      <meta property="og:locale" content="pl_PL" />
-
-      <meta property="product:price:amount" content={price} />
-      <meta property="product:price:currency" content="PLN" />
-      <meta property="product:availability" content={availability} />
-      <meta property="product:brand" content={piece.brand.name} />
-      <meta property="product:condition" content="used" />
-
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={pageImage} />
-
-      <link rel="canonical" href={pageUrl} />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateProductStructuredData(piece)),
-        }}
-      />
-
       <Container>
         <Section>
           <div className="relative grid w-full grid-cols-1 md:grid-cols-2 gap-4.5 md:gap-8">

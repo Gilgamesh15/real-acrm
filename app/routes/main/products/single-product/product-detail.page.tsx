@@ -14,7 +14,7 @@ import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { RichText } from "~/components/shared/rich-text/rich-text";
 import { db } from "~/lib/db";
-import { generateProductGroupStructuredData } from "~/lib/seo";
+import { generateProductStructuredData } from "~/lib/seo";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
 import {
   calculateProductPrice,
@@ -78,6 +78,42 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { product };
 }
 
+export const meta: Route.MetaFunction = ({ data }) => {
+  if (!data) return [];
+
+  const { product } = data;
+  const productPrice = calculateProductPrice(product).lineTotalInGrosz / 100;
+  const pageTitle = `${product.name} | ACRM`;
+  const pageDescription = `${product.name} - kompletny zestaw. ${product.pieces.length} dostępnych ubrań z projektu. Wysyłka w 24h.`;
+  const pageUrl = `${BASE_URL}/projekty/${product.slug}`;
+  const pageImage = product.images[0]?.url || `${BASE_URL}/logo-dark.png`;
+  const availability = product.pieces.some((p) => p.status === "published")
+    ? "in stock"
+    : "out of stock";
+
+  return [
+    { title: pageTitle },
+    { name: "description", content: pageDescription },
+    { name: "robots", content: "index, follow" },
+    { property: "og:type", content: "product" },
+    { property: "og:title", content: pageTitle },
+    { property: "og:description", content: pageDescription },
+    { property: "og:url", content: pageUrl },
+    { property: "og:image", content: pageImage },
+    { property: "og:site_name", content: "ACRM | Fashion Projects" },
+    { property: "og:locale", content: "pl_PL" },
+    { property: "product:price:amount", content: productPrice.toFixed(2) },
+    { property: "product:price:currency", content: "PLN" },
+    { property: "product:availability", content: availability },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: pageTitle },
+    { name: "twitter:description", content: pageDescription },
+    { name: "twitter:image", content: pageImage },
+    { tagName: "link", rel: "canonical", href: pageUrl },
+    { "script:ld+json": generateProductStructuredData(product) },
+  ];
+};
+
 export default function ProductDetailPage({
   loaderData,
 }: Route.ComponentProps) {
@@ -95,47 +131,8 @@ export default function ProductDetailPage({
 
   const { onProductBuyNow } = useCheckoutDialog();
 
-  const productPrice = calculateProductPrice(product).lineTotalInGrosz / 100;
-  const pageTitle = `${product.name} | ACRM`;
-  const pageDescription = `${product.name} - kompletny zestaw. ${product.pieces.length} dostępnych ubrań z projektu. Wysyłka w 24h.`;
-  const pageUrl = `${BASE_URL}/projekty/${product.slug}`;
-  const pageImage = product.images[0]?.url || `${BASE_URL}/logo-dark.png`;
-  const availability = product.pieces.some((p) => p.status === "published")
-    ? "in stock"
-    : "out of stock";
-
   return (
     <>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      <meta name="robots" content="index, follow" />
-
-      <meta property="og:type" content="product" />
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:url" content={pageUrl} />
-      <meta property="og:image" content={pageImage} />
-      <meta property="og:site_name" content="ACRM | Fashion Projects" />
-      <meta property="og:locale" content="pl_PL" />
-
-      <meta property="product:price:amount" content={productPrice.toFixed(2)} />
-      <meta property="product:price:currency" content="PLN" />
-      <meta property="product:availability" content={availability} />
-
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={pageImage} />
-
-      <link rel="canonical" href={pageUrl} />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateProductGroupStructuredData(product)),
-        }}
-      />
-
       <main>
         <Container max="xs">
           <ProductImagesCarouselSection
