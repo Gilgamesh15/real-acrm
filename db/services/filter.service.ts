@@ -966,7 +966,7 @@ class FilterService {
                 .where(eq(childCategories.parentId, schema.categories.id))
             )
           )
-          .orderBy(schema.categories.name),
+          .orderBy(desc(schema.categories.updatedAt)),
 
         // Get tags for eligible pieces
         db

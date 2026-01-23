@@ -139,7 +139,7 @@ export async function loader() {
         },
       },
 
-      orderBy: asc(schema.products.featuredOrder),
+      orderBy: desc(schema.products.featuredOrder),
     })
     .then((res) => res);
 

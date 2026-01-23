@@ -240,7 +240,7 @@ export const getFilterSearchParams = ({
     "alphabetical-asc",
     "alphabetical-desc",
   ] satisfies `${CatalogSortBy}-${CatalogSortOrder}`[]).withDefault(
-    "relevance-asc"
+    "date-desc"
   ),
 });
 
