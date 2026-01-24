@@ -101,6 +101,7 @@ const MainProductCard = ({
           aspectRatio={6 / 8}
           quality="auto:good"
           mode="cover"
+          width={400}
           className="-z-2 absolute h-full w-full"
         />
 
@@ -124,8 +125,7 @@ const MainProductCard = ({
                       aspectRatio={1}
                       width={80}
                       height={80}
-                      mode="cover"
-                      scale={2}
+                      mode="contain"
                       className="min-w-full min-h-full absolute"
                     />
                   </li>
