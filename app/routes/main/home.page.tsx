@@ -335,6 +335,8 @@ function HeroSection() {
               priority
               fetchPriority="high"
               mode="cover"
+              width={800}
+              height={1000}
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -365,6 +367,8 @@ function HeroSection() {
               priority
               fetchPriority="high"
               mode="cover"
+              width={800}
+              height={1000}
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 

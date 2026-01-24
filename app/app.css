@@ -4,6 +4,33 @@
 /*TODO When we resolve carousels in the app import only necessary styles drop the bundle import */
 @import "swiper/css/bundle";
 
+/* Inter Variable */
+@font-face {
+  font-family: "Inter Variable'";
+  src: url("/fonts/inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap; /* This is the magic! */
+}
+
+/* Tektur Variable */
+@font-face {
+  font-family: "Tektur Variable";
+  src: url("/fonts/tektur.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Poiret One */
+@font-face {
+  font-family: "Poiret One";
+  src: url("/fonts/poiret-one.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 body {

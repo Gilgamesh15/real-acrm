@@ -7,7 +7,7 @@ import {
   SendIcon,
   XIcon,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { lazy, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -40,7 +40,6 @@ import type { InpostApiLocker } from "~/lib/types";
 import { LockerDetails } from "../locker-picker/locker-details";
 import { LockerInfo } from "../locker-picker/locker-info";
 import { LockerList } from "../locker-picker/locker-list";
-import { LockerPickerMap } from "../locker-picker/locker-picker-map.client";
 import { LockersProvider, useLockers } from "../locker-picker/lockers-provider";
 import { OpenMapProvider, useOpenMap } from "../locker-picker/openmap-provider";
 import { SearchBar } from "../locker-picker/search-bar";
@@ -48,6 +47,12 @@ import { useCart } from "./cart-provider";
 import { useCheckout } from "./checkout-provider";
 import HomeDeliveryHero from "/home-delivery-hero.png";
 import ParcelLockerDeliveryHero from "/parcel-locker-delivery-hero.png";
+
+const LockerPickerMap = lazy(() =>
+  import("../locker-picker/locker-picker-map.client").then((m) => ({
+    default: m.LockerPickerMap,
+  }))
+);
 
 type CheckoutDialogContextType = {
   goToCheckout: () => void;

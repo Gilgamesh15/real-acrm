@@ -1,6 +1,3 @@
-import "@fontsource-variable/inter";
-import "@fontsource-variable/tektur";
-import "@fontsource/poiret-one";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -65,6 +62,30 @@ const queryClient = new QueryClient();
 
 export function links() {
   return [
+    // Preconnect to Cloudinary for faster LCP image loading
+    { rel: "preconnect", href: "https://res.cloudinary.com" },
+    { rel: "dns-prefetch", href: "https://res.cloudinary.com" },
+    {
+      rel: "preload",
+      href: "/fonts/tektur.woff2",
+      as: "font",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "preload",
+      href: "/fonts/poiret-one.woff2",
+      as: "font",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "preload",
+      href: "/fonts/inter.woff2",
+      as: "font",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
     {
       rel: "apple-touch-icon",
       sizes: "180x180",

@@ -72,31 +72,13 @@ export default function ImagesCardsCarouselSection({
                   scale: 0.8,
                 },
               },
-              640: {
-                coverflowEffect: {
-                  stretch: 160,
-                  scale: 0.85,
-                },
-              },
               768: {
                 coverflowEffect: {
                   stretch: 80,
                   scale: 0.77,
                 },
               },
-              1024: {
-                coverflowEffect: {
-                  stretch: 90,
-                  scale: 0.7,
-                },
-              },
               1280: {
-                coverflowEffect: {
-                  stretch: 60,
-                  scale: 0.78,
-                },
-              },
-              1536: {
                 coverflowEffect: {
                   stretch: 50,
                   scale: 0.8,

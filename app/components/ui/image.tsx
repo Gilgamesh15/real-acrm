@@ -7,7 +7,15 @@ import { cld, extractPublicId } from "~/lib/claudinary";
 
 type ImageProps = Omit<
   React.ComponentProps<"img">,
-  "height" | "width" | "loading" | "ref" | "alt" | "src" | "srcSet" | "sizes"
+  | "height"
+  | "width"
+  | "loading"
+  | "ref"
+  | "alt"
+  | "src"
+  | "srcSet"
+  | "sizes"
+  | "fetchPriority"
 > & {
   src: string;
   alt: string;
@@ -32,6 +40,9 @@ type ImageProps = Omit<
 
   // scalling
   scale?: number;
+
+  // fetch priority for LCP optimization
+  fetchPriority?: "high" | "low" | "auto";
 };
 
 // Resize mode mapping
@@ -50,6 +61,7 @@ export const Image: React.FC<ImageProps> = ({
   quality = "auto:good",
   priority = false,
   scale = 1,
+  fetchPriority,
   ...rest
 }) => {
   const img = React.useMemo(() => {
@@ -73,14 +85,20 @@ export const Image: React.FC<ImageProps> = ({
     return image;
   }, [src, width, scale, height, mode, aspectRatio, quality]);
 
-  // Configure plugins
+  // Configure plugins - skip blur placeholder for priority images to avoid extra network request
   const plugins = React.useMemo(() => {
-    const pluginList = [placeholder({ mode: "blur" })];
-
-    if (!priority) pluginList.push(lazyload());
-
-    return pluginList;
+    if (priority) return [];
+    return [placeholder({ mode: "blur" }), lazyload()];
   }, [priority]);
 
-  return <AdvancedImage cldImg={img} alt={alt} plugins={plugins} {...rest} />;
+  return (
+    <AdvancedImage
+      cldImg={img}
+      alt={alt}
+      plugins={plugins}
+      fetchPriority={fetchPriority}
+      
+      {...rest}
+    />
+  );
 };

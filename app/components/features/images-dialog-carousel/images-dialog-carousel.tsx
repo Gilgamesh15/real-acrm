@@ -49,8 +49,8 @@ function ImagesDrawerCarousel({
             zoom={{
               maxRatio: 3,
               minRatio: 1,
-              toggle: false,
-              panOnMouseMove: true,
+              toggle: true,
+              panOnMouseMove: false,
             }}
             modules={[A11y, Keyboard, Mousewheel, Zoom]}
             keyboard
