@@ -8,6 +8,7 @@ import {
 import React from "react";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 
 import type { DBQueryResult } from "~/lib/types";
 import { getChildren, getIsLeaf, getSlugPath } from "~/lib/utils";
@@ -85,10 +86,11 @@ function MobileSidebarCategories({
               className="w-full justify-start h-14 relative font-secondary text-xl tracking-wide"
               onClick={() => onNavigate(`/kategorie/${getSlugPath(current)}`)}
             >
-              <img
+              <Image
                 src={current.image?.url ?? ""}
                 alt={current.name}
-                className="absolute inset-0 size-full object-cover z-0"
+                quality="auto:eco"
+                className="absolute inset-0 size-full z-0"
               />
               <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/40 to-background/90 z-10" />
               <span className="relative z-20">{current.name}</span>
@@ -109,10 +111,12 @@ function MobileSidebarCategories({
                 className="w-full justify-start h-14 relative font-secondary text-xl tracking-wide"
                 onClick={() => handleSelectCategory(category)}
               >
-                <img
+                <Image
                   src={category.image?.url ?? ""}
                   alt={category.name}
-                  className="absolute inset-0 size-full object-cover z-0"
+                  quality="auto"
+                  mode="cover"
+                  className="absolute inset-0 size-full z-0 object-cover "
                 />
                 <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/40 to-background/90 z-10" />
                 <span className="relative z-20">

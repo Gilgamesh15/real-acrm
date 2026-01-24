@@ -1,10 +1,13 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
+import React from "react";
 import { A11y, Keyboard, Mousewheel, Zoom } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 
+import { Image } from "~/components/ui/image";
+
 function ImagesDrawerCarousel({
-  images,
+  images: rawImages,
   isDialogOpen,
   setIsDialogOpen,
   defaultActiveIndex,
@@ -14,6 +17,15 @@ function ImagesDrawerCarousel({
   setIsDialogOpen: (isDialogOpen: boolean) => void;
   defaultActiveIndex: number;
 }) {
+  const images = React.useMemo(() => {
+    const images = [...rawImages];
+    while (images.length < 8) {
+      images.push(...images);
+    }
+
+    return images;
+  }, [rawImages]);
+
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogPrimitive.Portal>
@@ -87,10 +99,13 @@ function ImagesDrawerCarousel({
                 className="overflow-hidden cursor-zoom-in"
               >
                 <div className="border border-primary/50  size-full">
-                  <img
+                  <Image
                     src={image}
-                    alt={`Image ${index + 1}`}
-                    className="object-cover size-full"
+                    alt={`Image ${(index % images.length) + 1}`}
+                    priority
+                    quality="auto:good"
+                    mode="contain"
+                    className="size-full"
                   />
                 </div>
               </SwiperSlide>
@@ -103,3 +118,7 @@ function ImagesDrawerCarousel({
 }
 
 export { ImagesDrawerCarousel };
+
+/**
+https://res.cloudinary.com/dbpz6wtou/image/upload/f_auto/q_auto:best/c_scale,w_400/co_black,e_colorize:70/lldoln9rvh3mjmkwithv?_a=DAJHqpDbZAAD
+ */

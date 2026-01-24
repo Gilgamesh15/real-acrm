@@ -15,6 +15,7 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -158,10 +159,13 @@ export const columns: ColumnDef<Product>[] = [
       const primaryImage = getPrimaryImage(row.original);
       return (
         <div className="flex items-center gap-3">
-          <img
+          <Image
             src={primaryImage.url}
             alt={primaryImage.alt}
-            className="size-6 object-cover"
+            width={24}
+            height={24}
+            quality="auto:low"
+            className="size-6"
           />
           <span>{row.original.name}</span>
         </div>

@@ -9,6 +9,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
+import { Image } from "~/components/ui/image";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -101,17 +102,22 @@ const MainMenu = ({
                             buttonVariants({
                               variant: "outline",
                             }),
-                            "aspect-square relative p-0 m-0 block size-full z-30 overflow-hidden"
+                            "aspect-square relative p-0 m-0 block size-full z-30 overflow-hidden whitespace-normal"
                           )}
                         >
                           <div className="absolute inset-0 bg-linear-to-l from-background/50 via-background/20 to-background/50 z-20" />
-                          <img
-                            src={cat.image?.url}
+                          <Image
+                            src={cat.image?.url || ""}
                             alt={cat.name}
-                            className="absolute inset-0 size-full object-cover z-10"
+                            aspectRatio={1}
+                            quality="auto:good"
+                            mode="cover"
+                            className="absolute inset-0 size-full z-10 object-cover"
                           />
-                          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide break-words">
-                            {cat.name}
+                          <span className="absolute inset-0 flex items-center justify-center pt-[50%] z-20 z-20 px-2">
+                            <span className="text-lg text-shadow-2xs font-secondary tracking-wide text-center break-words">
+                              {cat.name}
+                            </span>
                           </span>
                         </Link>
                       </li>

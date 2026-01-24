@@ -6,6 +6,7 @@ import React from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Image } from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 import { Separator } from "~/components/ui/separator";
 
@@ -85,7 +86,7 @@ export const meta: Route.MetaFunction = ({ data }) => {
   const { product } = data;
   const productPrice = calculateProductPrice(product).lineTotalInGrosz / 100;
   const pageTitle = `${product.name} | ACRM`;
-  const pageDescription = `${product.name} - kompletny zestaw. ${product.pieces.length} dostępnych ubrań z projektu. Wysyłka w 24h.`;
+  const pageDescription = `${product.name} - kompletny zestaw. Zawiera ${product.pieces.map((p) => p.name).join(", ")}. Wysyłka w 24h.`;
   const pageUrl = `${BASE_URL}/projekty/${product.slug}`;
   const pageImage = product.images[0]?.url || `${BASE_URL}/logo-dark.png`;
   const availability = product.pieces.some((p) => p.status === "published")
@@ -190,6 +191,7 @@ export default function ProductDetailPage({
 
             return (
               <Card
+                key={piece.id}
                 className="py-2 gap-1.5 w-full lg:w-[calc(50%-8px)]"
                 onClick={() => {
                   setSelectedPiece(piece);
@@ -205,10 +207,13 @@ export default function ProductDetailPage({
                 </CardHeader>
                 <CardContent className="px-2 flex flex-row gap-3">
                   <div className="size-20 relative">
-                    <img
+                    <Image
                       src={primaryImage?.url || ""}
                       alt={primaryImage?.alt || ""}
-                      className="object-cover absolute h-full w-full"
+                      width={80}
+                      height={80}
+                      quality="auto:good"
+                      className="absolute h-full w-full"
                     />
 
                     <EyeIcon className="absolute top-0 right-0 text-muted-foreground rounded-full p-1 size-6 bg-muted/50" />

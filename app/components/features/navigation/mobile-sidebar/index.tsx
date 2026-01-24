@@ -4,6 +4,7 @@ import React from "react";
 import { Await } from "react-router";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Error,
   ErrorCode,
@@ -158,10 +159,12 @@ const MobileSidebar = ({
                           }
                         >
                           <div className="absolute inset-0 bg-linear-to-l from-background/50 via-background/20 to-background/50 z-0" />
-                          <img
-                            src={tag.image?.url}
+                          <Image
+                            src={tag.image?.url || ""}
                             alt={tag.name}
-                            className="absolute inset-0 size-full object-cover -z-10"
+                            aspectRatio={1}
+                            quality="auto:good"
+                            className="absolute inset-0 size-full -z-10"
                           />
                           <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide">
                             {tag.name}

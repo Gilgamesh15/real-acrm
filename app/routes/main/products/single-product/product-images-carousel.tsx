@@ -9,6 +9,7 @@ import {
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 import type { Swiper } from "swiper/types";
 
+import { Image } from "~/components/ui/image";
 import { Section } from "~/components/ui/layout";
 import {
   SlideIndicator,
@@ -143,10 +144,12 @@ export default function ProductImagesCarouselSection({
                         isActive ? "cursor-zoom-in" : "cursor-pointer"
                       )}
                     >
-                      <img
-                        className="object-cover size-full"
+                      <Image
                         src={image}
                         alt="Stylizacja"
+                        quality="auto:best"
+                        mode="cover"
+                        className="size-full"
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent" />
                     </div>

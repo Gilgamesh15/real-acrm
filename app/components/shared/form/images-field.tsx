@@ -4,6 +4,7 @@ import React from "react";
 import type z from "zod";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Field,
   FieldDescription,
@@ -118,10 +119,13 @@ export function ImagesField({
               className="flex items-center gap-3 p-2 bg-muted rounded-lg border group"
             >
               <div className="w-16 h-16 bg-muted-foreground/10 rounded-md overflow-hidden shrink-0 relative">
-                <img
+                <Image
                   src={image.url || "/placeholder.svg"}
                   alt={image.alt || `Obraz produktu ${index + 1}`}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  width={64}
+                  height={64}
+                  quality="auto:good"
+                  className="absolute inset-0 w-full h-full"
                 />
               </div>
               <div className="flex-1 min-w-0">

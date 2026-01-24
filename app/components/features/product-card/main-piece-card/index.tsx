@@ -2,6 +2,7 @@ import { ShoppingBasket, Zap } from "lucide-react";
 import { Link } from "react-router";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Tooltip,
   TooltipContent,
@@ -47,11 +48,13 @@ const MainPieceCard = ({
         onClick={onClick}
         className="flex flex-col gap-2 relative w-full h-full size-full"
       >
-        <img
+        <Image
           src={primaryImage?.url || "/placeholder.png"}
           alt={primaryImage?.alt || `${piece.name} - ${piece.brand.name}`}
-          loading="lazy"
-          className="object-cover size-full z-0 absolute"
+          aspectRatio={5 / 8}
+          quality="auto:good"
+          mode="contain"
+          className="size-full z-0 absolute"
         />
 
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground z-1" />

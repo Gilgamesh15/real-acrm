@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,10 +73,13 @@ export const columns: ColumnDef<Category>[] = [
       return (
         <div className="flex items-center gap-3">
           {row.original.image?.url && (
-            <img
+            <Image
               src={row.original.image.url}
               alt={row.original.name}
-              className="size-6 object-cover rounded"
+              width={24}
+              height={24}
+              quality="auto:low"
+              className="size-6 rounded"
             />
           )}
           <span>{row.original.name}</span>

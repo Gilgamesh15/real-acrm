@@ -18,6 +18,7 @@ import { Swiper as SwiperComponent } from "swiper/react";
 import type { Swiper } from "swiper/types";
 
 import { Button, buttonVariants } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
@@ -143,7 +144,10 @@ export const meta: Route.MetaFunction = ({ data }) => {
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const { piece, similarPiecesPromise } = loaderData;
 
-  useStructuredData(generatePieceStructuredData(piece), "piece-structured-data");
+  useStructuredData(
+    generatePieceStructuredData(piece),
+    "piece-structured-data"
+  );
 
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();
@@ -152,7 +156,13 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-  const thumbsImages = piece.images.concat(piece.images);
+  const images = React.useMemo(() => {
+    const images: typeof piece.images = [];
+    while (images.length < 14) {
+      images.push(...piece.images);
+    }
+    return images;
+  }, [piece.images]);
 
   return (
     <>
@@ -171,45 +181,50 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                 keyboard
                 mousewheel
               >
-                {piece.images.map((image) => (
+                {images.map((image, index) => (
                   <SwiperSlide
-                    key={image.id}
+                    key={`${image.id}-${index}`}
                     className="cursor-zoom-in"
                     onClick={() => {
                       setIsDialogOpen(true);
                     }}
                   >
-                    <img
+                    <Image
                       src={image.url}
                       alt={image.alt}
-                      className="aspect-6/5 object-contain"
+                      aspectRatio={6 / 5}
+                      priority={index === 0}
+                      quality="auto:best"
+                      mode="contain"
+                      className="aspect-6/5 size-full"
                     />
                   </SwiperSlide>
                 ))}
               </SwiperComponent>
               <SwiperComponent
                 onSwiper={setThumbsSwiper}
-                loop={true}
                 breakpoints={{
                   0: {
                     slidesPerView: 5,
+                    loop: piece.images.length > 10,
                   },
                   1024: {
                     slidesPerView: 6,
+                    loop: piece.images.length > 10,
                   },
                   1536: {
                     slidesPerView: 7,
+                    loop: piece.images.length > 10,
                   },
                 }}
                 freeMode={true}
-                watchSlidesProgress={true}
                 modules={[FreeMode, Navigation, Thumbs, Mousewheel]}
                 mousewheel={{
                   forceToAxis: true,
                 }}
               >
-                {thumbsImages.map((image, index) => (
-                  <SwiperSlide key={image.id} className="p-1">
+                {images.map((image, index) => (
+                  <SwiperSlide key={`${image.id}-${index}`} className="p-1">
                     <div
                       className={cn(
                         "aspect-square border transition-all duration-300",
@@ -218,10 +233,13 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                           : " border-primary/50 scale-100"
                       )}
                     >
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.alt}
-                        className="object-cover size-full aspect-square"
+                        aspectRatio={1}
+                        quality="auto:eco"
+                        mode="cover"
+                        className="size-full"
                       />
                     </div>
                   </SwiperSlide>

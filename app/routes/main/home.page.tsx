@@ -19,6 +19,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
+import { Image } from "~/components/ui/image";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -256,31 +257,24 @@ export const meta: Route.MetaFunction = () => [
   },
   { name: "robots", content: "index, follow" },
   { property: "og:title", content: "ACRM | Fashion Projects" },
+  { property: "og:type", content: "website" },
+  { property: "og:image", content: "https://acrm.pl/logo-light.png" },
+  { property: "og:url", content: "https://acrm.pl/" },
   {
     property: "og:description",
     content:
       "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
   },
-  { property: "og:image", content: "https://acrm.pl/og-image-home.jpg" },
   { property: "og:url", content: "https://acrm.pl" },
-  { property: "og:type", content: "website" },
-  { property: "og:locale", content: "pl_PL" },
-  { property: "og:site_name", content: "ACRM | Fashion Projects" },
+  { property: "og:image:url", content: "https://acrm.pl/logo-light.png" },
+  { property: "og:image:type", content: "image/png" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
   {
     property: "og:image:alt",
-    content: "ACRM Fashion Projects - Sklep z odzieżą vintage",
+    content: "ACRM Fashion Projects - Sklep z odzieżą używaną",
   },
   { name: "twitter:card", content: "summary_large_image" },
-  { name: "twitter:title", content: "ACRM | Fashion Projects" },
-  {
-    name: "twitter:description",
-    content:
-      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach.",
-  },
-  { name: "twitter:image", content: "https://acrm.pl/og-image-home.jpg" },
-  { tagName: "link", rel: "canonical", href: "https://acrm.pl" },
 ];
 
 export default function Home({ loaderData }: Route.ComponentProps) {
@@ -484,7 +478,7 @@ function TopFeaturedSection({
               {Array.from({ length: 8 }).map((_, index) => (
                 <SwiperSlide
                   key={`skeleton-${index}`}
-                  className="max-w-40 min-w-[160px]"
+                  className="max-w-40 min-w-[160px] h-[584px]"
                 >
                   <div className="flex flex-col gap-4">
                     <div>
@@ -551,50 +545,50 @@ function TopFeaturedSection({
                   {chunkedItems.map((chunk, chunkIndex) => (
                     <SwiperSlide
                       key={`chunk-${chunkIndex}`}
-                      className="max-w-40 min-w-[160px]"
+                      className="max-w-40 min-w-[160px] min-h-[584px] space-y-4"
                     >
-                      <div className="flex flex-col gap-4">
-                        {chunk.map((item) => {
-                          const [primaryImage] = item.images;
+                      {chunk.map((item) => {
+                        const [primaryImage] = item.images;
 
-                          return (
-                            <article
-                              key={item.id}
-                              className="group cursor-pointer block"
-                            >
-                              <Link to={item.href} className="block">
-                                <div className="mb-3 overflow-hidden relative">
-                                  <img
-                                    src={
-                                      primaryImage?.url || "/placeholder.svg"
-                                    }
-                                    alt={
-                                      primaryImage?.alt ||
-                                      `${item.name} - zdjęcie produktu`
-                                    }
-                                    loading="lazy"
-                                    className="object-cover transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
-                                  />
-                                </div>
+                        return (
+                          <article
+                            key={item.id}
+                            className="group cursor-pointer block size-full min-h-[284px]"
+                          >
+                            <Link to={item.href} className="block">
+                              <div className="mb-3 overflow-hidden relative">
+                                <Image
+                                  src={primaryImage?.url || "/placeholder.svg"}
+                                  alt={
+                                    primaryImage?.alt ||
+                                    `${item.name} - zdjęcie produktu`
+                                  }
+                                  aspectRatio={3 / 4}
+                                  width={160}
+                                  scale={2}
+                                  quality="auto:best"
+                                  mode="cover"
+                                  className="transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
+                                />
+                              </div>
 
-                                <div className="flex flex-col gap-1 items-start">
-                                  <h3 className="text-sm text-primary leading-snug line-clamp-2">
-                                    {item.name}
-                                  </h3>
-                                  <data
-                                    value={item.priceInGrosz}
-                                    className="text-xs text-muted-foreground font-bold"
-                                  >
-                                    {formatCurrency(
-                                      priceFromGrosz(item.priceInGrosz)
-                                    )}
-                                  </data>
-                                </div>
-                              </Link>
-                            </article>
-                          );
-                        })}
-                      </div>
+                              <div className="flex flex-col gap-1 items-start">
+                                <h3 className="text-sm text-primary leading-snug line-clamp-2">
+                                  {item.name}
+                                </h3>
+                                <data
+                                  value={item.priceInGrosz}
+                                  className="text-xs text-muted-foreground font-bold"
+                                >
+                                  {formatCurrency(
+                                    priceFromGrosz(item.priceInGrosz)
+                                  )}
+                                </data>
+                              </div>
+                            </Link>
+                          </article>
+                        );
+                      })}
                     </SwiperSlide>
                   ))}
                 </SwiperComponent>
@@ -666,11 +660,13 @@ function CategoriesSection({
                     className="relative border aspect-square group size-full block w-[calc(33.333%-0.75rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.75rem)] text-center font-secondary tracking-wide"
                   >
                     <Link to={`/kategorie/${getSlugPath(category)}`}>
-                      <img
-                        src={category.image?.url}
+                      <Image
+                        src={category.image?.url || ""}
                         alt={`Kategoria ${category.name}`}
-                        className="object-cover size-full absolute"
-                        loading="lazy"
+                        aspectRatio={1}
+                        quality="auto:best"
+                        mode="cover"
+                        className="size-full absolute"
                       />
 
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
@@ -794,10 +790,12 @@ function TagsSection({
                 aria-labelledby={`tag-${tag.id}`}
               >
                 <div className="absolute inset-0 size-full bg-linear-to-t from-background/90 via-background/20 via-80% to-background/90 z-0" />
-                <img
-                  src={tag.image?.url}
+                <Image
+                  src={tag.image?.url || ""}
                   alt={tag.name}
-                  className="object-cover size-full absolute -z-10"
+                  mode="cover"
+                  quality="auto:best"
+                  className="size-full absolute -z-10 object-cover"
                 />
 
                 <Link

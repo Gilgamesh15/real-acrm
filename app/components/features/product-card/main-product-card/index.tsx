@@ -4,6 +4,7 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Tooltip,
   TooltipContent,
@@ -94,11 +95,13 @@ const MainProductCard = ({
         onClick={onClick}
         className={cn("flex flex-col gap-2 size-full relative", className)}
       >
-        <img
+        <Image
           src={primaryImage?.url || "/placeholder.png"}
           alt={primaryImage?.alt || `${product.name} - projekt`}
-          loading="lazy"
-          className="object-cover -z-2 absolute h-full w-full"
+          aspectRatio={6 / 8}
+          quality="auto:good"
+          mode="cover"
+          className="-z-2 absolute h-full w-full"
         />
 
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground -z-1" />
@@ -115,11 +118,15 @@ const MainProductCard = ({
               return (
                 <React.Fragment key={piece.id}>
                   <li className="relative w-full aspect-square">
-                    <img
+                    <Image
                       src={primaryImage?.url || "/placeholder.png"}
                       alt={`${piece.name} - element projektu`}
-                      loading="lazy"
-                      className="object-cover min-w-full min-h-full aspect-square absolute"
+                      aspectRatio={1}
+                      width={80}
+                      height={80}
+                      mode="cover"
+                      scale={2}
+                      className="min-w-full min-h-full absolute"
                     />
                   </li>
                   {index !== product.pieces.length - 1 && (

@@ -4,6 +4,7 @@ import React from "react";
 import type z from "zod";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Field,
   FieldDescription,
@@ -61,10 +62,12 @@ export function ImageField({
         {imageField.state.value ? (
           <div className="relative group">
             <div className="aspect-video bg-muted rounded-lg overflow-hidden border relative">
-              <img
+              <Image
                 src={imageField.state.value.url || "/placeholder.svg"}
                 alt={imageField.state.value.alt || "Przesłany obraz produktu"}
-                className="absolute inset-0 w-full h-full object-cover"
+                aspectRatio={16 / 9}
+                quality="auto:good"
+                className="absolute inset-0 w-full h-full"
               />
             </div>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

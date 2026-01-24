@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   Collapsible,
@@ -71,10 +72,12 @@ const ProductCardImage = ({
       )}
       onClick={handleClick}
     >
-      <img
+      <Image
         src={url}
         alt={alt}
-        className="object-cover size-full h-full w-full"
+        aspectRatio={1}
+        quality="auto:good"
+        className="size-full h-full w-full"
       />
     </div>
   );

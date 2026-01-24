@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
+import { Image } from "~/components/ui/image";
 import {
   Card,
   CardContent,
@@ -312,10 +313,13 @@ export default function ReturnRequestPage() {
                                   onCheckedChange={handleToggle}
                                 />
                               </Field>
-                              <img
+                              <Image
                                 src={item.pieceImage ?? "/placeholder.svg"}
                                 alt={item.pieceName}
-                                className="w-16 h-16 object-cover rounded"
+                                width={64}
+                                height={64}
+                                quality="auto:good"
+                                className="rounded"
                               />
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-medium truncate">
@@ -404,10 +408,13 @@ export default function ReturnRequestPage() {
                         key={item.id}
                         className="flex items-center gap-3 text-sm"
                       >
-                        <img
+                        <Image
                           src={item.pieceImage ?? "/placeholder.svg"}
                           alt={item.pieceName}
-                          className="w-8 h-8 object-cover rounded"
+                          width={32}
+                          height={32}
+                          quality="auto:eco"
+                          className="rounded"
                         />
                         <span className="flex-1 truncate">
                           {item.pieceName}

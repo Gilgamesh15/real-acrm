@@ -17,6 +17,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
+import { Image } from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -327,10 +328,12 @@ export default function ProductsBrowsePage({
                     "relative h-14 w-full"
                   )}
                 >
-                  <img
-                    src={category.image}
+                  <Image
+                    src={category.image || ""}
                     alt={category.name}
-                    className="absolute inset-0 size-full object-cover -z-10"
+                    quality="auto"
+                    mode="cover"
+                    className="absolute inset-0 size-full -z-10 object-cover"
                   />
                   <h2 className="text-lg text-shadow-2xs font-secondary tracking-wide">
                     {category.name}

@@ -100,6 +100,8 @@ export function Layout() {
         {GOOGLE_VERIFICATION && (
           <meta name="google-site-verification" content={GOOGLE_VERIFICATION} />
         )}
+        <meta name="og:locale" content="pl_PL" />
+        <meta name="og:site_name" content="ACRM | Fashion Projects" />
         <Meta />
         <Links />
       </head>
