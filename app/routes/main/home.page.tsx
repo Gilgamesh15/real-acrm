@@ -674,6 +674,8 @@ function CategoriesSection({
                         aspectRatio={1}
                         mode="cover"
                         className="size-full absolute"
+                        width={200}
+                        height={200}
                       />
 
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
