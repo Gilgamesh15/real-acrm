@@ -38,8 +38,11 @@ import {
 } from "~/lib/utils";
 
 import type { Route } from "./+types/home.page";
-import ManHero from "/men-hero.jpg";
-import WomenHero from "/women-hero.jpg";
+
+const womenHeroUrl =
+  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/women-hero_mykywe.jpg";
+const manHeroUrl =
+  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/men-hero_d1pnxe.jpg";
 
 export async function loader() {
   const categoriesPromise = db.query.categories
@@ -326,9 +329,13 @@ function HeroSection() {
         <article className="group relative h-full flex-1 overflow-hidden">
           <Link to="/kategorie?gender=male" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję męską</span>
-            <img
-              src={ManHero}
+            <Image
+              src={manHeroUrl}
               alt="Men's Collection"
+              priority
+              fetchPriority="high"
+              quality="auto:best"
+              mode="cover"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -353,9 +360,13 @@ function HeroSection() {
         <article className="group relative h-full flex-1 overflow-hidden">
           <Link to="/kategorie?gender=female" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję damską</span>
-            <img
-              src={WomenHero}
+            <Image
+              src={womenHeroUrl}
               alt="Women's Collection"
+              priority
+              fetchPriority="high"
+              quality="auto:best"
+              mode="cover"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -565,7 +576,7 @@ function TopFeaturedSection({
                                   }
                                   aspectRatio={3 / 4}
                                   width={160}
-                                  scale={2}
+                                  scale={1.5}
                                   quality="auto:best"
                                   mode="cover"
                                   className="transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
@@ -795,6 +806,7 @@ function TagsSection({
                   alt={tag.name}
                   mode="cover"
                   quality="auto:best"
+                  width={1920}
                   className="size-full absolute -z-10 object-cover"
                 />
 
@@ -803,9 +815,9 @@ function TagsSection({
                   className="h-36 md:h-44 lg:h-60"
                 >
                   <div className="size-full flex items-center justify-center p-12 font-secondary">
-                    <h1 className="text-4xl leading-tight font-medium text-foreground sm:text-5xl md:text-6xl lg:text-7xl relative z-10">
+                    <h2 className="text-4xl leading-tight font-medium text-foreground sm:text-5xl md:text-6xl lg:text-7xl relative z-10">
                       {tag.name}
-                    </h1>
+                    </h2>
                   </div>
                 </Link>
                 <nav

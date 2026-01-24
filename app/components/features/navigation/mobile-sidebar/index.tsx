@@ -57,7 +57,7 @@ const MobileSidebar = ({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Otwórz menu">
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
