@@ -18,12 +18,14 @@ function ImagesDrawerCarousel({
   defaultActiveIndex: number;
 }) {
   const images = React.useMemo(() => {
-    const images = [...rawImages];
-    while (images.length < 8) {
-      images.push(...images);
-    }
+    if (rawImages.length === 0) return [];
 
-    return images;
+    // Repeat images until we have at least 8
+    const repeated: string[] = [];
+    while (repeated.length < 8) {
+      repeated.push(...rawImages);
+    }
+    return repeated;
   }, [rawImages]);
 
   return (
