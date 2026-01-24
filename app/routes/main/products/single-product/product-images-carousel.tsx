@@ -147,7 +147,6 @@ export default function ProductImagesCarouselSection({
                       <Image
                         src={image}
                         alt="Stylizacja"
-                        quality="auto:best"
                         mode="cover"
                         className="size-full"
                       />

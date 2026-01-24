@@ -110,7 +110,6 @@ const MainMenu = ({
                             src={cat.image?.url || ""}
                             alt={cat.name}
                             aspectRatio={1}
-                            quality="auto:good"
                             mode="cover"
                             className="absolute inset-0 size-full z-10 object-cover"
                           />

@@ -4,13 +4,13 @@ import React from "react";
 import type z from "zod";
 
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "~/components/ui/field";
+import { Image } from "~/components/ui/image";
 
 import { CloudinaryWidget } from "~/components/shared/claudinary-widget/claudinary-widget";
 import clodinaryLocalisation from "~/lib/claudinary-localisation.json";
@@ -66,7 +66,6 @@ export function ImageField({
                 src={imageField.state.value.url || "/placeholder.svg"}
                 alt={imageField.state.value.alt || "Przesłany obraz produktu"}
                 aspectRatio={16 / 9}
-                quality="auto:good"
                 className="absolute inset-0 w-full h-full"
               />
             </div>

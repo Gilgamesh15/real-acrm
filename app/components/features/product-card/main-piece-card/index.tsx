@@ -52,9 +52,9 @@ const MainPieceCard = ({
           src={primaryImage?.url || "/placeholder.png"}
           alt={primaryImage?.alt || `${piece.name} - ${piece.brand.name}`}
           aspectRatio={5 / 8}
-          quality="auto:good"
           mode="contain"
           className="size-full z-0 absolute"
+          height={500}
         />
 
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground z-1" />

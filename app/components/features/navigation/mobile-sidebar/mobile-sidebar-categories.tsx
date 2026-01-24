@@ -89,7 +89,6 @@ function MobileSidebarCategories({
               <Image
                 src={current.image?.url ?? ""}
                 alt={current.name}
-                quality="auto:eco"
                 className="absolute inset-0 size-full z-0"
               />
               <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/40 to-background/90 z-10" />
@@ -114,7 +113,6 @@ function MobileSidebarCategories({
                 <Image
                   src={category.image?.url ?? ""}
                   alt={category.name}
-                  quality="auto"
                   mode="cover"
                   className="absolute inset-0 size-full z-0 object-cover "
                 />

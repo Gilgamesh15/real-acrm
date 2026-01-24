@@ -99,9 +99,8 @@ const MainProductCard = ({
           src={primaryImage?.url || "/placeholder.png"}
           alt={primaryImage?.alt || `${product.name} - projekt`}
           aspectRatio={6 / 8}
-          quality="auto:good"
           mode="cover"
-          width={400}
+          width={280}
           className="-z-2 absolute h-full w-full"
         />
 

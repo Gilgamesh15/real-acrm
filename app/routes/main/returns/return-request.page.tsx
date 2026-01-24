@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   Card,
   CardContent,
@@ -20,6 +19,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "~/components/ui/field";
+import { Image } from "~/components/ui/image";
 import { Input } from "~/components/ui/input";
 import { StepIndicator } from "~/components/ui/step-indicator";
 
@@ -318,7 +318,6 @@ export default function ReturnRequestPage() {
                                 alt={item.pieceName}
                                 width={64}
                                 height={64}
-                                quality="auto:good"
                                 className="rounded"
                               />
                               <div className="flex-1 min-w-0">
@@ -413,7 +412,6 @@ export default function ReturnRequestPage() {
                           alt={item.pieceName}
                           width={32}
                           height={32}
-                          quality="auto:eco"
                           className="rounded"
                         />
                         <span className="flex-1 truncate">

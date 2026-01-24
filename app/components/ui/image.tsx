@@ -47,7 +47,7 @@ export const Image: React.FC<ImageProps> = ({
   height,
   aspectRatio,
   mode = "contain",
-  quality = "auto",
+  quality = "auto:good",
   priority = false,
   scale = 1,
   ...rest

@@ -15,13 +15,13 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Image } from "~/components/ui/image";
 
 import {
   ActionDialog,
@@ -164,7 +164,6 @@ export const columns: ColumnDef<Product>[] = [
             alt={primaryImage.alt}
             width={24}
             height={24}
-            quality="auto:low"
             className="size-6"
           />
           <span>{row.original.name}</span>

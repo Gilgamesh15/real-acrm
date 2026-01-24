@@ -334,7 +334,6 @@ function HeroSection() {
               alt="Men's Collection"
               priority
               fetchPriority="high"
-              quality="auto:best"
               mode="cover"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
@@ -365,7 +364,6 @@ function HeroSection() {
               alt="Women's Collection"
               priority
               fetchPriority="high"
-              quality="auto:best"
               mode="cover"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
@@ -577,7 +575,6 @@ function TopFeaturedSection({
                                   aspectRatio={3 / 4}
                                   width={160}
                                   scale={1.5}
-                                  quality="auto:best"
                                   mode="cover"
                                   className="transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
                                 />
@@ -675,7 +672,6 @@ function CategoriesSection({
                         src={category.image?.url || ""}
                         alt={`Kategoria ${category.name}`}
                         aspectRatio={1}
-                        quality="auto:best"
                         mode="cover"
                         className="size-full absolute"
                       />
@@ -805,7 +801,6 @@ function TagsSection({
                   src={tag.image?.url || ""}
                   alt={tag.name}
                   mode="cover"
-                  quality="auto:best"
                   width={1920}
                   className="size-full absolute -z-10 object-cover"
                 />

@@ -14,13 +14,13 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Image } from "~/components/ui/image";
 import { Spinner } from "~/components/ui/spinner";
 
 import { createColumnConfigHelper } from "~/components/shared/data-table-filter/core/filters";
@@ -78,7 +78,6 @@ export const columns: ColumnDef<Category>[] = [
               alt={row.original.name}
               width={24}
               height={24}
-              quality="auto:low"
               className="size-6 rounded"
             />
           )}

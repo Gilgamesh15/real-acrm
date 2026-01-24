@@ -331,7 +331,6 @@ export default function ProductsBrowsePage({
                   <Image
                     src={category.image || ""}
                     alt={category.name}
-                    quality="auto"
                     mode="cover"
                     className="absolute inset-0 size-full -z-10 object-cover"
                   />

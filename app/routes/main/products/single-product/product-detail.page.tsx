@@ -212,7 +212,6 @@ export default function ProductDetailPage({
                       alt={primaryImage?.alt || ""}
                       width={80}
                       height={80}
-                      quality="auto:good"
                       className="absolute h-full w-full"
                     />
 

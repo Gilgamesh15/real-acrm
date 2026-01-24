@@ -4,7 +4,6 @@ import React from "react";
 import { Await } from "react-router";
 
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   Error,
   ErrorCode,
@@ -13,6 +12,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
+import { Image } from "~/components/ui/image";
 import {
   Sheet,
   SheetContent,
@@ -57,7 +57,12 @@ const MobileSidebar = ({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Otwórz menu">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          aria-label="Otwórz menu"
+        >
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
@@ -163,7 +168,6 @@ const MobileSidebar = ({
                             src={tag.image?.url || ""}
                             alt={tag.name}
                             aspectRatio={1}
-                            quality="auto:good"
                             className="absolute inset-0 size-full -z-10"
                           />
                           <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide">

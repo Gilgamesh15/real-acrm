@@ -103,7 +103,6 @@ function ImagesDrawerCarousel({
                     src={image}
                     alt={`Image ${(index % images.length) + 1}`}
                     priority
-                    quality="auto:good"
                     mode="contain"
                     className="size-full"
                   />

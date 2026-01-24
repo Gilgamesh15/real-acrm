@@ -194,7 +194,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                       alt={image.alt}
                       aspectRatio={6 / 5}
                       priority={index === 0}
-                      quality="auto:best"
                       mode="contain"
                       className="aspect-6/5 size-full"
                     />
@@ -237,7 +236,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                         src={image.url}
                         alt={image.alt}
                         aspectRatio={1}
-                        quality="auto:eco"
                         mode="cover"
                         className="size-full"
                       />

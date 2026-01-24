@@ -4,13 +4,13 @@ import React from "react";
 import type z from "zod";
 
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "~/components/ui/field";
+import { Image } from "~/components/ui/image";
 
 import clodinaryLocalisation from "~/lib/claudinary-localisation.json";
 import type { ImagesFormSchema } from "~/lib/schemas";
@@ -124,7 +124,6 @@ export function ImagesField({
                   alt={image.alt || `Obraz produktu ${index + 1}`}
                   width={64}
                   height={64}
-                  quality="auto:good"
                   className="absolute inset-0 w-full h-full"
                 />
               </div>

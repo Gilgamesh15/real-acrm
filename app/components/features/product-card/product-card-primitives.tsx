@@ -5,13 +5,13 @@ import { useNavigate } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
+import { Image } from "~/components/ui/image";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
   Tooltip,
@@ -76,7 +76,6 @@ const ProductCardImage = ({
         src={url}
         alt={alt}
         aspectRatio={1}
-        quality="auto:good"
         className="size-full h-full w-full"
       />
     </div>
