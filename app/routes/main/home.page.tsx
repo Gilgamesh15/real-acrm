@@ -333,7 +333,7 @@ function HeroSection() {
               src={manHeroUrl}
               alt="Men's Collection"
               priority
-              responsive
+              width={1200}
               quality="auto:best"
               fetchPriority="high"
               mode="cover"
@@ -365,8 +365,8 @@ function HeroSection() {
               src={womenHeroUrl}
               alt="Women's Collection"
               priority
+              width={1200}
               quality="auto:best"
-              responsive
               fetchPriority="high"
               mode="cover"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
@@ -936,7 +936,9 @@ function FeaturedProductsSection({
             className="w-full"
             modules={[A11y, Keyboard, Mousewheel]}
             keyboard
-            mousewheel
+            mousewheel={{
+              forceToAxis: true,
+            }}
             slidesPerView="auto"
             spaceBetween={10}
             freeMode
@@ -987,7 +989,9 @@ function FeaturedProductsSection({
               className="w-full"
               modules={[A11y, Keyboard, Mousewheel]}
               keyboard
-              mousewheel
+              mousewheel={{
+                forceToAxis: true,
+              }}
               slidesPerView="auto"
               spaceBetween={10}
               freeMode

@@ -172,7 +172,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                 thumbs={{ swiper: thumbsSwiper }}
                 modules={[FreeMode, Thumbs, A11y, Keyboard, Mousewheel]}
                 keyboard
-                mousewheel
+                mousewheel={{
+                  forceToAxis: true,
+                }}
               >
                 {images.map((image, index) => (
                   <SwiperSlide

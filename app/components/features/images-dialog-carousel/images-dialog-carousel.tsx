@@ -121,7 +121,3 @@ function ImagesDrawerCarousel({
 }
 
 export { ImagesDrawerCarousel };
-
-/**
-https://res.cloudinary.com/dbpz6wtou/image/upload/f_auto/q_auto:best/c_scale,w_400/co_black,e_colorize:70/lldoln9rvh3mjmkwithv?_a=DAJHqpDbZAAD
- */
