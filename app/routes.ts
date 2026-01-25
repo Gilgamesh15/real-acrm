@@ -17,7 +17,7 @@ export default [
   route("/api/default-locker", "./api/default-locker.ts"),
   route("/api/webhooks/stripe", "./api/stripe-webhook.ts"),
   route("/api/create-order", "./api/create-order.ts"),
-  route("/api/sitemap.xml", "./api/sitemap.ts"),
+  route("/sitemap.xml", "./api/sitemap.ts"),
   route("/robots.txt", "./api/robots.ts"),
   route("/site.webmanifest", "./api/webmanifest.ts"),
   route("/api/cancel-order", "./api/cancel-order.ts"),
