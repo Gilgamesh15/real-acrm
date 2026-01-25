@@ -4,6 +4,7 @@ import {
   placeholder,
   responsive,
 } from "@cloudinary/react";
+import { dpr } from "@cloudinary/url-gen/actions/delivery";
 import { limitFill, pad } from "@cloudinary/url-gen/actions/resize";
 import React from "react";
 
@@ -88,6 +89,7 @@ export const Image: React.FC<ImageProps> = ({
     image.resize(action);
     image.format("auto");
     image.quality(quality);
+    image.delivery(dpr("auto"));
 
     return image;
   }, [src, width, scale, height, mode, aspectRatio, quality]);
@@ -95,7 +97,7 @@ export const Image: React.FC<ImageProps> = ({
   // Configure plugins - skip blur placeholder for priority images to avoid extra network request
   const plugins = React.useMemo(() => {
     const base = [];
-    if (isResponsive) base.push(responsive());
+    if (isResponsive && !priority) base.push(responsive());
     if (priority) return base;
     return [placeholder({ mode: "vectorize" }), ...base, lazyload()];
   }, [priority, isResponsive]);
