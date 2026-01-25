@@ -4,7 +4,6 @@ import {
   placeholder,
   responsive,
 } from "@cloudinary/react";
-import { dpr } from "@cloudinary/url-gen/actions/delivery";
 import { limitFill, pad } from "@cloudinary/url-gen/actions/resize";
 import React from "react";
 
@@ -89,7 +88,6 @@ export const Image: React.FC<ImageProps> = ({
     image.resize(action);
     image.format("auto");
     image.quality(quality);
-    image.delivery(dpr("auto"));
 
     return image;
   }, [src, width, scale, height, mode, aspectRatio, quality]);
