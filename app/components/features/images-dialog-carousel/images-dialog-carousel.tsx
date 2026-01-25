@@ -56,7 +56,9 @@ function ImagesDrawerCarousel({
             }}
             modules={[A11y, Keyboard, Mousewheel, Zoom]}
             keyboard
-            mousewheel
+            mousewheel={{
+              forceToAxis: true,
+            }}
             spaceBetween={10}
             breakpoints={{
               0: {

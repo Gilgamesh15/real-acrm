@@ -31,7 +31,12 @@ const AuthDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={className} aria-label="Menu użytkownika">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={className}
+          aria-label="Menu użytkownika"
+        >
           <User />
         </Button>
       </DropdownMenuTrigger>

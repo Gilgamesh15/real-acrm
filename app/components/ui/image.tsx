@@ -1,4 +1,9 @@
-import { AdvancedImage, lazyload, placeholder } from "@cloudinary/react";
+import {
+  AdvancedImage,
+  lazyload,
+  placeholder,
+  responsive,
+} from "@cloudinary/react";
 import { dpr } from "@cloudinary/url-gen/actions/delivery";
 import { limitFill, pad } from "@cloudinary/url-gen/actions/resize";
 import React from "react";
@@ -38,8 +43,11 @@ type ImageProps = Omit<
   height?: number;
   aspectRatio?: number;
 
-  // scalling
+  // scaling
   scale?: number;
+
+  // sizes
+  responsive?: boolean;
 
   // fetch priority for LCP optimization
   fetchPriority?: "high" | "low" | "auto";
@@ -62,6 +70,7 @@ export const Image: React.FC<ImageProps> = ({
   priority = false,
   scale = 1,
   fetchPriority,
+  responsive: isResponsive = false,
   ...rest
 }) => {
   const img = React.useMemo(() => {
@@ -87,9 +96,11 @@ export const Image: React.FC<ImageProps> = ({
 
   // Configure plugins - skip blur placeholder for priority images to avoid extra network request
   const plugins = React.useMemo(() => {
-    if (priority) return [];
-    return [placeholder({ mode: "blur" }), lazyload()];
-  }, [priority]);
+    const base = [];
+    if (isResponsive) base.push(responsive());
+    if (priority) return base;
+    return [placeholder({ mode: "vectorize" }), ...base, lazyload()];
+  }, [priority, isResponsive]);
 
   return (
     <AdvancedImage
@@ -97,7 +108,6 @@ export const Image: React.FC<ImageProps> = ({
       alt={alt}
       plugins={plugins}
       fetchPriority={fetchPriority}
-      
       {...rest}
     />
   );

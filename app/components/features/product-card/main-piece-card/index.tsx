@@ -54,7 +54,7 @@ const MainPieceCard = ({
           aspectRatio={5 / 8}
           mode="contain"
           className="size-full z-0 absolute"
-          height={500}
+          responsive
         />
 
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground z-1" />

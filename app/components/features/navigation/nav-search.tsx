@@ -53,7 +53,12 @@ function NavSearch({ className }: { className?: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className={className} variant="ghost" size="icon" aria-label="Szukaj">
+        <Button
+          className={className}
+          variant="ghost"
+          size="icon"
+          aria-label="Szukaj"
+        >
           <SearchIcon />
         </Button>
       </DialogTrigger>

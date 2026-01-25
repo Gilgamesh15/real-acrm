@@ -2,6 +2,7 @@ import type { JSONContent, Node } from "@tiptap/react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 
 import { cn } from "~/lib/utils";
+import "~/rich-text.css";
 
 import { RICH_TEXT_EDITOR_EXTENSIONS } from "./extentions";
 

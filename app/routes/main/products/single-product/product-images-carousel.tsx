@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  A11y,
-  EffectCoverflow,
-  Keyboard,
-  Mousewheel,
-  Virtual,
-} from "swiper/modules";
+import { A11y, EffectCoverflow, Keyboard, Mousewheel } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 import type { Swiper } from "swiper/types";
 
@@ -120,14 +114,16 @@ export default function ProductImagesCarouselSection({
                 height: config.slideHeight,
               }}
               keyboard
-              mousewheel
+              mousewheel={{
+                forceToAxis: true,
+              }}
               effect="coverflow"
               coverflowEffect={{
                 rotate: 10,
                 slideShadows: true,
               }}
               loop
-              modules={[A11y, EffectCoverflow, Keyboard, Virtual, Mousewheel]}
+              modules={[A11y, EffectCoverflow, Keyboard, Mousewheel]}
             >
               {displayImages.map((image, index) => (
                 <SwiperSlide key={`${image}-${index}`}>

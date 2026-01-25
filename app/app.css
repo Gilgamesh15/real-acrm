@@ -1,8 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./rich-text.css";
-/*TODO When we resolve carousels in the app import only necessary styles drop the bundle import */
-@import "swiper/css/bundle";
+
+@import "swiper/css";
+@import "swiper/css/a11y";
+@import "swiper/css/effect-coverflow";
+@import "swiper/css/free-mode";
+@import "swiper/css/keyboard";
+@import "swiper/css/mousewheel";
+@import "swiper/css/thumbs";
+@import "swiper/css/zoom";
 
 /* Inter Variable */
 @font-face {

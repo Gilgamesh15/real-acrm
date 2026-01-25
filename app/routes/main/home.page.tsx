@@ -333,10 +333,10 @@ function HeroSection() {
               src={manHeroUrl}
               alt="Men's Collection"
               priority
+              responsive
+              quality="auto:best"
               fetchPriority="high"
               mode="cover"
-              width={800}
-              height={1000}
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -365,10 +365,10 @@ function HeroSection() {
               src={womenHeroUrl}
               alt="Women's Collection"
               priority
+              quality="auto:best"
+              responsive
               fetchPriority="high"
               mode="cover"
-              width={800}
-              height={1000}
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -578,7 +578,7 @@ function TopFeaturedSection({
                                   }
                                   aspectRatio={3 / 4}
                                   width={160}
-                                  scale={1.5}
+                                  quality="auto:best"
                                   mode="cover"
                                   className="transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
                                 />
@@ -807,7 +807,7 @@ function TagsSection({
                   src={tag.image?.url || ""}
                   alt={tag.name}
                   mode="cover"
-                  width={1920}
+                  responsive
                   className="size-full absolute -z-10 object-cover"
                 />
 

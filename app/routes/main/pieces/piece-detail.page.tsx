@@ -5,14 +5,7 @@ import { exists } from "drizzle-orm";
 import { ChevronsRightIcon, ShoppingCartIcon, ZapIcon } from "lucide-react";
 import React from "react";
 import { Await, Link } from "react-router";
-import {
-  A11y,
-  FreeMode,
-  Keyboard,
-  Mousewheel,
-  Navigation,
-  Thumbs,
-} from "swiper/modules";
+import { A11y, FreeMode, Keyboard, Mousewheel, Thumbs } from "swiper/modules";
 import { SwiperSlide } from "swiper/react";
 import { Swiper as SwiperComponent } from "swiper/react";
 import type { Swiper } from "swiper/types";
@@ -216,11 +209,12 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                     loop: piece.images.length > 10,
                   },
                 }}
-                freeMode={true}
-                modules={[FreeMode, Navigation, Thumbs, Mousewheel]}
+                freeMode
+                modules={[A11y, FreeMode, Thumbs, Mousewheel]}
                 mousewheel={{
                   forceToAxis: true,
                 }}
+                keyboard
               >
                 {images.map((image, index) => (
                   <SwiperSlide key={`${image.id}-${index}`} className="p-1">

@@ -8,6 +8,7 @@ import {
 
 import { useIsMobile } from "~/hooks/use-mobile";
 import { cn } from "~/lib/utils";
+import "~/rich-text.css";
 
 import { RICH_TEXT_EDITOR_EXTENSIONS } from "./extentions";
 import { BlockquoteButton } from "./ui/blockquote-button";

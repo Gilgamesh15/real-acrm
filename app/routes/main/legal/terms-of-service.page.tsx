@@ -3,7 +3,7 @@ import { Container, Section } from "~/components/ui/layout";
 import { RichText } from "~/components/shared/rich-text/rich-text";
 
 const APP_URL = import.meta.env.VITE_APP_URL;
-const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL
+const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 
 export default function TermsOfServicePage() {
   return (
