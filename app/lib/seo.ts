@@ -308,7 +308,7 @@ function generatePieceStructuredData(
       url: `${BASE_URL}/ubrania/${piece.slug}`,
     },
     audience: {
-      "@type": "Audience",
+      "@type": "PeopleAudience",
       suggestedGender: GENDER_MAP[piece.gender] || "Unisex",
       suggestedMinAge: 5.0,
       brand: {
@@ -359,7 +359,7 @@ function generateProductStructuredData(
       url: `${BASE_URL}/projekty/${product.slug}`,
     },
     audience: {
-      "@type": "Audience",
+      "@type": "PeopleAudience",
       suggestedGender: GENDER_MAP[product.pieces?.[0]?.gender || "unisex"],
       suggestedMinAge: 5.0,
     },
