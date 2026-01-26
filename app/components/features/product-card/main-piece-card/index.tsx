@@ -53,6 +53,7 @@ const MainPieceCard = ({
           alt={primaryImage?.alt || `${piece.name} - ${piece.brand.name}`}
           aspectRatio={5 / 8}
           mode="contain"
+          quality="auto:good"
           className="size-full z-0 absolute"
           responsive
         />

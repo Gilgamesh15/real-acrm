@@ -2,6 +2,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics } from "@vercel/analytics/react";
+import { GoogleConsentMode } from "components/cookie-consent";
+import { CookieBanner } from "components/cookie-consent/cookie-banner";
+import { CookieConsentProvider } from "components/cookie-consent/cookie-provider";
+import { CookieSettings } from "components/cookie-consent/cookie-settings";
+import { CookieTrigger } from "components/cookie-consent/cookie-trigger";
 import { AlertCircleIcon } from "lucide-react";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import {
@@ -16,7 +21,6 @@ import type { MiddlewareFunction } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { CookieConsentController } from "./components/features/cookie-consent/cookie-consent-controller";
 import {
   Error,
   ErrorCode,
@@ -26,7 +30,6 @@ import {
   ErrorTitle,
 } from "./components/ui/error";
 import { Toaster } from "./components/ui/sonner";
-import { cookieConsent } from "./cookies.server";
 import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
@@ -44,17 +47,6 @@ export const middleware: MiddlewareFunction[] = [
   loggingMiddleware,
   sessionMiddleware,
 ];
-
-// ========================== LOADERS ==========================
-export async function loader({ request }: Route.LoaderArgs) {
-  const cookieHeader = request.headers.get("Cookie");
-  const cookie = await cookieConsent.parse(cookieHeader);
-
-  return {
-    cookieConsent:
-      typeof cookie === "string" && cookie === "true" ? (true as const) : null,
-  };
-}
 
 // ========================== ACTIONS ==========================
 
@@ -123,6 +115,24 @@ export function Layout() {
         )}
         <meta name="og:locale" content="pl_PL" />
         <meta name="og:site_name" content="ACRM | Fashion Projects" />
+
+        <GoogleConsentMode />
+
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-L5Z39N51Z1"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'G-L5Z39N51Z1');
+            `,
+          }}
+        />
         <Meta />
         <Links />
       </head>
@@ -142,11 +152,34 @@ export function Layout() {
           }}
         >
           <QueryClientProvider client={queryClient}>
-            <CookieConsentController>
+            <CookieConsentProvider
+              config={{
+                consentVersion: "1.0.0",
+                privacyPolicyUrl: "/polityka-prywatnosci",
+                traceability: {
+                  enabled: true,
+                  endpoint: "/api/google-consent-traceability",
+                  method: "POST",
+                  //  headers?: Record<string, string>
+                  // getVisitorId?: () => string | Promise<string>
+                  //includeUserAgent?: boolean
+                  retryOnFailure: true,
+                  maxRetries: 3,
+                  //  onSuccess?: (record: ConsentRecord) => void
+                  //  onError?: (error: Error, record: ConsentRecord) => void
+                },
+                googleConsentMode: {
+                  enabled: true,
+                },
+              }}
+            >
               <div className="min-h-svh max-w-screen overflow-x-hidden flex flex-col">
                 <Outlet />
               </div>
-            </CookieConsentController>
+              <CookieBanner />
+              <CookieSettings />
+              <CookieTrigger />
+            </CookieConsentProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
         </NuqsAdapter>

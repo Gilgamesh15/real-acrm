@@ -1,3 +1,4 @@
+import type { ConsentCategories } from "components/cookie-consent";
 import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
@@ -945,12 +946,16 @@ export const coupons = pgTable(
 export const couponsToProducts = pgTable(
   "coupons_to_products",
   {
-    couponId: uuid("coupon_id").references(() => coupons.id, {
-      onDelete: "cascade",
-    }),
-    productId: uuid("product_id").references(() => products.id, {
-      onDelete: "cascade",
-    }),
+    couponId: uuid("coupon_id")
+      .references(() => coupons.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    productId: uuid("product_id")
+      .references(() => products.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -996,4 +1001,16 @@ export const promotionCodes = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex().on(table.code)]
+);
+
+export const consentRecords = pgTable(
+  "consent_records",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    visitorId: text("visitor_id").notNull(),
+    consentId: uuid("consent_id").notNull(),
+    categories: jsonb("categories").notNull().$type<ConsentCategories>(),
+    timestamp: timestamp("timestamp").defaultNow().notNull(),
+  },
+  (table) => [index().on(table.visitorId), index().on(table.consentId)]
 );
