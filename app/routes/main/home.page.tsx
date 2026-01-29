@@ -39,9 +39,11 @@ import {
 
 import type { Route } from "./+types/home.page";
 
-const womenHeroUrl =
+const PAGE_TITLE = "ACRM | Fashion Projects";
+
+const WOMEN_HERO_URL =
   "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/women-hero_mykywe.jpg";
-const manHeroUrl =
+const MEN_HERO_URL =
   "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/men-hero_d1pnxe.jpg";
 
 export async function loader() {
@@ -252,14 +254,14 @@ export async function loader() {
 }
 
 export const meta: Route.MetaFunction = () => [
-  { title: "ACRM | Fashion Projects" },
+  { title: PAGE_TITLE },
   {
     name: "description",
     content:
       "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
   },
   { name: "robots", content: "index, follow" },
-  { property: "og:title", content: "ACRM | Fashion Projects" },
+  { property: "og:title", content: PAGE_TITLE },
   { property: "og:type", content: "website" },
   { property: "og:image", content: "https://acrm.pl/logo-light.png" },
   { property: "og:url", content: "https://acrm.pl/" },
@@ -288,6 +290,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     topPiecesPromise,
     topProductsPromise,
   } = loaderData;
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   return (
     <main>
@@ -330,7 +339,7 @@ function HeroSection() {
           <Link to="/kategorie?gender=male" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję męską</span>
             <Image
-              src={manHeroUrl}
+              src={MEN_HERO_URL}
               alt="Men's Collection"
               priority
               width={1200}
@@ -362,7 +371,7 @@ function HeroSection() {
           <Link to="/kategorie?gender=female" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję damską</span>
             <Image
-              src={womenHeroUrl}
+              src={WOMEN_HERO_URL}
               alt="Women's Collection"
               priority
               width={1200}

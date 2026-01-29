@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
+import React from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -23,8 +24,11 @@ import { authClient } from "~/lib/auth-client";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "~/lib/schemas";
 import { cn } from "~/lib/utils";
 
+import type { Route } from "./+types/login.page";
 import GoogleIcon from "/google.svg";
 import MetaIcon from "/meta.svg";
+
+const PAGE_TITLE = "Zaloguj się | ACRM";
 
 const LoginSchema = z.object({
   email: z.email({ error: "Nieprawidłowy format email" }),
@@ -36,6 +40,8 @@ const LoginSchema = z.object({
     }),
   rememberMe: z.boolean(),
 });
+
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -79,6 +85,10 @@ export default function LoginPage() {
                 };
           },
           success: () => {
+            // Track login event
+            window.gtag?.("event", "login", {
+              method: "email",
+            });
             navigate("/");
             return "Pomyślnie zalogowano!";
           },
@@ -89,10 +99,20 @@ export default function LoginPage() {
 
   const isLoading = form.state.isSubmitting;
 
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
   const handleGoogleSignIn = async () => {
     try {
       await authClient.signIn.social({
         provider: "google",
+      });
+      // Track login event for Google
+      window.gtag?.("event", "login", {
+        method: "google",
       });
     } catch (error) {
       if (error instanceof APIError) {
@@ -105,6 +125,10 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "facebook",
+      });
+      // Track login event for Facebook
+      window.gtag?.("event", "login", {
+        method: "facebook",
       });
     } catch (error) {
       if (error instanceof APIError) {

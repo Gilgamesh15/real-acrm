@@ -1,4 +1,18 @@
+import React from "react";
+
+import type { Route } from "./+types/about-us.page";
+
+const PAGE_TITLE = "O nas | ACRM";
+
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
+
 export default function AboutUsPage() {
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">

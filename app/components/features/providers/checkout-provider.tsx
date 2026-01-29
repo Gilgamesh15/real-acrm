@@ -10,7 +10,7 @@ import type {
   loader as pendingOrderLoader,
 } from "~/api/pending-order";
 import type { CreateOrderSchemaType } from "~/lib/schemas";
-import { getOrderItems } from "~/lib/utils";
+import { groupPurchasableItems } from "~/lib/utils";
 
 type CheckoutContextType = {
   items: {
@@ -68,7 +68,7 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
   // Update state when pending order is fetched
   React.useEffect(() => {
     if (data?.order) {
-      const { products, pieces } = getOrderItems({ items: data.order.items });
+      const { products, pieces } = groupPurchasableItems(data.order.items);
       setItems({ products, pieces });
       setStripeCheckoutUrl(data.stripeCheckoutUrl ?? null);
     } else {
@@ -98,7 +98,7 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
             throw new Error("Nie udało się utworzyć sesji płatności");
           }
 
-          return result.checkoutSession.url;
+          return { url: result.checkoutSession.url, order: result.order };
         },
         {
           loading: "Trwa utworzenie zamówienia...",
@@ -113,7 +113,15 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
                   description: "Odśwież stronę i spróbuj ponownie.",
                 };
           },
-          success: (url) => {
+          success: ({
+            url,
+            //order
+          }) => {
+            //window.gtag?.("event", "begin_checkout", {
+            //  currency: "PLN",
+            //  value: totalValue,
+            //});
+
             setStripeCheckoutUrl(url);
             window.location.href = url;
             return "Zamówienie utworzone";

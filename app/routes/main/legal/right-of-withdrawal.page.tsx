@@ -1,10 +1,22 @@
+import React from "react";
+
 import { Container, Section } from "~/components/ui/layout";
 
 import { RichText } from "~/components/shared/rich-text/rich-text";
 
+import type { Route } from "./+types/right-of-withdrawal.page";
+
 const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
+const PAGE_TITLE = "Prawo odstąpienia od umowy | ACRM";
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
 export default function RightOfWithdrawalPage() {
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
   return (
     <main>
       <Container>

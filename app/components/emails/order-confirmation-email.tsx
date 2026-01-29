@@ -5,7 +5,7 @@ import type { DBQueryResult } from "~/lib/types";
 import {
   calculateProductPrice,
   formatCurrency,
-  getOrderItems,
+  groupPurchasableItems,
   orderDetailsFromOrder,
   priceFromGrosz,
 } from "~/lib/utils";
@@ -52,7 +52,7 @@ const OrderConfirmationEmail = ({
 }: OrderConfirmationEmailProps) => {
   const orderDetails = orderDetailsFromOrder(order);
 
-  const { products, pieces } = getOrderItems(order);
+  const { products, pieces } = groupPurchasableItems(order.items);
 
   return (
     <EmailBase

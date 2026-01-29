@@ -126,11 +126,42 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
   });
 
   const onCourierClick = React.useCallback(() => {
+    //window.gtag?.("event", "add_shipping_info", {
+    //  currency: "PLN",
+    //  value: totalCartValue,
+    //  shipping_tier: "courier",
+    //  items: [
+    //    ...items.products.flatMap((product) => {
+    //      const skewPercent = product.pricePercentageSkew;
+    //      return product.pieces.map((piece) => ({
+    //        item_id: piece.id,
+    //        item_name: piece.name,
+    //        item_brand: piece.brand.name,
+    //        item_category: piece.category?.name,
+    //        price: priceFromGrosz(
+    //          Math.round((piece.priceInGrosz * (100 - skewPercent)) / 100)
+    //        ),
+    //      }));
+    //    }),
+    //    ...items.pieces.map((piece) => ({
+    //      item_id: piece.id,
+    //      item_name: piece.name,
+    //      item_brand: piece.brand.name,
+    //      item_category: piece.category?.name,
+    //      price: priceFromGrosz(piece.priceInGrosz),
+    //    })),
+    //  ],
+    //});
+
     initiateCheckout({
       pieces,
       deliveryMethod: "courier",
     });
-  }, [initiateCheckout, pieces]);
+  }, [
+    initiateCheckout,
+    pieces,
+    //items
+  ]);
 
   const onLockerClick = React.useCallback(() => {
     setTab("locker-selection");
@@ -150,13 +181,40 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
       return;
     }
 
+    //const totalCartValue =
+    //  items.products.reduce(
+    //    (sum, product) =>
+    //      sum +
+    //      product.pieces.reduce(
+    //        (pSum, piece) => pSum + priceFromGrosz(piece.priceInGrosz),
+    //        0
+    //      ),
+    //    0
+    //  ) +
+    //  items.pieces.reduce(
+    //    (sum, piece) => sum + priceFromGrosz(piece.priceInGrosz),
+    //    0
+    //  );
+    //
+    //gtag.event.emit("add_shipping_info", {
+    //  currency: "PLN",
+    //  value: totalCartValue,
+    //  shipping_tier: "locker",
+    //});
+
     initiateCheckout({
       pieces,
       deliveryMethod: "locker",
       lockerCode: selectedLocker.name,
       saveLocker,
     });
-  }, [initiateCheckout, pieces, selectedLocker, saveLocker]);
+  }, [
+    initiateCheckout,
+    pieces,
+    selectedLocker,
+    saveLocker,
+    //items
+  ]);
 
   const goToCheckout = React.useCallback(() => {
     setOpen(true);

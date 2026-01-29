@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import React from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -88,6 +89,9 @@ export default function ZarejestrujSie() {
                 };
           },
           success: (res) => {
+            window.gtag?.("event", "sign_up", {
+              method: "email",
+            });
             navigate(`/potwierdz-email?email=${res?.email}`);
             return "Pomyślnie zarejestrowano konto!";
           },
@@ -96,10 +100,20 @@ export default function ZarejestrujSie() {
     },
   });
 
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: "Zarejestruj się | ACRM",
+      page_location: window.location.href,
+    });
+  }, []);
+
   const handleGoogleSignIn = async () => {
     try {
       await authClient.signIn.social({
         provider: "google",
+      });
+      window.gtag?.("event", "sign_up", {
+        method: "google",
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -124,6 +138,9 @@ export default function ZarejestrujSie() {
     try {
       await authClient.signIn.social({
         provider: "facebook",
+      });
+      window.gtag?.("event", "sign_up", {
+        method: "facebook",
       });
     } catch (error) {
       if (error instanceof Error) {

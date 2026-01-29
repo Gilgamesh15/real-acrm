@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { asc, desc, eq } from "drizzle-orm";
 import { AlertCircleIcon, ArrowUpRightIcon } from "lucide-react";
+import React from "react";
 import { Link, redirect } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -68,8 +69,18 @@ export async function loader({ context }: Route.LoaderArgs) {
   return { orders };
 }
 
+const PAGE_TITLE = "Zamówienia | ACRM";
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
+
 export default function OrdersListPage({ loaderData }: Route.ComponentProps) {
   const { orders } = loaderData;
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   if (orders.length === 0) {
     return (
@@ -92,6 +103,7 @@ export default function OrdersListPage({ loaderData }: Route.ComponentProps) {
       </Empty>
     );
   }
+
   return (
     <div className="flex flex-col gap-4">
       {orders.map((order) => (
@@ -101,7 +113,7 @@ export default function OrdersListPage({ loaderData }: Route.ComponentProps) {
   );
 }
 
-export async function ErrorBoundary(_: Route.ErrorBoundaryProps) {
+export async function ErrorBoundary() {
   return (
     <div className="size-full flex-1 flex flex-col items-center justify-center">
       <Error>

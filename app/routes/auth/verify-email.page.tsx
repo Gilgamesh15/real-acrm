@@ -33,6 +33,8 @@ import { auth } from "~/lib/auth";
 import { authClient } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
 
+import type { Route } from "./+types/verify-email.page";
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const token = new URL(request.url).searchParams.get("token") || undefined;
 
@@ -48,8 +50,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const COUNTDOWN_DURATION = 60;
+const PAGE_TITLE = "Potwierdź email | ACRM";
 // this will either be pending or success it will not be error ever also meaning that token is irrelevant here
-export default function PotwierdzEmail() {
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
+
+export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") ?? undefined;
@@ -116,6 +121,13 @@ export default function PotwierdzEmail() {
       navigate("/zaloguj-sie");
     }
   }, [hasToken, redirectCountdown, navigate]);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   if (hasToken) {
     return (

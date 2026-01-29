@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { RotateCcwIcon } from "lucide-react";
+import React from "react";
 import { Link } from "react-router";
 import { data, redirect } from "react-router";
 
@@ -27,7 +28,7 @@ import {
   calculateProductPrice,
   cn,
   formatDate,
-  getOrderItems,
+  groupPurchasableItems,
 } from "~/lib/utils";
 import {
   orderDetailsFromOrder,
@@ -96,10 +97,19 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   };
 }
 
+const getPageTitle = (orderNumber: string) =>
+  `Zamówienie #${orderNumber} | ACRM`;
+export const meta: Route.MetaFunction = ({ data }) => {
+  if (!data) return [];
+
+  const { order } = data;
+  return [{ title: getPageTitle(order.orderNumber) }];
+};
+
 export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
   const { order } = loaderData;
 
-  const { products, pieces } = getOrderItems(order);
+  const { products, pieces } = groupPurchasableItems(order.items);
 
   const canReturnItems = pieces.some(
     (piece) =>
@@ -130,6 +140,13 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
   const orderDetails = orderDetailsFromOrder(order);
 
   const orderStatus = orderStatusFromOrder(order);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: getPageTitle(order.orderNumber),
+      page_location: window.location.href,
+    });
+  }, [order.orderNumber]);
 
   return (
     <main className={cn("space-y-6")}>

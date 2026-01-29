@@ -16,6 +16,9 @@ const ProductInfoCard = ({
   product: DBQueryResult<
     "products",
     {
+      columns: {
+        description: false;
+      };
       with: {
         images: true;
         pieces: true;

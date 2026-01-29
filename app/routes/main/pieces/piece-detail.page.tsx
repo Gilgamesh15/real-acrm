@@ -142,6 +142,31 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
     "piece-structured-data"
   );
 
+  const pageTitle = `${piece.name} | ${piece.brand.name} | ACRM`;
+
+  React.useEffect(() => {
+    window.gtag?.("event", "view_item", {
+      currency: "PLN",
+      value: priceFromGrosz(piece.priceInGrosz),
+      items: [
+        {
+          item_id: piece.id,
+          item_name: piece.name,
+          item_brand: piece.brand.name,
+          item_category: piece.category?.name,
+          price: priceFromGrosz(piece.priceInGrosz),
+        },
+      ],
+    });
+  }, [piece]);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: pageTitle,
+      page_location: window.location.href,
+    });
+  }, [pageTitle]);
+
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();
   const [thumbsSwiper, setThumbsSwiper] = React.useState<Swiper | null>(null);

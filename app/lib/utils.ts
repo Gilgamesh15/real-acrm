@@ -617,16 +617,45 @@ export function getReservationData(
   }
 }
 
-export function getOrderItems<
+export function ungroupPurchasableItems<
   TProduct extends { id: string },
   TPiece extends { id: string },
->(order: {
+>(
+  products: (TProduct & { pieces: TPiece[] })[],
+  pieces: TPiece[]
+): {
+  items: Array<{
+    product?: TProduct | null | undefined;
+    productId?: string | null | undefined;
+    piece: TPiece;
+  }>;
+} {
+  const items: {
+    product?: TProduct | null | undefined;
+    productId?: string | null | undefined;
+    piece: TPiece;
+  }[] = [];
+  for (const product of products) {
+    for (const piece of product.pieces) {
+      items.push({ product, productId: product.id, piece });
+    }
+  }
+  for (const piece of pieces) {
+    items.push({ piece });
+  }
+  return { items };
+}
+
+export function groupPurchasableItems<
+  TProduct extends { id: string },
+  TPiece extends { id: string },
+>(
   items: {
     product?: TProduct | null | undefined;
     productId?: string | null | undefined;
     piece: TPiece;
-  }[];
-}): {
+  }[]
+): {
   products: (TProduct & { pieces: TPiece[] })[];
   pieces: TPiece[];
 } {
@@ -635,7 +664,7 @@ export function getOrderItems<
   })[] = [];
   const pieces: TPiece[] = [];
 
-  for (const item of order.items) {
+  for (const item of items) {
     if (item.productId && item.product) {
       const existingProductIndex = products.findIndex(
         (p) => p.id === item.productId

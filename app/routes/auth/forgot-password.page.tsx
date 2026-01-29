@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
 import { Send } from "lucide-react";
 import { ArrowRightIcon } from "lucide-react";
+import React from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -29,16 +30,27 @@ import { useCountdown } from "~/hooks/use-countdown";
 import { authClient } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
 
-const COUNTDOWN_DURATION = 60;
+import type { Route } from "./+types/forgot-password.page";
 
+const COUNTDOWN_DURATION = 60;
+const PAGE_TITLE = "Zapomniałeś hasła? | ACRM";
 const ForgotPasswordSchema = z.object({
   email: z.email({ error: "Nieprawidłowy format email" }),
 });
+
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
 export default function ZapomnialesHasla() {
   const [countdown, { startCountdown }] = useCountdown({
     countStart: COUNTDOWN_DURATION,
   });
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   const form = useForm({
     defaultValues: {

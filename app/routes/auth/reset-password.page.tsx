@@ -1,6 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
 import { XOctagon } from "lucide-react";
+import React from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -34,6 +35,8 @@ import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/reset-password.page";
 
+const PAGE_TITLE = "Resetuj hasło | ACRM";
+
 const ResetPasswordSchema = z.object({
   password: PasswordSchema,
   confirmPassword: z
@@ -43,6 +46,10 @@ const ResetPasswordSchema = z.object({
       error: "Nieprawidłowe hasło",
     }),
 });
+
+export const meta: Route.MetaFunction = () => {
+  return [{ title: PAGE_TITLE }];
+};
 
 export default function ResetujHaslo({ params }: Route.ComponentProps) {
   const { token } = params;
@@ -92,6 +99,13 @@ export default function ResetujHaslo({ params }: Route.ComponentProps) {
   });
 
   const isLoading = form.state.isSubmitting;
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   if (!token) {
     return (

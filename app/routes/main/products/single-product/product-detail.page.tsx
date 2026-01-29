@@ -19,6 +19,7 @@ import { db } from "~/lib/db";
 import { generateProductStructuredData } from "~/lib/seo";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
 import {
+  calculatePriceData,
   calculateProductPrice,
   formatCurrency,
   priceFromGrosz,
@@ -136,6 +137,38 @@ export default function ProductDetailPage({
     generateProductStructuredData(product),
     "product-structured-data"
   );
+
+  React.useEffect(() => {
+    const productPrice = priceFromGrosz(
+      calculateProductPrice(product).lineTotalInGrosz
+    );
+    window.gtag?.("event", "view_item", {
+      currency: "PLN",
+      value: productPrice,
+      items: product.pieces.map((piece) => ({
+        item_id: piece.id,
+        item_name: piece.name,
+        item_brand: piece.brand.name,
+        item_category: piece.category?.name,
+        item_category2: piece.category?.path[1]?.name,
+        item_category3: piece.category?.path[2]?.name,
+        item_category4: piece.category?.path[3]?.name,
+        item_category5: piece.category?.path[4]?.name,
+        price: priceFromGrosz(
+          calculatePriceData(piece.priceInGrosz, {
+            percentOff: product.pricePercentageSkew,
+          }).lineTotalInGrosz
+        ),
+      })),
+    });
+  }, [product]);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: `${product.name} | ACRM`,
+      page_location: window.location.href,
+    });
+  }, [product]);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
+import React from "react";
 import { Link, data } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -23,7 +24,7 @@ import {
   calculateProductPrice,
   cn,
   formatDate,
-  getOrderItems,
+  groupPurchasableItems,
   orderDetailsFromOrder,
   priceFromGrosz,
 } from "~/lib/utils";
@@ -39,8 +40,10 @@ export async function loader({ params }: Route.LoaderArgs) {
       items: {
         with: {
           product: {
+            columns: {
+              description: false,
+            },
             with: {
-              pieces: true,
               images: {
                 limit: 1,
                 orderBy: asc(schema.images.displayOrder),
@@ -49,6 +52,8 @@ export async function loader({ params }: Route.LoaderArgs) {
           },
           piece: {
             with: {
+              brand: true,
+              category: true,
               images: {
                 limit: 1,
                 orderBy: asc(schema.images.displayOrder),
@@ -67,6 +72,9 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { order };
 }
 
+const PAGE_TITLE = "Zamówienie - sukces | ACRM";
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
+
 export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
   const { order } = loaderData;
 
@@ -75,7 +83,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
   const isLoggedIn =
     !!session && !session.isPending && !session.data?.user.isAnonymous;
 
-  const { products, pieces } = getOrderItems(order);
+  const { products, pieces } = groupPurchasableItems(order.items);
 
   const priceSummary = {
     subtotal: priceFromGrosz(order.subtotalInGrosz),
@@ -97,6 +105,34 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
       })),
     ],
   };
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "purchase", {
+      transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
+      currency: "PLN",
+      tax: priceFromGrosz(order.taxInGrosz),
+      shipping: 0,
+      value: priceFromGrosz(order.totalInGrosz),
+      items: order.items.map((item) => ({
+        item_id: item.piece.id,
+        item_name: item.piece.name,
+        item_brand: item.piece.brand?.name,
+        item_category: item.piece.category?.path[0]?.name,
+        item_category2: item.piece.category?.path[1]?.name,
+        item_category3: item.piece.category?.path[2]?.name,
+        item_category4: item.piece.category?.path[3]?.name,
+        item_category5: item.piece.category?.path[4]?.name,
+        price: priceFromGrosz(item.piece.priceInGrosz),
+      })),
+    });
+  }, [order]);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">

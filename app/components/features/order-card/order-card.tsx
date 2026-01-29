@@ -20,7 +20,7 @@ import {
   cn,
   formatCurrency,
   formatDate,
-  getOrderItems,
+  groupPurchasableItems,
   orderStatusFromOrder,
   priceFromGrosz,
 } from "~/lib/utils";
@@ -55,7 +55,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const { products, pieces } = getOrderItems(order);
+  const { products, pieces } = groupPurchasableItems(order.items);
 
   const totalItems = products.length + pieces.length;
   const orderStatus = orderStatusFromOrder(order);

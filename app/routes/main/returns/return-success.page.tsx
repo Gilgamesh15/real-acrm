@@ -2,6 +2,7 @@ import * as schema from "db/schema";
 import { returnService } from "db/services/return.service";
 import { asc } from "drizzle-orm";
 import { CheckCircle } from "lucide-react";
+import React from "react";
 import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
@@ -20,6 +21,8 @@ import { ProductInfoCard } from "~/components/features/product-card/product-info
 import { cn, formatDate, returnDetailsFromReturn } from "~/lib/utils";
 
 import type { Route } from "./+types/return-success.page";
+
+const PAGE_TITLE = "Zwrot zamówienia - sukces | ACRM";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { returnReqNumber } = params;
@@ -64,6 +67,8 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { returnRequest };
 }
 
+export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
+
 export default function ReturnSuccessPage({
   loaderData,
 }: Route.ComponentProps) {
@@ -75,6 +80,13 @@ export default function ReturnSuccessPage({
   const pieces = returnRequest.items
     .map((item) => item.orderItem?.piece)
     .filter((piece) => piece !== null);
+
+  React.useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_title: PAGE_TITLE,
+      page_location: window.location.href,
+    });
+  }, []);
 
   return (
     <main>
