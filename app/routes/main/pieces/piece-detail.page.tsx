@@ -102,7 +102,7 @@ export const meta: Route.MetaFunction = ({ data }) => {
   if (!data) return [];
 
   const { piece } = data;
-  const pageTitle = `${piece.name} | ${piece.brand.name} | ACRM`;
+  const pageTitle = `${piece.name} | ACRM`;
   const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${(piece.priceInGrosz / 100).toFixed(2)} zł. Darmowa dostawa InPost.`;
   const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
@@ -142,8 +142,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
     "piece-structured-data"
   );
 
-  const pageTitle = `${piece.name} | ${piece.brand.name} | ACRM`;
-
   React.useEffect(() => {
     window.gtag?.("event", "view_item", {
       currency: "PLN",
@@ -159,13 +157,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
       ],
     });
   }, [piece]);
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: pageTitle,
-      page_location: window.location.href,
-    });
-  }, [pageTitle]);
 
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { useCookieConsent } from "./cookie-provider";
 import {
   loadScript,

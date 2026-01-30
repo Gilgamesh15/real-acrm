@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Container, Section } from "~/components/ui/layout";
 
 import { RichText } from "~/components/shared/rich-text/rich-text";
@@ -11,12 +9,6 @@ const PAGE_TITLE = "Polityka prywatności | ACRM";
 export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
 export default function PrivacyPolicyPage() {
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
   return (
     <main>
       <Container>

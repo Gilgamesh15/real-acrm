@@ -291,13 +291,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     topProductsPromise,
   } = loaderData;
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
-
   return (
     <main>
       <HeroSection />

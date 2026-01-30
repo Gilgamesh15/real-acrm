@@ -1,6 +1,5 @@
 import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
-import React from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -99,12 +98,6 @@ export default function LoginPage() {
 
   const isLoading = form.state.isSubmitting;
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
   const handleGoogleSignIn = async () => {
     try {
       await authClient.signIn.social({

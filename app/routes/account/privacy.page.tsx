@@ -320,12 +320,6 @@ export default function PrivacyPage() {
     handleDelete();
   }, [fetcher.formData, fetcher.state, fetcher.data, navigate]);
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: "Ustawienia prywatności | ACRM",
-      page_location: window.location.href,
-    });
-  }, []);
   return (
     <div className="space-y-6">
       <h1 className="sr-only">Ustawienia prywatności</h1>

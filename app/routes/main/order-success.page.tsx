@@ -1,7 +1,7 @@
 import * as schema from "db/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
-import React from "react";
+import { useEffect } from "react";
 import { Link, data } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -106,14 +106,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
     ],
   };
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     window.gtag?.("event", "purchase", {
       transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
       currency: "PLN",

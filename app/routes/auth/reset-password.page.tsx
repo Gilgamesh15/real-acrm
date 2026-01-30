@@ -1,7 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
 import { XOctagon } from "lucide-react";
-import React from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -99,13 +98,6 @@ export default function ResetujHaslo({ params }: Route.ComponentProps) {
   });
 
   const isLoading = form.state.isSubmitting;
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
 
   if (!token) {
     return (

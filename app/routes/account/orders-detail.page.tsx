@@ -1,7 +1,6 @@
 import * as schema from "db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { RotateCcwIcon } from "lucide-react";
-import React from "react";
 import { Link } from "react-router";
 import { data, redirect } from "react-router";
 
@@ -140,13 +139,6 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
   const orderDetails = orderDetailsFromOrder(order);
 
   const orderStatus = orderStatusFromOrder(order);
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: getPageTitle(order.orderNumber),
-      page_location: window.location.href,
-    });
-  }, [order.orderNumber]);
 
   return (
     <main className={cn("space-y-6")}>

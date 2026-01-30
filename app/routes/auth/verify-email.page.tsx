@@ -122,13 +122,6 @@ export default function VerifyEmailPage() {
     }
   }, [hasToken, redirectCountdown, navigate]);
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
-
   if (hasToken) {
     return (
       <Empty>

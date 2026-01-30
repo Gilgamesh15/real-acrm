@@ -3,7 +3,6 @@ import * as schema from "db/schema";
 import { orderService } from "db/services/order.service";
 import { eq } from "drizzle-orm";
 import { XOctagon } from "lucide-react";
-import React from "react";
 import { data, redirect, useFetcher } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -201,13 +200,6 @@ export default function ProfilePage({ loaderData }: Route.ComponentProps) {
       );
     },
   });
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
 
   return (
     <form

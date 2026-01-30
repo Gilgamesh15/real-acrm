@@ -2,7 +2,6 @@ import { useForm } from "@tanstack/react-form";
 import { APIError } from "better-auth";
 import { Send } from "lucide-react";
 import { ArrowRightIcon } from "lucide-react";
-import React from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -44,13 +43,6 @@ export default function ZapomnialesHasla() {
   const [countdown, { startCountdown }] = useCountdown({
     countStart: COUNTDOWN_DURATION,
   });
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
 
   const form = useForm({
     defaultValues: {

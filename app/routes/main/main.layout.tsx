@@ -12,9 +12,7 @@ import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generateOrganizationStructuredData } from "~/lib/seo";
 
-import type { Route } from "./+types/main.layout";
-
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader() {
   const categoriesPromise = db.query.categories
     .findMany({
       with: {

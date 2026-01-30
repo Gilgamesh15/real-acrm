@@ -163,13 +163,6 @@ export default function ProductDetailPage({
     });
   }, [product]);
 
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: `${product.name} | ACRM`,
-      page_location: window.location.href,
-    });
-  }, [product]);
-
   return (
     <>
       <main>

@@ -34,6 +34,7 @@ import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
 const GOOGLE_VERIFICATION = import.meta.env.VITE_GOOGLE_VERIFICATION;
+const GOOGLE_ANALYTICS_ID = import.meta.env.VITE_GOOGLE_ANALYTICS_ID;
 
 export const meta: Route.MetaFunction = () => [
   { title: "ACRM | Fashion Projects" },
@@ -48,64 +49,13 @@ export const middleware: MiddlewareFunction[] = [
   sessionMiddleware,
 ];
 
-// ========================== ACTIONS ==========================
-
 const queryClient = new QueryClient();
-
-export function links() {
-  return [
-    // Preconnect to Cloudinary for faster LCP image loading
-    { rel: "preconnect", href: "https://res.cloudinary.com" },
-    { rel: "dns-prefetch", href: "https://res.cloudinary.com" },
-    {
-      rel: "preload",
-      href: "/fonts/tektur.woff2",
-      as: "font",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "preload",
-      href: "/fonts/poiret-one.woff2",
-      as: "font",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "preload",
-      href: "/fonts/inter.woff2",
-      as: "font",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "apple-touch-icon",
-      sizes: "180x180",
-      href: "/apple-touch-icon.png",
-    },
-    {
-      rel: "icon",
-      type: "image/png",
-      sizes: "32x32",
-      href: "/favicon-32x32.png",
-    },
-    {
-      rel: "icon",
-      type: "image/png",
-      sizes: "16x16",
-      href: "/favicon-16x16.png",
-    },
-    {
-      rel: "manifest",
-      href: "/site.webmanifest",
-    },
-  ];
-}
 
 export function Layout() {
   return (
     <html lang="pl" className="dark">
       <head>
+        {/* meta */}
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
@@ -115,26 +65,74 @@ export function Layout() {
         )}
         <meta name="og:locale" content="pl_PL" />
         <meta name="og:site_name" content="ACRM | Fashion Projects" />
+        <Meta />
 
+        {/* links */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link
+          rel="preload"
+          href="/fonts/tektur.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/poiret-one.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/inter.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
+        <Links />
+
+        {/* google analytics */}
         <GoogleConsentMode />
 
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-L5Z39N51Z1"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
+        {GOOGLE_ANALYTICS_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
 
-              gtag('config', 'G-L5Z39N51Z1');
-            `,
-          }}
-        />
-        <Meta />
-        <Links />
+                  gtag('config', '${GOOGLE_ANALYTICS_ID}');
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body>
         <NuqsAdapter

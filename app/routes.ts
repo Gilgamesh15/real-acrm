@@ -23,7 +23,10 @@ export default [
   route("/api/pending-order", "./api/pending-order.ts"),
   route("/api/return-order", "./api/return-order.ts"),
   route("/api/create-return", "./api/create-return.ts"),
-  route("/api/google-consent-traceability", "./api/google-consent-traceability.ts"),
+  route(
+    "/api/google-consent-traceability",
+    "./api/google-consent-traceability.ts"
+  ),
   route("/produkt/*", "./legacy-product-detail-redirect.page.tsx"),
   route("/produkty/*", "./legacy-product-browse-redirect.page.tsx"),
 
@@ -69,7 +72,7 @@ export default [
       "/polityka-prywatnosci",
       "./routes/main/legal/privacy-policy.page.tsx"
     ),
-    route("o-nas", "./routes/main/legal/about-us.page.tsx"),
+    route("o-nas", "./routes/main/legal/about-us/about-us.page.tsx"),
 
     // returns
     ...prefix("/zwroty", [

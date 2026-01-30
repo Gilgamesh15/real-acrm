@@ -1,27 +1,44 @@
-import type { ConsentAction, ConsentCategories, ConsentRecord, TraceabilityConfig } from "./types"
-import { generateUUID, getVisitorId } from "./utils"
+import type {
+  ConsentAction,
+  ConsentCategories,
+  ConsentRecord,
+  TraceabilityConfig,
+} from "./types";
+import { generateUUID, getVisitorId } from "./utils";
 
 interface TrackConsentParams {
-  categories: ConsentCategories
-  action: ConsentAction
-  consentVersion: string
-  expiresAt: string
-  config: TraceabilityConfig
-  userId?: string
-  scope?: "device" | "global"
+  categories: ConsentCategories;
+  action: ConsentAction;
+  consentVersion: string;
+  expiresAt: string;
+  config: TraceabilityConfig;
+  userId?: string;
+  scope?: "device" | "global";
 }
 
 /**
  * Send consent record to the configured endpoint
  */
-export async function trackConsent(params: TrackConsentParams): Promise<ConsentRecord | null> {
-  const { categories, action, consentVersion, expiresAt, config, userId, scope = "device" } = params
+export async function trackConsent(
+  params: TrackConsentParams
+): Promise<ConsentRecord | null> {
+  const {
+    categories,
+    action,
+    consentVersion,
+    expiresAt,
+    config,
+    userId,
+    scope = "device",
+  } = params;
 
   if (!config.enabled || !config.endpoint) {
-    return null
+    return null;
   }
 
-  const visitorId = config.getVisitorId ? await config.getVisitorId() : getVisitorId()
+  const visitorId = config.getVisitorId
+    ? await config.getVisitorId()
+    : getVisitorId();
 
   const record: ConsentRecord = {
     visitorId,
@@ -33,12 +50,19 @@ export async function trackConsent(params: TrackConsentParams): Promise<ConsentR
     action,
     timestamp: new Date().toISOString(),
     expiresAt,
-    url: config.includeUrl !== false && typeof window !== "undefined" ? window.location.href : "",
-    userAgent: config.includeUserAgent !== false && typeof navigator !== "undefined" ? navigator.userAgent : "",
+    url:
+      config.includeUrl !== false && typeof window !== "undefined"
+        ? window.location.href
+        : "",
+    userAgent:
+      config.includeUserAgent !== false && typeof navigator !== "undefined"
+        ? navigator.userAgent
+        : "",
     language: typeof navigator !== "undefined" ? navigator.language : "",
-  }
+  };
 
-  const maxRetries = config.retryOnFailure !== false ? (config.maxRetries ?? 3) : 1
+  const maxRetries =
+    config.retryOnFailure !== false ? (config.maxRetries ?? 3) : 1;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -49,52 +73,59 @@ export async function trackConsent(params: TrackConsentParams): Promise<ConsentR
           ...config.headers,
         },
         body: JSON.stringify(record),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      config.onSuccess?.(record)
-      return record
+      config.onSuccess?.(record);
+      return record;
     } catch (error) {
       if (attempt === maxRetries - 1) {
-        const err = error instanceof Error ? error : new Error(String(error))
-        config.onError?.(err, record)
+        const err = error instanceof Error ? error : new Error(String(error));
+        config.onError?.(err, record);
 
         // Store in localStorage as fallback
-        storeFailedRecord(record)
+        storeFailedRecord(record);
       }
     }
   }
 
-  return null
+  return null;
 }
 
 /**
  * Store failed record for later retry
  */
 function storeFailedRecord(record: ConsentRecord): void {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return;
 
-  const key = "cookie-consent-pending"
-  const pending = JSON.parse(localStorage.getItem(key) ?? "[]") as ConsentRecord[]
-  pending.push(record)
-  localStorage.setItem(key, JSON.stringify(pending))
+  const key = "cookie-consent-pending";
+  const pending = JSON.parse(
+    localStorage.getItem(key) ?? "[]"
+  ) as ConsentRecord[];
+  pending.push(record);
+  localStorage.setItem(key, JSON.stringify(pending));
 }
 
 /**
  * Retry sending failed records
  */
-export async function retryFailedRecords(config: TraceabilityConfig): Promise<void> {
-  if (typeof window === "undefined" || !config.enabled || !config.endpoint) return
+export async function retryFailedRecords(
+  config: TraceabilityConfig
+): Promise<void> {
+  if (typeof window === "undefined" || !config.enabled || !config.endpoint)
+    return;
 
-  const key = "cookie-consent-pending"
-  const pending = JSON.parse(localStorage.getItem(key) ?? "[]") as ConsentRecord[]
+  const key = "cookie-consent-pending";
+  const pending = JSON.parse(
+    localStorage.getItem(key) ?? "[]"
+  ) as ConsentRecord[];
 
-  if (pending.length === 0) return
+  if (pending.length === 0) return;
 
-  const stillPending: ConsentRecord[] = []
+  const stillPending: ConsentRecord[] = [];
 
   for (const record of pending) {
     try {
@@ -105,17 +136,17 @@ export async function retryFailedRecords(config: TraceabilityConfig): Promise<vo
           ...config.headers,
         },
         body: JSON.stringify(record),
-      })
+      });
 
       if (!response.ok) {
-        stillPending.push(record)
+        stillPending.push(record);
       } else {
-        config.onSuccess?.(record)
+        config.onSuccess?.(record);
       }
     } catch {
-      stillPending.push(record)
+      stillPending.push(record);
     }
   }
 
-  localStorage.setItem(key, JSON.stringify(stillPending))
+  localStorage.setItem(key, JSON.stringify(stillPending));
 }

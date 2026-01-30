@@ -1,7 +1,5 @@
-import "@fontsource-variable/inter";
-import "@fontsource-variable/tektur";
-import "@fontsource/poiret-one";
 import type { Preview } from "@storybook/react-vite";
+import React from "react";
 import { withRouter } from "storybook-addon-remix-react-router";
 
 import "../app/app.css";

@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -156,13 +156,6 @@ export default function ReturnRequestPage() {
         .filter((item) => form.state.values.orderItemIds.includes(item.id))
         .reduce((sum, item) => sum + item.lineTotalInGrosz, 0)
     : 0;
-
-  React.useEffect(() => {
-    window.gtag?.("event", "page_view", {
-      page_title: PAGE_TITLE,
-      page_location: window.location.href,
-    });
-  }, []);
 
   return (
     <main className={cn("flex flex-col h-full flex-1 px-4 md:px-8 py-6")}>
