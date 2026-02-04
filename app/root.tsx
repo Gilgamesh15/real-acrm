@@ -2,12 +2,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics } from "@vercel/analytics/react";
-import { GoogleConsentMode } from "components/cookie-consent";
-import { CookieBanner } from "components/cookie-consent/cookie-banner";
-import { CookieConsentProvider } from "components/cookie-consent/cookie-provider";
-import { CookieSettings } from "components/cookie-consent/cookie-settings";
-import { CookieTrigger } from "components/cookie-consent/cookie-trigger";
-import { AlertCircleIcon } from "lucide-react";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import {
   Links,
@@ -16,25 +10,32 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useRevalidator,
 } from "react-router";
 import type { MiddlewareFunction } from "react-router";
 
+import { GoogleConsentMode } from "~/components/features/cookie-consent";
+import { CookieBanner } from "~/components/features/cookie-consent/cookie-banner";
+import { CookieConsentProvider } from "~/components/features/cookie-consent/cookie-provider";
+import { CookieSettings } from "~/components/features/cookie-consent/cookie-settings";
+import { CookieTrigger } from "~/components/features/cookie-consent/cookie-trigger";
+
 import type { Route } from "./+types/root";
 import "./app.css";
+import { Button } from "./components/ui/button";
 import {
-  Error,
-  ErrorCode,
-  ErrorContent,
-  ErrorDescription,
-  ErrorMedia,
-  ErrorTitle,
-} from "./components/ui/error";
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "./components/ui/empty";
 import { Toaster } from "./components/ui/sonner";
+import { SpecialText } from "./components/ui/special-text";
+import { sessionContext } from "./context/session-context.server";
 import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
-
-const GOOGLE_VERIFICATION = import.meta.env.VITE_GOOGLE_VERIFICATION;
-const GOOGLE_ANALYTICS_ID = import.meta.env.VITE_GOOGLE_ANALYTICS_ID;
 
 export const meta: Route.MetaFunction = () => [
   { title: "ACRM | Fashion Projects" },
@@ -51,7 +52,15 @@ export const middleware: MiddlewareFunction[] = [
 
 const queryClient = new QueryClient();
 
-export function Layout() {
+export async function loader({ context }: Route.LoaderArgs) {
+  const session = context.get(sessionContext);
+
+  return {
+    session,
+  };
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl" className="dark">
       <head>
@@ -60,8 +69,11 @@ export function Layout() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
         <meta name="format-detection" content="telephone=no" />
-        {GOOGLE_VERIFICATION && (
-          <meta name="google-site-verification" content={GOOGLE_VERIFICATION} />
+        {import.meta.env.VITE_GOOGLE_VERIFICATION && (
+          <meta
+            name="google-site-verification"
+            content={import.meta.env.VITE_GOOGLE_VERIFICATION}
+          />
         )}
         <meta name="og:locale" content="pl_PL" />
         <meta name="og:site_name" content="ACRM | Fashion Projects" />
@@ -114,11 +126,11 @@ export function Layout() {
         {/* google analytics */}
         <GoogleConsentMode />
 
-        {GOOGLE_ANALYTICS_ID && (
+        {import.meta.env.VITE_GOOGLE_ANALYTICS_ID && (
           <>
             <script
               async
-              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}`}
             />
             <script
               dangerouslySetInnerHTML={{
@@ -127,7 +139,7 @@ export function Layout() {
                   function gtag(){dataLayer.push(arguments);}
                   gtag('js', new Date());
 
-                  gtag('config', '${GOOGLE_ANALYTICS_ID}');
+                  gtag('config', '${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}');
                 `,
               }}
             />
@@ -158,13 +170,8 @@ export function Layout() {
                   enabled: true,
                   endpoint: "/api/google-consent-traceability",
                   method: "POST",
-                  //  headers?: Record<string, string>
-                  // getVisitorId?: () => string | Promise<string>
-                  //includeUserAgent?: boolean
                   retryOnFailure: true,
                   maxRetries: 3,
-                  //  onSuccess?: (record: ConsentRecord) => void
-                  //  onError?: (error: Error, record: ConsentRecord) => void
                 },
                 googleConsentMode: {
                   enabled: true,
@@ -172,7 +179,7 @@ export function Layout() {
               }}
             >
               <div className="min-h-svh max-w-screen overflow-x-hidden flex flex-col">
-                <Outlet />
+                {children}
               </div>
               <CookieBanner />
               <CookieSettings />
@@ -181,7 +188,6 @@ export function Layout() {
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
         </NuqsAdapter>
-
         <Toaster richColors />
         <ScrollRestoration />
         <Scripts />
@@ -196,31 +202,28 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  if (isRouteErrorResponse(error)) {
-    return (
-      <Error>
-        <ErrorMedia>
-          <AlertCircleIcon />
-        </ErrorMedia>
-        <ErrorContent>
-          <ErrorTitle>Error</ErrorTitle>
-          <ErrorDescription>{JSON.stringify(error.data)}</ErrorDescription>
-        </ErrorContent>
-        <ErrorCode>{error.status}</ErrorCode>
-      </Error>
-    );
-  }
+  const revalidator = useRevalidator();
 
   return (
-    <Error>
-      <ErrorMedia>
-        <AlertCircleIcon />
-      </ErrorMedia>
-      <ErrorContent>
-        <ErrorTitle>Wystąpił błąd</ErrorTitle>
-        <ErrorDescription>Spróbuj ponownie później.</ErrorDescription>
-      </ErrorContent>
-      <ErrorCode>500</ErrorCode>
-    </Error>
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="default">
+          <SpecialText>
+            {isRouteErrorResponse(error) ? error.status : "500"}
+          </SpecialText>
+        </EmptyMedia>
+        <EmptyTitle className="text-2xl font-bold">Wystąpił błąd</EmptyTitle>
+        {isRouteErrorResponse(error) && (
+          <EmptyDescription className="text-sm text-muted-foreground">
+            {error.statusText}
+          </EmptyDescription>
+        )}
+      </EmptyHeader>
+      <EmptyContent>
+        <Button onClick={revalidator.revalidate} variant="default" size="lg">
+          Odśwież stronę
+        </Button>
+      </EmptyContent>
+    </Empty>
   );
 }

@@ -214,4 +214,7 @@ export default [
       ]),
     ]),
   ]),
+
+  // 404
+  route("*", "./routes/404.page.tsx"),
 ] satisfies RouteConfig;
