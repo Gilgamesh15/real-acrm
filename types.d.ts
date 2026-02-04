@@ -1,4 +1,67 @@
-export type GTagItem = {
+declare global {
+  interface ImportMetaEnv {
+    // client
+    readonly VITE_CLOUDINARY_CLOUD_NAME: string;
+    readonly VITE_FROM_EMAIL: string;
+    readonly VITE_APP_URL: string;
+    readonly VITE_BETTER_AUTH_URL: string;
+    readonly VITE_COMPANY_EMAIL: string;
+    readonly VITE_DARK_LOGO_URL: string;
+    readonly VITE_INPOST_API_KEY: string;
+    readonly VITE_INPOST_ENVIROMENT: string;
+    readonly VITE_INSTAGRAM_URL: string;
+    readonly VITE_LIGHT_LOGO_URL: string;
+    readonly VITE_MAPBOX_API_KEY: string;
+    readonly VITE_MAPBOX_ENVIRONMENT: string;
+    readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
+    readonly VITE_TIKTOK_URL: string;
+    readonly VITE_YOUTUBE_URL: string;
+    // client prod only
+    readonly VITE_GOOGLE_VERIFICATION: string | undefined;
+    readonly VITE_GOOGLE_ANALYTICS_ID: string | undefined;
+  }
+}
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      // client
+      readonly VITE_CLOUDINARY_CLOUD_NAME: string;
+      readonly VITE_FROM_EMAIL: string;
+      readonly VITE_APP_URL: string;
+      readonly VITE_BETTER_AUTH_URL: string;
+      readonly VITE_COMPANY_EMAIL: string;
+      readonly VITE_DARK_LOGO_URL: string;
+      readonly VITE_INPOST_API_KEY: string;
+      readonly VITE_INPOST_ENVIROMENT: string;
+      readonly VITE_INSTAGRAM_URL: string;
+      readonly VITE_LIGHT_LOGO_URL: string;
+      readonly VITE_MAPBOX_API_KEY: string;
+      readonly VITE_MAPBOX_ENVIRONMENT: string;
+      readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
+      readonly VITE_TIKTOK_URL: string;
+      readonly VITE_YOUTUBE_URL: string;
+      // client prod only
+      readonly VITE_GOOGLE_VERIFICATION: string | undefined;
+      readonly VITE_GOOGLE_ANALYTICS_ID: string | undefined;
+      // server
+      readonly BETTER_AUTH_SECRET: string;
+      readonly BETTER_STACK_ENDPOINT: string;
+      readonly BETTER_STACK_SOURCE_TOKEN: string;
+      readonly CLOUDINARY_API_KEY: string;
+      readonly CLOUDINARY_API_SECRET: string;
+      readonly DATABASE_URL: string;
+      readonly FACEBOOK_CLIENT_ID: string;
+      readonly FACEBOOK_CLIENT_SECRET: string;
+      readonly GOOGLE_CLIENT_ID: string;
+      readonly GOOGLE_CLIENT_SECRET: string;
+      readonly RESEND_API_KEY: string;
+      readonly STRIPE_SECRET_KEY: string;
+      readonly STRIPE_WEBHOOK_SECRET: string;
+    }
+  }
+}
+
+type GTagItem = {
   item_id: string;
   item_name: string;
   affiliation?: string;
@@ -19,19 +82,8 @@ export type GTagItem = {
   quantity?: number;
 };
 
-type ConsentArgs = {
-  ad_storage: "granted" | "denied";
-  ad_user_data: "granted" | "denied";
-  ad_personalization: "granted" | "denied";
-  analytics_storage: "granted" | "denied";
-  wait_for_update: number;
-};
-
 type Args = {
-  config: {
-    default: ConsentArgs;
-    update: ConsentArgs;
-  };
+  consent: any;
   event: {
     add_payment_info: {
       currency: string;
