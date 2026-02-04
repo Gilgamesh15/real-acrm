@@ -39,9 +39,13 @@ import type { Route } from "./+types/privacy.page";
 export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
-  if (session.user.isAnonymous) {
+  if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", { status: 302 });
   }
+
+  return {
+    userId: session.user.id,
+  };
 }
 
 // ========================== ACTIONS ==========================
@@ -54,12 +58,11 @@ export async function action({ request, context }: Route.ActionArgs) {
   const logger = context.get(loggerContext);
   const session = context.get(sessionContext);
 
-  if (session.user.isAnonymous) {
+  if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", { status: 302 });
   }
 
   const userId = session.user.id;
-
   try {
     const intent = (await request.formData()).get("intent") as
       | Intent
@@ -266,9 +269,6 @@ export default function PrivacyPage() {
   };
 
   React.useEffect(() => {
-    console.log("Fetcher state:", fetcher.state);
-    console.log("Fetcher data:", fetcher.data);
-    console.log("Intent:", fetcher.formData?.get("intent"));
     if (
       fetcher.data?.intent === Intent.EXPORT &&
       fetcher.state === "idle" &&

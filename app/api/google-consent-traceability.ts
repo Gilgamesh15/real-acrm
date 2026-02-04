@@ -1,7 +1,7 @@
-import type { ConsentRecord } from "components/cookie-consent";
 import * as schema from "db/schema";
 import { data } from "react-router";
 
+import type { ConsentRecord } from "~/components/features/cookie-consent";
 import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 

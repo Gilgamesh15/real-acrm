@@ -1,4 +1,3 @@
-import type { ConsentCategories } from "components/cookie-consent";
 import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
@@ -16,6 +15,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { ConsentCategories } from "~/components/features/cookie-consent";
 import type { RichText, TreeNodePathSegment } from "~/lib/types";
 
 export const genderEnum = pgEnum("gender", ["male", "female", "unisex"]);

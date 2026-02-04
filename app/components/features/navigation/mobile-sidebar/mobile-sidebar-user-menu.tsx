@@ -4,10 +4,10 @@ import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 
 import { authClient } from "~/lib/auth-client";
-import type { UseSessionReturn } from "~/lib/types";
+import type { Session } from "~/lib/types";
 
 interface MobileSidebarUserMenuProps {
-  session: UseSessionReturn;
+  session: Session;
   onNavigate: (href: string) => void;
 }
 

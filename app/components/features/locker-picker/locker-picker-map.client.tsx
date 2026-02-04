@@ -12,7 +12,7 @@ import { Separator } from "~/components/ui/separator";
 import { Spinner } from "~/components/ui/spinner";
 
 import { useGeolocation } from "~/hooks/use-geolocation";
-import type { Coordinate, Coordinates, InpostApiLocker } from "~/lib/types";
+import type { Coordinate, InpostApiLocker } from "~/lib/types";
 import { cn } from "~/lib/utils";
 
 const MAPBOX_ENVIRONMENT = import.meta.env.VITE_MAPBOX_ENVIRONMENT;
@@ -43,7 +43,7 @@ export function LockerPickerMap({
   center?: Coordinate;
   selectedLocker?: InpostApiLocker;
   onSelectedLockerChange: (locker: InpostApiLocker) => void;
-  onSearchInpostLockers: (coords: Coordinates) => void;
+  onSearchInpostLockers: (coords: Coordinate) => void;
   activeLocker?: InpostApiLocker;
   onActiveLockerChange: (locker: InpostApiLocker) => void;
 }) {

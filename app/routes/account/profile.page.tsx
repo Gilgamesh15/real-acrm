@@ -73,7 +73,7 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
     const logger = context.get(loggerContext);
     const session = context.get(sessionContext);
 
-    if (session.user.isAnonymous) {
+    if (!session || session.user.isAnonymous) {
       throw redirect("/zaloguj-sie", { status: 302 });
     }
 

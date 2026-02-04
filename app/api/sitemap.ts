@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { SitemapStream, streamToPromise } from "sitemap";
 
+import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import { getSlugPath } from "~/lib/utils";
 
@@ -24,7 +25,8 @@ type SitemapEntry = {
  * Generates XML sitemap for the website
  * Called by React Router's sitemap route handler
  */
-export async function loader({}: LoaderFunctionArgs) {
+export async function loader({ context }: LoaderFunctionArgs) {
+  const logger = context.get(loggerContext);
   const entries: SitemapEntry[] = [];
 
   // ==========================================
@@ -132,7 +134,7 @@ export async function loader({}: LoaderFunctionArgs) {
       });
     }
   } catch (error) {
-    console.error("Error fetching sitemap data:", error);
+    logger.error("Error fetching sitemap data from database", { error });
     // Continue with static routes even if DB queries fail
   }
 
@@ -140,7 +142,7 @@ export async function loader({}: LoaderFunctionArgs) {
   // GENERATE XML
   // ==========================================
 
-  const sitemap = await generateSitemapXML(entries); // Added await
+  const sitemap = await generateSitemapXML(entries);
 
   return new Response(sitemap, {
     headers: {
@@ -158,7 +160,7 @@ async function generateSitemapXML(entries: SitemapEntry[]): Promise<string> {
 
   for (const entry of entries) {
     stream.write({
-      url: entry.url, // Now relative URLs
+      url: entry.url,
       lastmod: entry.lastmod,
       changefreq: entry.changefreq,
       priority: entry.priority,

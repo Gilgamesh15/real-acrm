@@ -16,6 +16,7 @@ import { stripe as stripeClient } from "./stripe";
 
 export const auth = betterAuth({
   secret: process.env["BETTER_AUTH_SECRET"]!,
+  baseURL: process.env["VITE_APP_URL"]!,
   user: {
     deleteUser: {
       enabled: true,

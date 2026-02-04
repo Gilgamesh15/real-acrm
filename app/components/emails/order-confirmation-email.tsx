@@ -15,7 +15,7 @@ import { EmailBase, colors, fonts } from "./email-base";
 const APP_URL = import.meta.env.VITE_APP_URL;
 const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 const ORDER_CONFIRMATION_ICON_URL =
-  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1768639124/Adobe_Express_-_file_qtvusb.png";
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975334/Adobe_Express_-_file_qtvusb_bwcgiv.png";
 const ORDER_CONFIRMATION_TITLE = "Potwierdzenie zamówienia";
 
 interface OrderConfirmationEmailProps {

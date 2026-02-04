@@ -12,8 +12,6 @@ import type { AuthClient } from "./auth-client";
 
 export type RichText = Node | JSONContent;
 
-export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
-
 export type TablesWithRelations = ExtractTablesWithRelations<typeof schema>;
 
 export type DBQueryArgs<
@@ -36,40 +34,6 @@ export type DBQueryResult<
   TConfig
 >;
 
-export type AggregatePrice<T extends "default" | "inGrosz" = "default"> =
-  T extends "default"
-    ? {
-        subtotal: number;
-        //totalDiscount: number;
-        total: number;
-        tax: number;
-      }
-    : T extends "inGrosz"
-      ? {
-          subtotalInGrosz: number;
-          //totalDiscountInGrosz: number;
-          totalInGrosz: number;
-          taxInGrosz: number;
-        }
-      : never;
-
-export type ItemPrice<T extends "default" | "inGrosz" = "default"> =
-  T extends "default"
-    ? {
-        //discountAmount: number;
-        lineTotal: number;
-        tax: number;
-        unitPrice: number;
-      }
-    : T extends "inGrosz"
-      ? {
-          //discountAmountInGrosz: number;
-          lineTotalInGrosz: number;
-          taxInGrosz: number;
-          unitPriceInGrosz: number;
-        }
-      : never;
-
 export type TreeNode = {
   id: string;
   parentId?: string | null | undefined;
@@ -86,38 +50,17 @@ export type TreeNodeWithPath = TreeNode & {
   path: Array<TreeNodePathSegment>;
 };
 
-export type UseSessionReturn = ReturnType<AuthClient["useSession"]["get"]>;
+export type Session = ReturnType<AuthClient["useSession"]["get"]>;
 
 export type ServerSession = NonNullable<
   Awaited<ReturnType<Auth["api"]["getSession"]>>
 >;
 
-export type CatalogType = "product" | "piece" | "both";
-
 export type CatalogSortBy = "relevance" | "price" | "date" | "alphabetical";
 
 export type CatalogSortOrder = "asc" | "desc";
 
-type DataWithResponseInit<D> = ReturnType<typeof data<D>>;
-
-export type ActionResponse<
-  T extends Record<string, unknown> = Record<string, unknown>,
-> = DataWithResponseInit<
-  {
-    message: string;
-  } & (
-    | {
-        success: true;
-        error?: undefined;
-        data: T;
-      }
-    | {
-        success: false;
-        error: unknown;
-        data?: undefined;
-      }
-  )
->;
+export type DataWithResponseInit<D> = ReturnType<typeof data<D>>;
 
 export interface InpostApiLocker {
   name: string;
@@ -203,14 +146,6 @@ export type OrderDetails = {
     }
 );
 
-// Return Contact Details Types
-export type ReturnContactDetails = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-};
-
 // ========================== DATABASE PRIMITIVE TYPES ==========================
 
 // enums
@@ -223,25 +158,6 @@ export type ProductStatus =
 export type ReturnStatus = (typeof schema.returnStatusEnum.enumValues)[number];
 export type Role = (typeof schema.roleEnum.enumValues)[number];
 
-// tables
-export type Category = typeof schema.categories.$inferSelect;
-export type User = typeof schema.users.$inferSelect;
-export type Size = typeof schema.sizes.$inferSelect;
-export type SizeGroup = typeof schema.sizeGroups.$inferSelect;
-export type Brand = typeof schema.brands.$inferSelect;
-export type BrandGroup = typeof schema.brandGroups.$inferSelect;
-export type OrderEvent = typeof schema.orderTimelineEvents.$inferSelect;
-export type Return = typeof schema.returns.$inferSelect;
-export type ReturnEvent = typeof schema.returnTimelineEvents.$inferSelect;
-export type Image = typeof schema.images.$inferSelect;
-export type Product = typeof schema.products.$inferSelect;
-export type Order = typeof schema.orders.$inferSelect;
-export type ReturnItem = typeof schema.returnItems.$inferSelect;
-export type OrderItem = typeof schema.orderItems.$inferSelect;
-export type Tag = typeof schema.tags.$inferSelect;
-export type Piece = typeof schema.pieces.$inferSelect;
-export type Measurement = typeof schema.measurements.$inferSelect;
-
 export type CloudinaryResult = {
   secure_url: string;
   width: number;
@@ -250,11 +166,6 @@ export type CloudinaryResult = {
   public_id: string;
   format: string;
   bytes: number;
-};
-
-export type Coordinates = {
-  latitude: number;
-  longitude: number;
 };
 
 export type LocalStorageCart = Array<{

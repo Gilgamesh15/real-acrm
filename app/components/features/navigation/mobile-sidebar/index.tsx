@@ -23,7 +23,7 @@ import {
 } from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
 
-import type { DBQueryResult, UseSessionReturn } from "~/lib/types";
+import type { DBQueryResult, Session } from "~/lib/types";
 
 import { Logo } from "../../logo/logo";
 import { MobileSidebarCategories } from "./mobile-sidebar-categories";
@@ -37,7 +37,7 @@ interface MobileSidebarProps {
     >[]
   >;
   tagsPromise: Promise<DBQueryResult<"tags", { with: { image: true } }>[]>;
-  session: UseSessionReturn;
+  session: Session;
   onNavigate: (href: string) => void;
 }
 

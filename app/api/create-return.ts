@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { type ActionFunctionArgs, data } from "react-router";
 import { z } from "zod";
 
+import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import { createIdentificationNumber } from "~/lib/utils";
 
@@ -12,7 +13,8 @@ const CreateReturnSchema = z.object({
   email: z.string().email(),
 });
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
+  const logger = context.get(loggerContext);
   const formData = await request.formData();
 
   const parsed = CreateReturnSchema.safeParse({
@@ -22,6 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!parsed.success) {
+    logger.error("Invalid data", { parsed });
     return data(
       { success: false, error: "Nieprawidłowe dane" },
       { status: 400 }
@@ -37,6 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!order) {
+    logger.error("Order not found", { orderId });
     return data(
       { success: false, error: "Zamówienie nie znalezione" },
       { status: 404 }
@@ -47,6 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const validItemIds = order.items.map((i) => i.id);
   const allValid = orderItemIds.every((id) => validItemIds.includes(id));
   if (!allValid) {
+    logger.error("Invalid order item IDs", { orderItemIds, validItemIds });
     return data(
       { success: false, error: "Nieprawidłowe przedmioty" },
       { status: 400 }
@@ -91,6 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
         .returning();
 
       if (!createdReturn) {
+        logger.error("Failed to create return", { createdReturn });
         throw new Error("Failed to create return");
       }
 
@@ -127,7 +133,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return data({ success: true, returnNumber });
   } catch (error) {
-    console.error("Failed to create return:", error);
+    logger.error("Failed to create return", { error });
     return data(
       { success: false, error: "Nie udało się utworzyć wniosku o zwrot" },
       { status: 500 }

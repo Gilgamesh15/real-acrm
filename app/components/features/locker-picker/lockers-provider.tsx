@@ -3,14 +3,16 @@ import React from "react";
 
 import type { loader as inpostLockersLoader } from "~/api/inpost-lockers";
 import { useDebounceValue } from "~/hooks/use-debounce-value";
+import type { Coordinate, InpostApiLocker } from "~/lib/types";
+
 import type { Coordinates, InpostApiLocker } from "~/lib/types";
 
 type LockersContextType = {
   lockers: InpostApiLocker[];
   isLoading: boolean;
   error?: string;
-  coordinates?: Coordinates;
-  setCoordinates: (coordinates: Coordinates) => void;
+  coordinates?: Coordinate;
+  setCoordinates: (coordinates: Coordinate) => void;
 };
 
 const LockersContext = React.createContext<LockersContextType | null>(null);
@@ -24,10 +26,10 @@ const useLockers = () => {
 };
 
 function LockersProvider({ children }: { children: React.ReactNode }) {
-  const [coordinates, setCoordinates] = React.useState<Coordinates | undefined>(
+  const [coordinates, setCoordinates] = React.useState<Coordinate | undefined>(
     undefined
   );
-  const [debouncedCoordinates] = useDebounceValue<Coordinates | undefined>(
+  const [debouncedCoordinates] = useDebounceValue<Coordinate | undefined>(
     coordinates,
     2000,
     {
@@ -49,8 +51,8 @@ function LockersProvider({ children }: { children: React.ReactNode }) {
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
-        latitude: debouncedCoordinates?.latitude.toString() ?? "50.0647",
-        longitude: debouncedCoordinates?.longitude.toString() ?? "19.945",
+          latitude: debouncedCoordinates?.latitude.toString() ?? "50.0647",
+          longitude: debouncedCoordinates?.longitude.toString() ?? "19.945",
       });
 
       const response = await fetch(`/api/inpost-lockers?${params}`);

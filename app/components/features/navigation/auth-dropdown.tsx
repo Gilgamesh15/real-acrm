@@ -12,12 +12,12 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 
 import { authClient } from "~/lib/auth-client";
-import type { UseSessionReturn } from "~/lib/types";
+import type { Session } from "~/lib/types";
 
 import type { NavItem } from "./navbar";
 
 interface AuthDropdownProps {
-  session: UseSessionReturn;
+  session: Session;
   accountItems: NavItem[];
   className?: string;
 }

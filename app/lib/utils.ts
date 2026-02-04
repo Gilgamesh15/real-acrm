@@ -12,7 +12,6 @@ import {
 } from "nuqs";
 import baseSlugify from "slugify";
 import { twMerge } from "tailwind-merge";
-import z from "zod";
 import * as z4 from "zod/v4/core";
 
 import type { badgeVariants } from "~/components/ui/badge";
@@ -27,7 +26,6 @@ import {
   type OrderStatus,
   type ProductStatus,
   type ReturnRequestDetails,
-  type ReturnStatus,
   type TreeNode,
   type TreeNodePathSegment,
   type TreeNodeWithPath,
@@ -89,23 +87,6 @@ export const formatDate = (date: Date, variant: "long" | "short" = "long") => {
   }).format(date);
 };
 
-export const formatFileSize = (bytes: number) => {
-  const units = ["byte", "kilobyte", "megabyte", "gigabyte"];
-  let value = bytes;
-  let unitIndex = 0;
-
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-
-  return new Intl.NumberFormat("pl-PL", {
-    style: "unit",
-    unit: units[unitIndex],
-    maximumFractionDigits: 2,
-  }).format(value);
-};
-
 export const priceFromGrosz = (grosz: number): number => {
   return grosz / 100;
 };
@@ -136,39 +117,9 @@ export function enrichWithPath<T extends TreeNode>(
   }));
 }
 
-// Get ancestor nodes (root to immediate parent)
-// If nodeId is undefined/null, returns all root nodes (nodes without parents)
-export function getAncestors<T extends TreeNode>(
-  nodes: T[],
-  nodeId?: string | null | undefined
-): T[] {
-  // If no nodeId provided, return root nodes
-  if (!nodeId) {
-    return nodes.filter((n) => !n.parentId);
-  }
-
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  const ancestors: T[] = [];
-
-  let current = nodeMap.get(nodeId);
-
-  while (current?.parentId) {
-    const parent = nodeMap.get(current.parentId);
-    if (!parent) break;
-    ancestors.unshift(parent);
-    current = parent;
-  }
-
-  return ancestors;
-}
-
 // Construct slug path from node
 export function getSlugPath(node: TreeNodeWithPath): string {
   return node.path.map((p) => p.slug).join("/");
-}
-
-export function getIsRoot(node: TreeNode): boolean {
-  return !node.parentId;
 }
 
 export function getIsLeaf<T extends TreeNode>(
@@ -176,25 +127,6 @@ export function getIsLeaf<T extends TreeNode>(
   nodeId: string
 ): boolean {
   return !nodes.some((n) => n.parentId === nodeId);
-}
-
-export function getNodeDepth<T extends TreeNode>(
-  nodes: T[],
-  nodeId: string
-): number {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-
-  let depth = 0;
-  let currentId = nodeMap.get(nodeId)?.parentId;
-
-  while (currentId) {
-    const node = nodeMap.get(currentId);
-    if (!node) break;
-    depth++;
-    currentId = node.parentId;
-  }
-
-  return depth;
 }
 
 export function getChildren<T extends TreeNode>(
@@ -271,27 +203,20 @@ export const sortFilterOptions = [
   },
 ] as const satisfies Array<{ value: string; label: string }>;
 
-export const FilterSchema = z.object({
-  search: z.string().optional(),
-  category: z.string().optional(),
-  brands: z.array(z.string()),
-  sizes: z.array(z.string()),
-  tags: z.array(z.string()),
-  gender: z.enum(["male", "female", "unisex"] satisfies Gender[]).optional(),
-  priceMin: z.number(),
-  priceMax: z.number(),
-  limit: z.number(),
-  offset: z.number(),
-  sortBy: z.enum([
-    "price",
-    "date",
-    "alphabetical",
-    "relevance",
-  ] satisfies CatalogSortBy[]),
-  sortOrder: z.enum(["asc", "desc"] satisfies CatalogSortOrder[]),
-});
-
-export type FilterArgs = z.infer<typeof FilterSchema>;
+export type FilterArgs = {
+  brands: string[];
+  sizes: string[];
+  tags: string[];
+  priceMin: number;
+  priceMax: number;
+  limit: number;
+  offset: number;
+  sortBy: "date" | "relevance" | "price" | "alphabetical";
+  sortOrder: "asc" | "desc";
+  search?: string | undefined;
+  category?: string | undefined;
+  gender?: "male" | "female" | "unisex" | undefined;
+};
 
 /**
  * Creates a unique identification number (typically for orders, returns, etc.)
@@ -344,31 +269,6 @@ export const ORDER_STATUS_BADGE_TEXT_MAP: Record<OrderStatus, string> = {
   processing: "W trakcie realizacji",
   in_transit: "W drodze do odbiorcy",
   delivered: "Dostarczone",
-};
-
-export const RETURN_STATUS_BADGE_VARIANT_MAP: Record<
-  ReturnStatus,
-  VariantProps<typeof badgeVariants>["variant"]
-> = {
-  pending: "warning",
-  accepted: "success",
-  rejected: "destructive",
-};
-
-export const RETURN_STATUS_BADGE_TEXT_MAP: Record<ReturnStatus, string> = {
-  pending: "Oczekuje na weryfikację",
-  accepted: "Zaakceptowany",
-  rejected: "Odrzucony",
-};
-
-export const returnStatusFromReturnItem = (
-  returnItem: DBQueryResult<"returnItems", { with: { events: true } }>
-): ReturnStatus => {
-  const events = returnItem.events.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-  const lastEvent = events[events.length - 1];
-  return lastEvent?.status ?? "pending";
 };
 
 export const returnDetailsFromReturn = (

@@ -12,7 +12,7 @@ import React from "react";
 import { useNavigate } from "react-router";
 
 import { authClient } from "~/lib/auth-client";
-import type { DBQueryResult, User } from "~/lib/types";
+import type { DBQueryResult, Session } from "~/lib/types";
 
 import { Logo } from "../logo/logo";
 import { AuthDropdown } from "./auth-dropdown";
@@ -28,7 +28,9 @@ export interface NavItem {
   label: string;
   icon: React.ReactNode;
   href: string;
-  access?: (user?: User | null | undefined) => boolean;
+  access?: (
+    user?: NonNullable<Session["data"]>["user"] | null | undefined
+  ) => boolean;
 }
 
 export const MAIN_ITEMS: NavItem[] = [

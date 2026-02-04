@@ -42,9 +42,9 @@ import type { Route } from "./+types/home.page";
 const PAGE_TITLE = "ACRM | Fashion Projects";
 
 const WOMEN_HERO_URL =
-  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/women-hero_mykywe.jpg";
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975338/women-hero_mykywe_icxbew.jpg";
 const MEN_HERO_URL =
-  "https://res.cloudinary.com/dbpz6wtou/image/upload/v1769278788/men-hero_d1pnxe.jpg";
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975339/men-hero_d1pnxe_pe5eso.jpg";
 
 export async function loader() {
   const categoriesPromise = db.query.categories
