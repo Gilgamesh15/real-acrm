@@ -64,8 +64,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     },
   });
 
-  console.log("HERE LOGGING HERE", category);
-
   if (!category) {
     throw data({}, { status: 404 });
   }

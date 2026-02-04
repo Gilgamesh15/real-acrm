@@ -65,8 +65,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
   const { pieceId } = params;
 
-  console.log("HERE LOGGING HERE");
-
   const piece = await db.query.pieces.findFirst({
     where: eq(schema.pieces.id, pieceId),
     with: {
@@ -88,8 +86,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
       },
     },
   });
-
-  console.log("HERE LOGGING HERE");
 
   if (!piece) {
     throw data({}, { status: 404 });

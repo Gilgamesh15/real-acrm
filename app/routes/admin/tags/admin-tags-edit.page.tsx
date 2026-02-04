@@ -136,7 +136,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Unexpected error in tag edit action:", error);
+    logger.error("Unexpected error in tag edit action:", { error });
     return data(
       {
         success: false,

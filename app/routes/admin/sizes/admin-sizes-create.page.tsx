@@ -148,7 +148,6 @@ export default function AdminSizesCreatePage({
   });
 
   React.useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data?.success) {
       navigate(`/admin/rozmiary`);
     }

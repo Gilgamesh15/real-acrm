@@ -165,7 +165,6 @@ export default function AdminTagsCreatePage() {
   });
 
   React.useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data?.success) {
       navigate(`/admin/tagi`);
     }

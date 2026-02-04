@@ -273,7 +273,6 @@ export default function AdminPiecesCreatePage({
   });
 
   React.useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data?.success) {
       navigate(`/admin/ubrania`);
     }
