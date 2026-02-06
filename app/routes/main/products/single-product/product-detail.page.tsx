@@ -19,10 +19,10 @@ import { db } from "~/lib/db";
 import { generateProductStructuredData } from "~/lib/seo";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
 import {
-  calculatePriceData,
-  calculateProductPrice,
+  calculateProductPriceDisplayData,
   formatCurrency,
-  priceFromGrosz,
+  formatDiscountLabel,
+  pieceToGoogleAnalyticsItem,
 } from "~/lib/utils";
 
 import type { Route } from "./+types/product-detail.page";
@@ -33,9 +33,11 @@ const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
 const productSelect = {
   with: {
     images: true,
+    discount: true,
     pieces: {
       where: inArray(schema.pieces.status, ["published", "in_checkout"]),
       with: {
+        discount: true,
         images: true,
         measurements: true,
         size: true,
@@ -85,7 +87,7 @@ export const meta: Route.MetaFunction = ({ data }) => {
   if (!data) return [];
 
   const { product } = data;
-  const productPrice = calculateProductPrice(product).lineTotalInGrosz / 100;
+  const productPrice = calculateProductPriceDisplayData(product).finalPrice;
   const pageTitle = `${product.name} | ACRM`;
   const pageDescription = `${product.name} - kompletny zestaw. Zawiera ${product.pieces.map((p) => p.name).join(", ")}. Wysyłka w 24h.`;
   const pageUrl = `${BASE_URL}/projekty/${product.slug}`;
@@ -138,30 +140,17 @@ export default function ProductDetailPage({
     "product-structured-data"
   );
 
+  const pricingData = React.useMemo(() => {
+    return calculateProductPriceDisplayData(product);
+  }, [product]);
+
   React.useEffect(() => {
-    const productPrice = priceFromGrosz(
-      calculateProductPrice(product).lineTotalInGrosz
-    );
     window.gtag?.("event", "view_item", {
       currency: "PLN",
-      value: productPrice,
-      items: product.pieces.map((piece) => ({
-        item_id: piece.id,
-        item_name: piece.name,
-        item_brand: piece.brand.name,
-        item_category: piece.category?.name,
-        item_category2: piece.category?.path[1]?.name,
-        item_category3: piece.category?.path[2]?.name,
-        item_category4: piece.category?.path[3]?.name,
-        item_category5: piece.category?.path[4]?.name,
-        price: priceFromGrosz(
-          calculatePriceData(piece.priceInGrosz, {
-            percentOff: product.pricePercentageSkew,
-          }).lineTotalInGrosz
-        ),
-      })),
+      value: pricingData.finalPrice,
+      items: product.pieces.map((piece) => pieceToGoogleAnalyticsItem(piece)),
     });
-  }, [product]);
+  }, [pricingData.finalPrice, product]);
 
   return (
     <>
@@ -174,11 +163,21 @@ export default function ProductDetailPage({
 
         <Container max="xs">
           <Section padding="xs" gap="xs" centered>
-            <p className="text-3xl font-bold" aria-label="Cena produktu">
-              {formatCurrency(
-                priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz)
+            <div className="flex flex-col items-center gap-1">
+              {pricingData.hasDiscount && (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground line-through">
+                    {formatCurrency(pricingData.originalPrice)}
+                  </span>
+                  <Badge variant="success">
+                    {formatDiscountLabel(pricingData.discount)}
+                  </Badge>
+                </div>
               )}
-            </p>
+              <p className="text-3xl font-bold" aria-label="Cena produktu">
+                {formatCurrency(pricingData.finalPrice)}
+              </p>
+            </div>
 
             <div className="flex gap-2 w-full">
               <Button
@@ -191,9 +190,9 @@ export default function ProductDetailPage({
                 variant={isInCart(product.id) ? "default" : "secondary"}
                 onClick={() => {
                   if (isInCart(product.id)) {
-                    removeCartProduct(product.id);
+                    removeCartProduct(product.id, true);
                   } else {
-                    addCartProduct(product);
+                    addCartProduct(product, true);
                   }
                 }}
               >

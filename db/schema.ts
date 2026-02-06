@@ -303,11 +303,9 @@ export const returns = pgTable(
       .references(() => orders.id, {
         onDelete: "restrict",
       }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null",
-      }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     // contact details
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
@@ -450,7 +448,10 @@ export const products = pgTable(
     homeFeaturedOrder: integer("home_featured_order").default(-1).notNull(),
     // order for bottom of home page
     featuredOrder: integer("featured_order").default(-1).notNull(),
-    pricePercentageSkew: integer("price_percentage_skew").notNull().default(0), // if pieces cost 10000 grosz + 5000 grosz and skew is 10 then the price will be (10000 grosz + 5000 grosz) * 0.90 =  13500 grosz
+
+    discountId: uuid("discount_id").references(() => discounts.id, {
+      onDelete: "set null",
+    }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -468,12 +469,18 @@ export const products = pgTable(
     uniqueIndex()
       .on(table.featuredOrder)
       .where(sql`${table.featuredOrder} > -1`),
+    index().on(table.discountId),
   ]
 );
 
-export const productsRelations = relations(products, ({ many }) => ({
+export const productsRelations = relations(products, ({ many, one }) => ({
   pieces: many(pieces),
   images: many(images),
+  discount: one(discounts, {
+    fields: [products.discountId],
+    references: [discounts.id],
+  }),
+  couponsToProducts: many(couponsToProducts),
 }));
 
 export const orders = pgTable(
@@ -516,7 +523,7 @@ export const orders = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, {
-        onDelete: "set null",
+        onDelete: "restrict",
       }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -648,10 +655,7 @@ export const piecesToTags = pgTable(
       .references(() => tags.id, {
         onDelete: "cascade",
       }),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.pieceId, table.tagId] }),
@@ -741,6 +745,9 @@ export const pieces = pgTable(
     productId: uuid("product_id").references(() => products.id, {
       onDelete: "set null",
     }),
+    discountId: uuid("discount_id").references(() => discounts.id, {
+      onDelete: "set null",
+    }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -762,6 +769,7 @@ export const pieces = pgTable(
     index().on(table.brandId),
     index().on(table.sizeId),
     index().on(table.categoryId),
+    index().on(table.discountId),
     uniqueIndex()
       .on(table.homeFeaturedOrder, table.productId)
       .where(
@@ -805,6 +813,11 @@ export const piecesRelations = relations(pieces, ({ one, many }) => ({
     fields: [pieces.productId],
     references: [products.id],
   }),
+  discount: one(discounts, {
+    fields: [pieces.discountId],
+    references: [discounts.id],
+  }),
+  couponsToPieces: many(couponsToPieces),
 }));
 
 export const measurements = pgTable(
@@ -917,6 +930,43 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
   }),
 }));
 
+export const discounts = pgTable(
+  "discounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    amountOffInGrosz: integer("amount_off_in_grosz"),
+    name: text("name"),
+    percentOff: integer("percent_off"),
+    expiresAt: timestamp("expires_at"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.name),
+    check(
+      "either_percent_off_or_amount_off_in_grosz_check",
+      sql`${table.percentOff} IS NOT NULL OR ${table.amountOffInGrosz} IS NOT NULL`
+    ),
+    check(
+      "percent_off_range_check",
+      sql`${table.percentOff} IS NULL OR (${table.percentOff} >= 1 AND ${table.percentOff} <= 100)`
+    ),
+    check(
+      "amount_off_positive_check",
+      sql`${table.amountOffInGrosz} IS NULL OR ${table.amountOffInGrosz} > 0`
+    ),
+  ]
+);
+
+export const discountsRelations = relations(discounts, ({ many }) => ({
+  products: many(products),
+  pieces: many(pieces),
+}));
+
 export const coupons = pgTable(
   "coupons",
   {
@@ -940,8 +990,25 @@ export const coupons = pgTable(
       "either_percent_off_or_amount_off_in_grosz_check",
       sql`${table.percentOff} IS NOT NULL OR ${table.amountOffInGrosz} IS NOT NULL`
     ),
+    check(
+      "max_usages_positive_check",
+      sql`${table.maxUsages} IS NULL OR ${table.maxUsages} > 0`
+    ),
+    check(
+      "percent_off_range_check",
+      sql`${table.percentOff} IS NULL OR (${table.percentOff} >= 1 AND ${table.percentOff} <= 100)`
+    ),
+    check(
+      "amount_off_positive_check",
+      sql`${table.amountOffInGrosz} IS NULL OR ${table.amountOffInGrosz} > 0`
+    ),
   ]
 );
+
+export const couponsRelations = relations(coupons, ({ many }) => ({
+  couponsToProducts: many(couponsToProducts),
+  couponsToPieces: many(couponsToPieces),
+}));
 
 export const couponsToProducts = pgTable(
   "coupons_to_products",
@@ -958,10 +1025,6 @@ export const couponsToProducts = pgTable(
       .notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.couponId, table.productId] }),
@@ -970,10 +1033,56 @@ export const couponsToProducts = pgTable(
   ]
 );
 
+export const couponsToProductsRelations = relations(
+  couponsToProducts,
+  ({ one }) => ({
+    coupon: one(coupons, {
+      fields: [couponsToProducts.couponId],
+      references: [coupons.id],
+    }),
+    product: one(products, {
+      fields: [couponsToProducts.productId],
+      references: [products.id],
+    }),
+  })
+);
+
+export const couponsToPieces = pgTable(
+  "coupons_to_pieces",
+  {
+    couponId: uuid("coupon_id")
+      .references(() => coupons.id, { onDelete: "cascade" })
+      .notNull(),
+    pieceId: uuid("piece_id")
+      .references(() => pieces.id, { onDelete: "cascade" })
+      .notNull(),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.couponId, table.pieceId] }),
+    index().on(table.couponId),
+    index().on(table.pieceId),
+  ]
+);
+
+export const couponsToPiecesRelations = relations(
+  couponsToPieces,
+  ({ one }) => ({
+    coupon: one(coupons, {
+      fields: [couponsToPieces.couponId],
+      references: [coupons.id],
+    }),
+    piece: one(pieces, {
+      fields: [couponsToPieces.pieceId],
+      references: [pieces.id],
+    }),
+  })
+);
+
 export const promotionCodes = pgTable(
   "promotion_codes",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
     code: text("code").notNull(),
     redeemableByUserId: text("redeemable_by_user_id").references(
       () => users.id,
@@ -1000,8 +1109,15 @@ export const promotionCodes = pgTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [uniqueIndex().on(table.code)]
+  (table) => [primaryKey({ columns: [table.code] })]
 );
+
+export const promotionCodesRelations = relations(promotionCodes, ({ one }) => ({
+  coupon: one(coupons, {
+    fields: [promotionCodes.couponId],
+    references: [coupons.id],
+  }),
+}));
 
 export const consentRecords = pgTable(
   "consent_records",

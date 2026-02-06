@@ -144,7 +144,9 @@ export default function ProductImagesCarouselSection({
                         src={image}
                         alt="Stylizacja"
                         mode="cover"
-                        className="size-full"
+                        className="size-full object-cover"
+                        quality="auto:best"
+                        responsive
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent" />
                     </div>

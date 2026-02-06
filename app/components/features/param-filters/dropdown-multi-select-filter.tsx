@@ -53,6 +53,7 @@ export function MultiSelectFilter({
           const isSelected = value.includes(option.value);
           return (
             <Button
+              key={option.value}
               variant="ghost"
               size="sm"
               className="flex w-full items-center justify-between"

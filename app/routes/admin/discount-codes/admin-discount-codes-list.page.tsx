@@ -1,11 +1,12 @@
 import * as schema from "db/schema";
-import { asc, eq, not } from "drizzle-orm";
-import { ChevronLeftIcon } from "lucide-react";
-import { Link, redirect } from "react-router";
+import { desc } from "drizzle-orm";
+import { ChevronLeftIcon, PlusIcon } from "lucide-react";
+import { Link, data, redirect } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
 
 import {
+  AdminPageActions,
   AdminPageContainer,
   AdminPageContent,
   AdminPageFooter,
@@ -23,8 +24,8 @@ import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { cn } from "~/lib/utils";
 
-import type { Route } from "./+types/admin-users-list.page";
-import { columns, columnsConfig } from "./admin-users.columns";
+import type { Route } from "./+types/admin-discount-codes-list.page";
+import { columns, columnsConfig } from "./admin-discount-codes.columns";
 
 // ========================== LOADING ==========================
 
@@ -32,44 +33,47 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    return redirect("/zaloguj-sie?callbackUrl=/admin");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin/kody-rabatowe");
   }
 
   if (session.user.role !== "admin") {
-    return redirect("/");
+    throw redirect("/");
   }
 
-  const users = await db.query.users.findMany({
-    orderBy: asc(schema.users.createdAt),
-    where: not(eq(schema.users.isAnonymous, true)),
+  const discountCodes = await db.query.promotionCodes.findMany({
+    orderBy: desc(schema.promotionCodes.createdAt),
   });
 
-  return { users };
+  return data({ discountCodes }, { status: 200 });
 }
 
-export const HydrateFallback = () => {
-  return (
-    <div>
-      <h1>Loading...</h1>
-    </div>
-  );
-};
+// ========================== ACTIONS ==========================
 
 // ========================== PAGE ==========================
 
-export default function AdminUsersListPage({
+export default function AdminDiscountCodesListPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { users } = loaderData;
+  const { discountCodes } = loaderData;
 
   return (
     <DataTableProvider
       columns={columns}
       columnsConfig={columnsConfig}
-      data={users}
+      data={discountCodes}
     >
       <AdminPageContainer>
-        <AdminPageHeader></AdminPageHeader>
+        <AdminPageHeader>
+          <AdminPageActions>
+            <Link
+              to="/admin/kody-rabatowe/utworz"
+              className={cn(buttonVariants({ size: "sm" }))}
+            >
+              <PlusIcon />
+              Utwórz kod promocyjny
+            </Link>
+          </AdminPageActions>
+        </AdminPageHeader>
         <AdminPageContent>
           <DataTableRoot>
             <div className="flex items-center justify-between gap-2">
@@ -77,13 +81,12 @@ export default function AdminUsersListPage({
               <DataTableColumnToggle />
             </div>
             <DataTableContent className="min-w-full" />
-            <div className="flex justify-end"></div>
           </DataTableRoot>
         </AdminPageContent>
 
         <AdminPageFooter>
           <Link
-            to="/admin"
+            to="/admin/kody-rabatowe"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

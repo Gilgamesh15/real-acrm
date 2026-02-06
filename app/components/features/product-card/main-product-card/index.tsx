@@ -13,10 +13,10 @@ import {
 
 import type { DBQueryResult } from "~/lib/types";
 import {
-  calculateProductPrice,
+  calculateProductPriceDisplayData,
   cn,
   formatCurrency,
-  priceFromGrosz,
+  formatDiscountLabel,
 } from "~/lib/utils";
 
 export interface MainProductCardProps {
@@ -28,9 +28,11 @@ export interface MainProductCardProps {
       };
       with: {
         images: true;
+        discount: true;
         pieces: {
           with: {
             images: true;
+            discount: true;
             brand: true;
             size: true;
           };
@@ -57,36 +59,7 @@ const MainProductCard = ({
 }: MainProductCardProps) => {
   const [primaryImage] = product.images;
 
-  const brands = product.pieces.reduce(
-    (acc, piece) => {
-      if (!acc.some((b) => b.id === piece.brand.id)) {
-        acc.push({
-          id: piece.brand.id,
-          name: piece.brand.name,
-        });
-      }
-      return acc;
-    },
-    [] as {
-      id: string;
-      name: string;
-    }[]
-  );
-  const sizes = product.pieces.reduce(
-    (acc, piece) => {
-      if (!acc.some((s) => s.id === piece.size.id)) {
-        acc.push({
-          id: piece.size.id,
-          name: piece.size.name,
-        });
-      }
-      return acc;
-    },
-    [] as {
-      id: string;
-      name: string;
-    }[]
-  );
+  const pricing = calculateProductPriceDisplayData(product);
 
   return (
     <article className="w-[280px] aspect-6/8  cursor-pointer">
@@ -141,47 +114,31 @@ const MainProductCard = ({
 
         <div className="absolute inset-0 size-full flex flex-col justify-between p-2">
           <div className="self-end">
-            <div className="text-right">
+            <div className="text-right flex flex-col items-end gap-1 absolute top-2 right-2 z-20">
               <data
-                value={priceFromGrosz(
-                  calculateProductPrice(product).lineTotalInGrosz
-                )}
-                className="text-2xl font-bold text-foreground absolute top-2 right-2 z-20"
+                value={pricing.finalPrice}
+                className="text-2xl font-extrabold text-foreground"
               >
-                {formatCurrency(
-                  priceFromGrosz(
-                    calculateProductPrice(product).lineTotalInGrosz
-                  )
-                )}
+                {formatCurrency(pricing.finalPrice)}
               </data>
+              {pricing.hasDiscount && (
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-muted-foreground line-through">
+                    {formatCurrency(pricing.originalPrice)}
+                  </span>
+                  <Badge variant="secondary">
+                    {formatDiscountLabel(pricing.discount)}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 justify-between min-h-24">
+          <div className="flex flex-col gap-2 justify-between min-h-20">
             <div className="flex flex-col gap-2.5">
-              <h3 className="uppercase text-3xl text-shadow-lg text-foreground font-secondary font-bold tracking-wide text-left">
+              <h3 className="uppercase text-2xl text-shadow-lg text-foreground font-secondary font-bold tracking-wide text-left">
                 {product.name}
               </h3>
-              <div className="flex flex-wrap gap-1">
-                {brands.map((brand) => (
-                  <Badge
-                    key={brand.id}
-                    variant="default"
-                    className="text-foreground"
-                  >
-                    {brand.name}
-                  </Badge>
-                ))}
-                {sizes.map((size) => (
-                  <Badge
-                    key={size.id}
-                    variant="default"
-                    className="text-foreground"
-                  >
-                    {size.name}
-                  </Badge>
-                ))}
-              </div>
             </div>
 
             <div

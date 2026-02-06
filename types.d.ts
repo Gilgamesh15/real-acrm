@@ -61,7 +61,7 @@ declare global {
   }
 }
 
-type GTagItem = {
+export type GTagItem = {
   item_id: string;
   item_name: string;
   affiliation?: string;
@@ -80,6 +80,13 @@ type GTagItem = {
   location_id?: string;
   price?: number;
   quantity?: number;
+};
+
+export type EnhancedGTagItem = GTagItem & {
+  creative_name?: string;
+  creative_slot?: string;
+  promotion_id?: string;
+  promotion_name?: string;
 };
 
 type Args = {
@@ -194,14 +201,7 @@ type Args = {
       creative_slot?: string;
       promotion_id?: string;
       promotion_name?: string;
-      items: Array<
-        GTagItem & {
-          creative_name?: string;
-          creative_slot?: string;
-          promotion_id?: string;
-          promotion_name?: string;
-        }
-      >;
+      items: Array<EnhancedGTagItem>;
     };
     share: {
       method?: string;
@@ -232,14 +232,7 @@ type Args = {
       creative_slot?: string;
       promotion_id?: string;
       promotion_name?: string;
-      items: Array<
-        GTagItem & {
-          creative_name?: string;
-          creative_slot?: string;
-          promotion_id?: string;
-          promotion_name?: string;
-        }
-      >;
+      items: Array<EnhancedGTagItem>;
     };
     view_search_results: {
       search_term?: string;

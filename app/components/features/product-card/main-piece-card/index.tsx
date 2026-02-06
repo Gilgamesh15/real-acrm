@@ -1,6 +1,7 @@
 import { ShoppingBasket, Zap } from "lucide-react";
 import { Link } from "react-router";
 
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Image } from "~/components/ui/image";
 import {
@@ -10,7 +11,12 @@ import {
 } from "~/components/ui/tooltip";
 
 import type { DBQueryResult } from "~/lib/types";
-import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
+import {
+  calculatePiecePriceDisplayData,
+  cn,
+  formatCurrency,
+  formatDiscountLabel,
+} from "~/lib/utils";
 
 export interface MainPieceCardProps {
   piece: DBQueryResult<
@@ -20,6 +26,7 @@ export interface MainPieceCardProps {
         images: true;
         brand: true;
         size: true;
+        discount: true;
       };
     }
   >;
@@ -41,6 +48,8 @@ const MainPieceCard = ({
   className,
 }: MainPieceCardProps) => {
   const [primaryImage] = piece.images;
+  const pricing = calculatePiecePriceDisplayData(piece);
+
   return (
     <article className={cn("aspect-5/8 relative bg-background", className)}>
       <Link
@@ -64,22 +73,26 @@ const MainPieceCard = ({
         <div className="absolute inset-0 size-full flex flex-col justify-between p-2 z-2">
           <div className="self-end text-right flex flex-col gap-1">
             <data
-              value={priceFromGrosz(piece.priceInGrosz)}
-              className="text-right text-2xl font-bold text-foreground"
+              value={pricing.finalPrice}
+              className="text-right text-2xl font-extrabold text-foreground"
             >
-              {formatCurrency(priceFromGrosz(piece.priceInGrosz))}
+              {formatCurrency(pricing.finalPrice)}
             </data>
-            <span className="uppercase text-md md:text-lg text-shadow-lg text-foreground font-bold tracking-wide text-balance">
-              {piece.brand.name}
-            </span>
-            <span className="uppercase text-md md:text-lg text-shadow-lg text-foreground font-bold tracking-wide text-balance">
-              {piece.size.name}
-            </span>
+            {pricing.hasDiscount && (
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-muted-foreground line-through">
+                  {formatCurrency(pricing.originalPrice)}
+                </span>
+                <Badge variant="secondary">
+                  {formatDiscountLabel(pricing.discount)}
+                </Badge>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2 justify-between h-fit">
             <div className="flex flex-col gap-2.5">
-              <h3 className="font-secondary uppercase text-left text-xl md:text-2xl text-shadow-lg text-foreground font-bold tracking-wide w-full">
+              <h3 className="font-secondary uppercase text-left text-xl text-shadow-lg text-foreground font-bold tracking-wide w-full">
                 {piece.name}
               </h3>
             </div>

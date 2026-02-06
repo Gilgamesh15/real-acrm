@@ -36,6 +36,12 @@ import { useGeolocation } from "~/hooks/use-geolocation";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { authClient } from "~/lib/auth-client";
 import type { InpostApiLocker } from "~/lib/types";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+  pieceToGoogleAnalyticsItem,
+  productToGoogleAnalyticsItem,
+} from "~/lib/utils";
 
 import { LockerDetails } from "../locker-picker/locker-details";
 import { LockerInfo } from "../locker-picker/locker-info";
@@ -56,8 +62,22 @@ const LockerPickerMap = lazy(() =>
 
 type CheckoutDialogContextType = {
   goToCheckout: () => void;
-  onPieceBuyNow: (piece: CartPiece) => void;
-  onProductBuyNow: (product: CartProduct) => void;
+  onPieceBuyNow: (
+    piece: CartPiece,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
+  onProductBuyNow: (
+    product: CartProduct,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
 };
 
 const CheckoutDialogContext =
@@ -126,42 +146,34 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
   });
 
   const onCourierClick = React.useCallback(() => {
-    //window.gtag?.("event", "add_shipping_info", {
-    //  currency: "PLN",
-    //  value: totalCartValue,
-    //  shipping_tier: "courier",
-    //  items: [
-    //    ...items.products.flatMap((product) => {
-    //      const skewPercent = product.pricePercentageSkew;
-    //      return product.pieces.map((piece) => ({
-    //        item_id: piece.id,
-    //        item_name: piece.name,
-    //        item_brand: piece.brand.name,
-    //        item_category: piece.category?.name,
-    //        price: priceFromGrosz(
-    //          Math.round((piece.priceInGrosz * (100 - skewPercent)) / 100)
-    //        ),
-    //      }));
-    //    }),
-    //    ...items.pieces.map((piece) => ({
-    //      item_id: piece.id,
-    //      item_name: piece.name,
-    //      item_brand: piece.brand.name,
-    //      item_category: piece.category?.name,
-    //      price: priceFromGrosz(piece.priceInGrosz),
-    //    })),
-    //  ],
-    //});
+    const totalCartValue =
+      items.products.reduce(
+        (sum, product) =>
+          sum + calculateProductPriceDisplayData(product).finalPrice,
+        0
+      ) +
+      items.pieces.reduce(
+        (sum, piece) => sum + calculatePiecePriceDisplayData(piece).finalPrice,
+        0
+      );
+
+    window.gtag?.("event", "add_shipping_info", {
+      currency: "PLN",
+      value: totalCartValue,
+      shipping_tier: "courier",
+      items: [
+        ...items.products.flatMap((product) =>
+          productToGoogleAnalyticsItem(product)
+        ),
+        ...items.pieces.map((piece) => pieceToGoogleAnalyticsItem(piece)),
+      ],
+    });
 
     initiateCheckout({
       pieces,
       deliveryMethod: "courier",
     });
-  }, [
-    initiateCheckout,
-    pieces,
-    //items
-  ]);
+  }, [initiateCheckout, pieces, items]);
 
   const onLockerClick = React.useCallback(() => {
     setTab("locker-selection");
@@ -178,29 +190,32 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
   const onProceedToCheckout = React.useCallback(() => {
     if (!selectedLocker) {
       console.error("No locker selected");
+      toast.error("Wybierz paczkomat");
       return;
     }
 
-    //const totalCartValue =
-    //  items.products.reduce(
-    //    (sum, product) =>
-    //      sum +
-    //      product.pieces.reduce(
-    //        (pSum, piece) => pSum + priceFromGrosz(piece.priceInGrosz),
-    //        0
-    //      ),
-    //    0
-    //  ) +
-    //  items.pieces.reduce(
-    //    (sum, piece) => sum + priceFromGrosz(piece.priceInGrosz),
-    //    0
-    //  );
-    //
-    //gtag.event.emit("add_shipping_info", {
-    //  currency: "PLN",
-    //  value: totalCartValue,
-    //  shipping_tier: "locker",
-    //});
+    const totalCartValue =
+      items.products.reduce(
+        (sum, product) =>
+          sum + calculateProductPriceDisplayData(product).finalPrice,
+        0
+      ) +
+      items.pieces.reduce(
+        (sum, piece) => sum + calculatePiecePriceDisplayData(piece).finalPrice,
+        0
+      );
+
+    window.gtag?.("event", "add_shipping_info", {
+      currency: "PLN",
+      value: totalCartValue,
+      shipping_tier: "locker",
+      items: [
+        ...items.products.flatMap((product) =>
+          productToGoogleAnalyticsItem(product)
+        ),
+        ...items.pieces.map((piece) => pieceToGoogleAnalyticsItem(piece)),
+      ],
+    });
 
     initiateCheckout({
       pieces,
@@ -208,29 +223,37 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
       lockerCode: selectedLocker.name,
       saveLocker,
     });
-  }, [
-    initiateCheckout,
-    pieces,
-    selectedLocker,
-    saveLocker,
-    //items
-  ]);
+  }, [initiateCheckout, pieces, selectedLocker, saveLocker, items]);
 
   const goToCheckout = React.useCallback(() => {
     setOpen(true);
   }, [setOpen]);
 
   const onPieceBuyNow = React.useCallback(
-    (piece: CartPiece) => {
-      addPiece(piece);
+    (
+      piece: CartPiece,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
+      addPiece(piece, true, details);
       goToCheckout();
     },
     [addPiece, goToCheckout]
   );
 
   const onProductBuyNow = React.useCallback(
-    (product: CartProduct) => {
-      addProduct(product);
+    (
+      product: CartProduct,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
+      addProduct(product, true, details);
       goToCheckout();
     },
     [addProduct, goToCheckout]

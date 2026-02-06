@@ -155,11 +155,6 @@ const ProductFormSchema = z.object({
     .array(z.string({ message: "Słowo kluczowe musi być tekstem" }))
     .min(1, "Wymagane jest co najmniej jedno słowo kluczowe"),
   description: z.any(),
-  pricePercentageSkew: z
-    .number({ message: "Procentowy zmiana ceny musi być liczbą" })
-    .int("Procentowy zmiana ceny musi być liczbą całkowitą")
-    .min(0, "Procentowy zmiana ceny musi być większy od 0")
-    .max(100, "Procentowy zmiana ceny musi być mniejszy od 100"),
   images: ImagesFormSchema,
   homeFeaturedOrder: z
     .number({
@@ -357,3 +352,130 @@ const CreateOrderSchema = z
 type CreateOrderSchemaType = z.infer<typeof CreateOrderSchema>;
 
 export { CreateOrderSchema, type CreateOrderSchemaType };
+
+const DiscountFormSchema = z
+  .object({
+    name: z
+      .string({ message: "Nazwa musi być tekstem" })
+      .min(1, "Nazwa jest wymagana")
+      .max(100, "Nazwa nie może przekraczać 100 znaków"),
+    discountType: z.enum(["percentage", "fixed"], {
+      message: "Wybierz typ zniżki",
+    }),
+    percentOff: z
+      .number({ message: "Procent musi być liczbą" })
+      .int("Procent musi być liczbą całkowitą")
+      .min(1, "Procent musi być co najmniej 1")
+      .max(100, "Procent nie może przekraczać 100")
+      .optional(),
+    amountOffInGrosz: z
+      .number({ message: "Kwota musi być liczbą" })
+      .int("Kwota musi być liczbą całkowitą")
+      .min(1, "Kwota musi być większa od 0")
+      .optional(),
+    productIds: z.array(z.string({ message: "ID produktu musi być tekstem" })),
+    pieceIds: z.array(z.string({ message: "ID elementu musi być tekstem" })),
+  })
+  .refine(
+    (data) => {
+      if (data.discountType === "percentage") {
+        return typeof data.percentOff === "number";
+      }
+      if (data.discountType === "fixed") {
+        return typeof data.amountOffInGrosz === "number";
+      }
+      return false;
+    },
+    {
+      message:
+        "Musisz podać wartość zniżki odpowiednią dla wybranego typu zniżki",
+      path: ["discountType"],
+    }
+  );
+
+type DiscountFormSchemaType = z.infer<typeof DiscountFormSchema>;
+
+export { DiscountFormSchema, type DiscountFormSchemaType };
+
+const CouponFormSchema = z
+  .object({
+    amountOffInGrosz: z
+      .number({ message: "Kwota musi być liczbą" })
+      .int("Kwota musi być liczbą całkowitą")
+      .min(1, "Kwota musi być większa od 0")
+      .optional(),
+    maxUsages: z
+      .number({ message: "Maksymalna liczba użyć musi być liczbą" })
+      .int("Maksymalna liczba użyć musi być liczbą całkowitą")
+      .min(1, "Maksymalna liczba użyć musi być większa od 0")
+      .optional(),
+    name: z
+      .string({ message: "Nazwa musi być tekstem" })
+      .min(1, "Nazwa jest wymagana")
+      .max(100, "Nazwa nie może przekraczać 100 znaków"),
+    couponType: z.enum(["percentage", "fixed"], {
+      message: "Wybierz typ zniżki",
+    }),
+    percentOff: z
+      .number({ message: "Procent musi być liczbą" })
+      .int("Procent musi być liczbą całkowitą")
+      .min(1, "Procent musi być co najmniej 1")
+      .max(100, "Procent nie może przekraczać 100")
+      .optional(),
+    usages: z
+      .number({ message: "Użyć musi być liczbą" })
+      .int("Użyć musi być liczbą całkowitą")
+      .min(0, "Użyć musi być większa od 0")
+      .optional(),
+    productIds: z.array(z.string({ message: "ID produktu musi być tekstem" })),
+    pieceIds: z.array(z.string({ message: "ID elementu musi być tekstem" })),
+  })
+  .refine(
+    (data) => {
+      if (data.couponType === "percentage") {
+        return typeof data.percentOff === "number";
+      }
+      if (data.couponType === "fixed") {
+        return typeof data.amountOffInGrosz === "number";
+      }
+      return false;
+    },
+    {
+      message:
+        "Musisz podać wartość zniżki odpowiednią dla wybranego typu zniżki",
+      path: ["couponType"],
+    }
+  );
+
+type CouponFormSchemaType = z.infer<typeof CouponFormSchema>;
+
+export { CouponFormSchema, type CouponFormSchemaType };
+
+const DiscountCodeFormSchema = z.object({
+  code: z
+    .string({ message: "Kod musi być tekstem" })
+    .min(1, "Kod jest wymagany"),
+  redeemableByUserId: z
+    .string({ message: "ID użytkownika musi być tekstem" })
+    .optional(),
+  maxUsages: z
+    .number({ message: "Maksymalna liczba użyć musi być liczbą" })
+    .int("Maksymalna liczba użyć musi być liczbą całkowitą")
+    .min(1, "Maksymalna liczba użyć musi być większa od 0")
+    .optional(),
+  couponId: z
+    .string({ message: "ID kuponu musi być tekstem" })
+    .min(1, "ID kuponu jest wymagane"),
+  firstTimeTransaction: z
+    .boolean({ message: "Czy transakcja pierwsza? musi być boolean" })
+    .optional(),
+  minimumAmountInGrosz: z
+    .number({ message: "Minimalna kwota musi być liczbą" })
+    .int("Minimalna kwota musi być liczbą całkowitą")
+    .min(1, "Minimalna kwota musi być większa od 0")
+    .optional(),
+});
+
+type DiscountCodeFormSchemaType = z.infer<typeof DiscountCodeFormSchema>;
+
+export { DiscountCodeFormSchema, type DiscountCodeFormSchemaType };

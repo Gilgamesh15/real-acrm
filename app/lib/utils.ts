@@ -12,6 +12,7 @@ import {
 } from "nuqs";
 import baseSlugify from "slugify";
 import { twMerge } from "tailwind-merge";
+import type { GTagItem } from "types";
 import * as z4 from "zod/v4/core";
 
 import type { badgeVariants } from "~/components/ui/badge";
@@ -21,9 +22,12 @@ import {
   type CatalogSortBy,
   type CatalogSortOrder,
   type DBQueryResult,
+  type DiscountInfo,
   type Gender,
   type OrderDetails,
   type OrderStatus,
+  type PriceData,
+  type PriceDisplayData,
   type ProductStatus,
   type ReturnRequestDetails,
   type TreeNode,
@@ -383,167 +387,435 @@ export const orderStatusFromOrder = (
   const lastEvent = events[0];
   return lastEvent?.status ?? "pending";
 };
+// ─── Internal helpers ────────────────────────────────────────────────────────
 
-export const calculatePriceData = (
-  priceInGrosz: number,
-  discount?:
-    | {
-        amountOffInGrosz: number;
-      }
-    | {
-        percentOff: number;
-      }
-): {
-  taxInGrosz: number;
-  lineTotalInGrosz: number;
-  discountAmountInGrosz: number;
-  unitPriceInGrosz: number; // net after discount
-} => {
-  const TAX_RATE = 0.23;
+function normalizeDiscount(
+  dbDiscount:
+    | DBQueryResult<
+        "discounts",
+        {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        }
+      >
+    | null
+    | undefined
+): DiscountInfo {
+  if (!dbDiscount) return { type: "none" };
 
-  // 1. Extract net price from gross
-  const netPriceInGrosz = Math.round(priceInGrosz / (1 + TAX_RATE));
+  if (dbDiscount.amountOffInGrosz && dbDiscount.amountOffInGrosz > 0)
+    return { type: "fixed", amountOffInGrosz: dbDiscount.amountOffInGrosz };
 
-  // 2. Calculate discount on NET price
-  let discountAmountInGrosz = 0;
+  if (dbDiscount.percentOff && dbDiscount.percentOff > 0)
+    return {
+      type: "percentage",
+      percentOff: Math.min(dbDiscount.percentOff, 100),
+    };
 
-  if (discount) {
-    if ("amountOffInGrosz" in discount) {
-      discountAmountInGrosz = Math.min(
-        discount.amountOffInGrosz,
-        netPriceInGrosz
-      );
-    }
+  return { type: "none" };
+}
 
-    if ("percentOff" in discount) {
-      discountAmountInGrosz = Math.round(
-        netPriceInGrosz * (discount.percentOff / 100)
-      );
-    }
+function calculateDiscountAmount(
+  bruttoInGrosz: number,
+  discount: DiscountInfo
+): number {
+  switch (discount.type) {
+    case "percentage":
+      return Math.round(bruttoInGrosz * (discount.percentOff / 100));
+    case "fixed":
+      return Math.min(discount.amountOffInGrosz, bruttoInGrosz);
+    case "none":
+      return 0;
   }
+}
 
-  const discountedNetInGrosz = netPriceInGrosz - discountAmountInGrosz;
-
-  // 3. Recalculate tax from discounted net
-  const taxInGrosz = Math.round(discountedNetInGrosz * TAX_RATE);
-
-  // 4. Final gross total
-  const lineTotalInGrosz = discountedNetInGrosz + taxInGrosz;
+// Takes a brutto price, applies a single discount, returns full breakdown.
+// Tax is extracted from the final brutto — not added on top.
+function applyDiscountAndBreakdown(
+  bruttoInGrosz: number,
+  discount: DiscountInfo
+): PriceData {
+  const discountAmountInGrosz = calculateDiscountAmount(
+    bruttoInGrosz,
+    discount
+  );
+  const lineTotalInGrosz = bruttoInGrosz - discountAmountInGrosz;
+  const taxInGrosz = Math.round(lineTotalInGrosz * (23 / 123));
+  const unitPriceInGrosz = lineTotalInGrosz - taxInGrosz;
 
   return {
-    taxInGrosz,
-    lineTotalInGrosz,
-    unitPriceInGrosz: discountedNetInGrosz,
     discountAmountInGrosz,
+    lineTotalInGrosz,
+    taxInGrosz,
+    unitPriceInGrosz,
   };
-};
+}
 
-export const calculateProductPrice = (
-  product: DBQueryResult<
-    "products",
+// ─── Backend exports ─────────────────────────────────────────────────────────
+// Piece with product: piece discount first, then product discount on the result.
+// Tax extracted once at the end from the final brutto.
+
+export function calculatePiecePrice(
+  piece: DBQueryResult<
+    "pieces",
     {
       columns: {
-        pricePercentageSkew: true;
+        priceInGrosz: true;
       };
       with: {
-        pieces: {
+        discount: {
           columns: {
-            priceInGrosz: true;
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+        product: {
+          columns: {};
+          with: {
+            discount: {
+              columns: {
+                amountOffInGrosz: true;
+                percentOff: true;
+              };
+            };
           };
         };
       };
     }
   >
-): {
-  taxInGrosz: number;
-  discountAmountInGrosz: number;
-  lineTotalInGrosz: number;
-  unitPriceInGrosz: number;
-} => {
-  // iterate over all pieces add their price to the total price and then multiply by (100 - pricePercentageSkew) / 100
-  let priceInGrosz = 0;
-  for (const piece of product.pieces) {
-    priceInGrosz += piece.priceInGrosz;
-  }
-  priceInGrosz = Math.round(
-    (priceInGrosz * (100 - product.pricePercentageSkew)) / 100
+): PriceData {
+  const pieceDiscount = normalizeDiscount(piece.discount);
+  const pieceDiscountAmount = calculateDiscountAmount(
+    piece.priceInGrosz,
+    pieceDiscount
   );
+  const afterPieceDiscount = piece.priceInGrosz - pieceDiscountAmount;
 
-  const {
-    taxInGrosz,
-    lineTotalInGrosz,
-    unitPriceInGrosz,
-    discountAmountInGrosz,
-  } = calculatePriceData(priceInGrosz);
+  // Product discount applies to the already-discounted brutto
+  const productDiscount = normalizeDiscount(piece.product?.discount);
+  const final = applyDiscountAndBreakdown(afterPieceDiscount, productDiscount);
 
   return {
-    taxInGrosz,
-    lineTotalInGrosz,
-    unitPriceInGrosz,
-    discountAmountInGrosz,
+    discountAmountInGrosz: pieceDiscountAmount + final.discountAmountInGrosz,
+    lineTotalInGrosz: final.lineTotalInGrosz,
+    taxInGrosz: final.taxInGrosz,
+    unitPriceInGrosz: final.unitPriceInGrosz,
   };
-};
-
-export function getReservationData(
-  piece: DBQueryResult<"pieces", {}>,
-  currentUserId?: string
-):
-  | {
-      isReserved: false;
-      expiresAt: null;
-      isOwnedByCurrentUser: false;
-    }
-  | {
-      isReserved: true;
-      expiresAt: Date;
-      isOwnedByCurrentUser: boolean;
-    } {
-  const now = new Date();
-  const reservationExpiresAt = piece.reservedUntil;
-  const isReserved =
-    reservationExpiresAt && reservationExpiresAt > now ? true : false;
-  if (isReserved && reservationExpiresAt) {
-    return {
-      isReserved: true,
-      expiresAt: reservationExpiresAt,
-      isOwnedByCurrentUser: piece.reservedByUserId === currentUserId,
-    };
-  } else {
-    return {
-      isReserved: false,
-      expiresAt: null,
-      isOwnedByCurrentUser: false,
-    };
-  }
 }
 
-export function ungroupPurchasableItems<
+// Product: sum pieces after their individual discounts, apply product discount
+// to that sum, extract tax once from the final total.
+
+export function calculateProductPrice(
+  product: DBQueryResult<
+    "products",
+    {
+      columns: {};
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+        pieces: {
+          columns: {
+            priceInGrosz: true;
+          };
+          with: {
+            discount: {
+              columns: {
+                amountOffInGrosz: true;
+                percentOff: true;
+              };
+            };
+          };
+        };
+      };
+    }
+  >
+): PriceData {
+  let totalPieceDiscountsInGrosz = 0;
+  let totalAfterPieceDiscounts = 0;
+
+  for (const piece of product.pieces) {
+    const pieceDiscount = normalizeDiscount(piece.discount);
+    const pieceDiscountAmount = calculateDiscountAmount(
+      piece.priceInGrosz,
+      pieceDiscount
+    );
+    totalPieceDiscountsInGrosz += pieceDiscountAmount;
+    totalAfterPieceDiscounts += piece.priceInGrosz - pieceDiscountAmount;
+  }
+
+  // Product discount on the summed post-piece-discount brutto
+  const productDiscount = normalizeDiscount(product.discount);
+  const final = applyDiscountAndBreakdown(
+    totalAfterPieceDiscounts,
+    productDiscount
+  );
+
+  return {
+    discountAmountInGrosz:
+      totalPieceDiscountsInGrosz + final.discountAmountInGrosz,
+    lineTotalInGrosz: final.lineTotalInGrosz,
+    taxInGrosz: final.taxInGrosz,
+    unitPriceInGrosz: final.unitPriceInGrosz,
+  };
+}
+
+// ─── Frontend exports ────────────────────────────────────────────────────────
+// Display data only — no tax breakdown needed here.
+// Piece: shows its own discount only (product discount is shown at bundle level).
+// Product: "original price" is the sum of pieces after their own discounts,
+//          then the product discount is shown as the savings on top of that.
+
+export function calculatePiecePriceDisplayData(
+  piece: DBQueryResult<
+    "pieces",
+    {
+      columns: {
+        priceInGrosz: true;
+      };
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+      };
+    }
+  >
+): PriceDisplayData {
+  const discount = normalizeDiscount(piece.discount);
+  const savingsInGrosz = calculateDiscountAmount(piece.priceInGrosz, discount);
+  const finalPriceInGrosz = piece.priceInGrosz - savingsInGrosz;
+
+  return {
+    originalPrice: priceFromGrosz(piece.priceInGrosz),
+    finalPrice: priceFromGrosz(finalPriceInGrosz),
+    savings: priceFromGrosz(savingsInGrosz),
+    discount,
+    hasDiscount: savingsInGrosz > 0,
+  };
+}
+
+export function calculateProductPriceDisplayData(
+  product: DBQueryResult<
+    "products",
+    {
+      columns: {};
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+        pieces: {
+          columns: {
+            priceInGrosz: true;
+          };
+          with: {
+            discount: {
+              columns: {
+                amountOffInGrosz: true;
+                percentOff: true;
+              };
+            };
+          };
+        };
+      };
+    }
+  >
+): PriceDisplayData {
+  // Base = sum of each piece after its own discount
+  let originalPriceInGrosz = 0;
+  for (const piece of product.pieces) {
+    const pieceDiscount = normalizeDiscount(piece.discount);
+    const pieceDiscountAmount = calculateDiscountAmount(
+      piece.priceInGrosz,
+      pieceDiscount
+    );
+    originalPriceInGrosz += piece.priceInGrosz - pieceDiscountAmount;
+  }
+
+  // Product discount applies to that sum
+  const discount = normalizeDiscount(product.discount);
+  const savingsInGrosz = calculateDiscountAmount(
+    originalPriceInGrosz,
+    discount
+  );
+  const finalPriceInGrosz = originalPriceInGrosz - savingsInGrosz;
+
+  return {
+    originalPrice: priceFromGrosz(originalPriceInGrosz),
+    finalPrice: priceFromGrosz(finalPriceInGrosz),
+    savings: priceFromGrosz(savingsInGrosz),
+    discount,
+    hasDiscount: savingsInGrosz > 0,
+  };
+}
+
+export function calculateProductPiecePriceDisplayData(
+  piece: DBQueryResult<
+    "pieces",
+    {
+      columns: { priceInGrosz: true };
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+      };
+    }
+  >,
+  product: DBQueryResult<
+    "products",
+    {
+      columns: {};
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+      };
+    }
+  >
+): PriceDisplayData {
+  const pieceDiscount = normalizeDiscount(piece.discount);
+  const pieceDiscountAmount = calculateDiscountAmount(
+    piece.priceInGrosz,
+    pieceDiscount
+  );
+  const afterPieceDiscount = piece.priceInGrosz - pieceDiscountAmount;
+
+  // Product discount applies to the already-discounted brutto
+  const productDiscount = normalizeDiscount(product.discount);
+  const productDiscountAmount = calculateDiscountAmount(
+    afterPieceDiscount,
+    productDiscount
+  );
+
+  const afterProductDiscount = afterPieceDiscount - productDiscountAmount;
+  const savingsInGrosz = pieceDiscountAmount + productDiscountAmount;
+
+  let discount: DiscountInfo = { type: "none" };
+  if (pieceDiscount.type !== "none" && productDiscount.type !== "none") {
+    discount = {
+      type: "fixed",
+      amountOffInGrosz: pieceDiscountAmount + productDiscountAmount,
+    };
+  } else if (pieceDiscount.type !== "none") {
+    discount = pieceDiscount;
+  } else if (productDiscount.type !== "none") {
+    discount = productDiscount;
+  }
+
+  return {
+    originalPrice: priceFromGrosz(piece.priceInGrosz),
+    finalPrice: priceFromGrosz(afterProductDiscount),
+    savings: priceFromGrosz(savingsInGrosz),
+    discount,
+    hasDiscount: savingsInGrosz > 0,
+  };
+}
+
+export function formatDiscountLabel(
+  discount: DiscountInfo
+): string | undefined {
+  switch (discount.type) {
+    case "percentage":
+      return `-${discount.percentOff}%`;
+    case "fixed":
+      return `-${new Intl.NumberFormat("pl-PL", {
+        style: "currency",
+        currency: "PLN",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(priceFromGrosz(discount.amountOffInGrosz))}`;
+    case "none":
+    default:
+      return undefined;
+  }
+}
+export function priceDataToDisplayData(pricing: PriceData): PriceDisplayData {
+  const hasDiscount = pricing.discountAmountInGrosz > 0;
+  const originalBrutto =
+    pricing.lineTotalInGrosz + pricing.discountAmountInGrosz;
+  return {
+    originalPrice: priceFromGrosz(originalBrutto),
+    finalPrice: priceFromGrosz(pricing.lineTotalInGrosz),
+    savings: priceFromGrosz(pricing.discountAmountInGrosz),
+    discount: hasDiscount
+      ? {
+          type: "fixed",
+          amountOffInGrosz: pricing.discountAmountInGrosz,
+        }
+      : {
+          type: "none",
+        },
+    hasDiscount,
+  };
+}
+export function groupOrderItems<
   TProduct extends { id: string },
   TPiece extends { id: string },
 >(
-  products: (TProduct & { pieces: TPiece[] })[],
-  pieces: TPiece[]
+  items: ({
+    product?: TProduct | null | undefined;
+    productId?: string | null | undefined;
+    piece: TPiece;
+  } & PriceData)[]
 ): {
-  items: Array<{
-    product?: TProduct | null | undefined;
-    productId?: string | null | undefined;
-    piece: TPiece;
-  }>;
+  products: (Omit<TProduct, "discountId" | "discount"> & {
+    pieces: (Omit<TPiece, "priceInGrosz" | "discountId" | "discount"> &
+      PriceData)[];
+  } & PriceData)[];
+  pieces: (Omit<TPiece, "priceInGrosz" | "discountId" | "discount"> &
+    PriceData)[];
 } {
-  const items: {
-    product?: TProduct | null | undefined;
-    productId?: string | null | undefined;
-    piece: TPiece;
-  }[] = [];
-  for (const product of products) {
-    for (const piece of product.pieces) {
-      items.push({ product, productId: product.id, piece });
-    }
-  }
-  for (const piece of pieces) {
-    items.push({ piece });
-  }
-  return { items };
+  const { products, pieces } = groupPurchasableItems<
+    Omit<TProduct, "discountId" | "discount"> & PriceData,
+    Omit<TPiece, "priceInGrosz" | "discountId" | "discount"> & PriceData
+  >(
+    items.map((item) => ({
+      product: item.product
+        ? {
+            ...item.product,
+            discount: undefined,
+            discountId: undefined,
+            taxInGrosz: item.taxInGrosz,
+            lineTotalInGrosz: item.lineTotalInGrosz,
+            discountAmountInGrosz: item.discountAmountInGrosz,
+            unitPriceInGrosz: item.unitPriceInGrosz,
+          }
+        : undefined,
+      productId: item.productId,
+      piece: {
+        ...item.piece,
+        discount: undefined,
+        discountId: undefined,
+        priceInGrosz: undefined,
+        taxInGrosz: item.taxInGrosz,
+        lineTotalInGrosz: item.lineTotalInGrosz,
+        discountAmountInGrosz: item.discountAmountInGrosz,
+        unitPriceInGrosz: item.unitPriceInGrosz,
+      },
+    }))
+  );
+
+  return {
+    products,
+    pieces,
+  };
 }
 
 export function groupPurchasableItems<
@@ -556,7 +828,9 @@ export function groupPurchasableItems<
     piece: TPiece;
   }[]
 ): {
-  products: (TProduct & { pieces: TPiece[] })[];
+  products: (TProduct & {
+    pieces: TPiece[];
+  })[];
   pieces: TPiece[];
 } {
   const products: (TProduct & {
@@ -582,5 +856,216 @@ export function groupPurchasableItems<
   return {
     products,
     pieces,
+  };
+}
+
+export function productToGoogleAnalyticsItem(
+  product: DBQueryResult<
+    "products",
+    {
+      columns: {
+        id: true;
+        name: true;
+      };
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+        pieces: {
+          columns: {
+            id: true;
+            name: true;
+            priceInGrosz: true;
+          };
+          with: {
+            discount: {
+              columns: {
+                amountOffInGrosz: true;
+                percentOff: true;
+              };
+            };
+            brand: {
+              columns: {
+                name: true;
+              };
+            };
+            category: {
+              columns: {
+                path: true;
+                name: true;
+              };
+            };
+          };
+        };
+      };
+    }
+  >,
+  details: Partial<{
+    item_list_id: string;
+    item_list_name: string;
+    index: number;
+  }> = {}
+): GTagItem[] {
+  // from last to first
+  return product.pieces.map((piece) => {
+    const sortedCategoryPath = piece.category?.path.reverse() ?? [];
+    const pricing = calculateProductPiecePriceDisplayData(piece, product);
+    return {
+      item_id: piece.id,
+      item_name: piece.name,
+      item_brand: piece.brand.name,
+      price: pricing.finalPrice,
+      ...(pricing.hasDiscount
+        ? {
+            discount: pricing.savings,
+          }
+        : {}),
+      ...(sortedCategoryPath[0]?.name
+        ? { item_category: sortedCategoryPath[0]?.name }
+        : {}),
+      ...(sortedCategoryPath[1]?.name
+        ? { item_category_2: sortedCategoryPath[1]?.name }
+        : {}),
+      ...(sortedCategoryPath[2]?.name
+        ? { item_category_3: sortedCategoryPath[2]?.name }
+        : {}),
+      ...(sortedCategoryPath[3]?.name
+        ? { item_category_4: sortedCategoryPath[3]?.name }
+        : {}),
+      ...(sortedCategoryPath[4]?.name
+        ? { item_category_5: sortedCategoryPath[4]?.name }
+        : {}),
+      ...details,
+    };
+  });
+}
+
+export function pieceToGoogleAnalyticsItem(
+  piece: DBQueryResult<
+    "pieces",
+    {
+      columns: {
+        id: true;
+        name: true;
+        priceInGrosz: true;
+      };
+      with: {
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
+        brand: {
+          columns: {
+            name: true;
+          };
+        };
+        category: {
+          columns: {
+            path: true;
+            name: true;
+          };
+        };
+      };
+    }
+  >,
+  details: Partial<{
+    item_list_id: string;
+    item_list_name: string;
+    index: number;
+  }> = {}
+): GTagItem {
+  // from last to first
+  const sortedCategoryPath = piece.category?.path.reverse() ?? [];
+  const pricing = calculatePiecePriceDisplayData(piece);
+  return {
+    item_id: piece.id,
+    item_name: piece.name,
+    item_brand: piece.brand.name,
+    price: pricing.finalPrice,
+    ...(pricing.hasDiscount
+      ? {
+          discount: pricing.savings,
+        }
+      : {}),
+    ...(sortedCategoryPath[0]?.name
+      ? { item_category: sortedCategoryPath[0]?.name }
+      : {}),
+    ...(sortedCategoryPath[1]?.name
+      ? { item_category_2: sortedCategoryPath[1]?.name }
+      : {}),
+    ...(sortedCategoryPath[2]?.name
+      ? { item_category_3: sortedCategoryPath[2]?.name }
+      : {}),
+    ...(sortedCategoryPath[3]?.name
+      ? { item_category_4: sortedCategoryPath[3]?.name }
+      : {}),
+    ...(sortedCategoryPath[4]?.name
+      ? { item_category_5: sortedCategoryPath[4]?.name }
+      : {}),
+    ...details,
+  };
+}
+
+export function orderItemsToGoogleAnalyticsItems(
+  item: DBQueryResult<
+    "orderItems",
+    {
+      with: {
+        piece: {
+          columns: {
+            id: true;
+            name: true;
+          };
+          with: {
+            brand: {
+              columns: {
+                name: true;
+              };
+            };
+            category: {
+              columns: {
+                path: true;
+                name: true;
+              };
+            };
+          };
+        };
+      };
+    }
+  >
+): GTagItem {
+  // from last to first
+  const sortedCategoryPath = item.piece.category?.path.reverse() ?? [];
+  const pricing = priceDataToDisplayData(item);
+  return {
+    item_id: item.piece.id,
+    item_name: item.piece.name,
+    item_brand: item.piece.brand.name,
+    price: pricing.finalPrice,
+    ...(pricing.hasDiscount
+      ? {
+          discount: pricing.savings,
+        }
+      : {}),
+    ...(sortedCategoryPath[0]?.name
+      ? { item_category: sortedCategoryPath[0]?.name }
+      : {}),
+    ...(sortedCategoryPath[1]?.name
+      ? { item_category_2: sortedCategoryPath[1]?.name }
+      : {}),
+    ...(sortedCategoryPath[2]?.name
+      ? { item_category_3: sortedCategoryPath[2]?.name }
+      : {}),
+    ...(sortedCategoryPath[3]?.name
+      ? { item_category_4: sortedCategoryPath[3]?.name }
+      : {}),
+    ...(sortedCategoryPath[4]?.name
+      ? { item_category_5: sortedCategoryPath[4]?.name }
+      : {}),
   };
 }

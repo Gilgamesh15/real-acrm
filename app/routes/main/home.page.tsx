@@ -11,6 +11,7 @@ import { Await, Link } from "react-router";
 import { A11y, FreeMode, Keyboard, Mousewheel } from "swiper/modules";
 import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
 
+import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Error,
@@ -28,13 +29,16 @@ import { MainProductCard } from "~/components/features/product-card/main-product
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { db } from "~/lib/db";
-import type { DBQueryResult } from "~/lib/types";
+import type { DBQueryResult, PriceDisplayData } from "~/lib/types";
 import {
-  calculateProductPrice,
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
   cn,
   formatCurrency,
+  formatDiscountLabel,
   getSlugPath,
-  priceFromGrosz,
+  pieceToGoogleAnalyticsItem,
+  productToGoogleAnalyticsItem,
 } from "~/lib/utils";
 
 import type { Route } from "./+types/home.page";
@@ -62,11 +66,12 @@ export async function loader() {
       with: {
         image: true,
         piecesToTags: {
-          orderBy: desc(schema.piecesToTags.updatedAt),
+          orderBy: desc(schema.piecesToTags.createdAt),
           limit: 4,
           with: {
             piece: {
               with: {
+                discount: true,
                 brand: true,
                 size: true,
                 category: true,
@@ -123,6 +128,7 @@ export async function loader() {
         description: false,
       },
       with: {
+        discount: true,
         images: {
           limit: 1,
           orderBy: asc(schema.images.displayOrder),
@@ -130,6 +136,7 @@ export async function loader() {
         pieces: {
           orderBy: asc(schema.pieces.productDisplayOrder),
           with: {
+            discount: true,
             images: {
               limit: 1,
               orderBy: asc(schema.images.displayOrder),
@@ -170,6 +177,7 @@ export async function loader() {
         description: false,
       },
       with: {
+        discount: true,
         images: {
           limit: 1,
           orderBy: asc(schema.images.displayOrder),
@@ -177,6 +185,7 @@ export async function loader() {
         pieces: {
           orderBy: asc(schema.pieces.productDisplayOrder),
           with: {
+            discount: true,
             images: {
               limit: 1,
               orderBy: asc(schema.images.displayOrder),
@@ -194,7 +203,7 @@ export async function loader() {
         id: item.id,
         images: item.images,
         name: item.name,
-        priceInGrosz: calculateProductPrice(item).lineTotalInGrosz,
+        pricing: calculateProductPriceDisplayData(item),
         href: `/projekty/${item.slug}`,
       }))
     );
@@ -225,6 +234,7 @@ export async function loader() {
       ),
       orderBy: desc(schema.pieces.homeFeaturedOrder),
       with: {
+        discount: true,
         images: {
           limit: 1,
           orderBy: asc(schema.images.displayOrder),
@@ -239,7 +249,7 @@ export async function loader() {
         id: item.id,
         images: item.images,
         name: item.name,
-        priceInGrosz: item.priceInGrosz,
+        pricing: calculatePiecePriceDisplayData(item),
         href: `/ubrania/${item.slug}`,
       }))
     );
@@ -437,7 +447,7 @@ function TopFeaturedSection({
         alt: string;
       }[];
       name: string;
-      priceInGrosz: number;
+      pricing: PriceDisplayData;
       href: string;
     }>
   >;
@@ -560,7 +570,7 @@ function TopFeaturedSection({
                   {chunkedItems.map((chunk, chunkIndex) => (
                     <SwiperSlide
                       key={`chunk-${chunkIndex}`}
-                      className="max-w-40 min-w-[160px] min-h-[584px] space-y-4"
+                      className="max-w-40 min-w-[160px] h-fit space-y-8"
                     >
                       {chunk.map((item) => {
                         const [primaryImage] = item.images;
@@ -568,36 +578,47 @@ function TopFeaturedSection({
                         return (
                           <article
                             key={item.id}
-                            className="group cursor-pointer block size-full min-h-[284px]"
+                            className={cn(
+                              "group cursor-pointer w-[160px] h-fit !p-0",
+                              className
+                            )}
                           >
-                            <Link to={item.href} className="block">
-                              <div className="mb-3 overflow-hidden relative">
+                            <Link
+                              to={item.href || "#"}
+                              className="block h-[308px]"
+                            >
+                              <div className="mb-3 overflow-hidden relative aspect-3/4">
                                 <Image
-                                  src={primaryImage?.url || "/placeholder.svg"}
-                                  alt={
-                                    primaryImage?.alt ||
-                                    `${item.name} - zdjęcie produktu`
-                                  }
-                                  aspectRatio={3 / 4}
                                   width={160}
-                                  quality="auto:best"
+                                  aspectRatio={3 / 4}
+                                  src={primaryImage?.url || ""}
+                                  alt={primaryImage?.alt || ""}
                                   mode="cover"
-                                  className="transition-transform duration-500 group-hover:scale-105 size-full aspect-3/4"
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
 
-                              <div className="flex flex-col gap-1 items-start">
-                                <h3 className="text-sm text-primary leading-snug line-clamp-2">
+                              <div className="flex flex-col">
+                                <h3 className="text-sm text-foreground leading-snug line-clamp-2 mb-0.5">
                                   {item.name}
                                 </h3>
-                                <data
-                                  value={item.priceInGrosz}
-                                  className="text-xs text-muted-foreground font-bold"
-                                >
-                                  {formatCurrency(
-                                    priceFromGrosz(item.priceInGrosz)
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-foreground">
+                                    {formatCurrency(item.pricing.finalPrice)}
+                                  </span>
+                                  {item.pricing.hasDiscount && (
+                                    <Badge variant="success">
+                                      {formatDiscountLabel(
+                                        item.pricing.discount
+                                      )}
+                                    </Badge>
                                   )}
-                                </data>
+                                </div>
+                                {item.pricing.hasDiscount && (
+                                  <span className="text-xs text-muted-foreground line-through">
+                                    {formatCurrency(item.pricing.originalPrice)}
+                                  </span>
+                                )}
                               </div>
                             </Link>
                           </article>
@@ -679,7 +700,7 @@ function CategoriesSection({
                         alt={`Kategoria ${category.name}`}
                         aspectRatio={1}
                         mode="cover"
-                        className="size-full absolute"
+                        className="size-full absolute object-cover"
                         width={200}
                         height={200}
                       />
@@ -715,7 +736,13 @@ function TagsSection({
           piecesToTags: {
             with: {
               piece: {
-                with: { images: true; brand: true; size: true; category: true };
+                with: {
+                  images: true;
+                  brand: true;
+                  size: true;
+                  category: true;
+                  discount: true;
+                };
               };
             };
           };
@@ -849,18 +876,45 @@ function TagsSection({
                     }}
                     freeMode
                   >
-                    {tag.piecesToTags.map(({ piece }) => (
+                    {tag.piecesToTags.map(({ piece }, pieceIndex) => (
                       <SwiperSlide key={piece.id}>
                         <MainPieceCard
                           piece={piece}
                           href={`/ubrania/${piece.slug}`}
                           isInCart={isInCart(piece.id)}
-                          onBuyNow={() => onPieceBuyNow(piece)}
+                          onClick={() => {
+                            window.gtag?.("event", "select_item", {
+                              item_list_id: `tag_${tag.id}`,
+                              item_list_name: tag.name,
+                              items: [
+                                pieceToGoogleAnalyticsItem(piece, {
+                                  item_list_id: `tag_${tag.id}`,
+                                  item_list_name: tag.name,
+                                  index: pieceIndex,
+                                }),
+                              ],
+                            });
+                          }}
+                          onBuyNow={() =>
+                            onPieceBuyNow(piece, {
+                              item_list_id: `tag_${tag.id}`,
+                              item_list_name: tag.name,
+                              index: pieceIndex,
+                            })
+                          }
                           onToggleCart={() => {
                             if (isInCart(piece.id)) {
-                              removePiece(piece.id);
+                              removePiece(piece.id, true, {
+                                item_list_id: `tag_${tag.id}`,
+                                item_list_name: tag.name,
+                                index: pieceIndex,
+                              });
                             } else {
-                              addPiece(piece);
+                              addPiece(piece, true, {
+                                item_list_id: `tag_${tag.id}`,
+                                item_list_name: tag.name,
+                                index: pieceIndex,
+                              });
                             }
                           }}
                         />
@@ -907,8 +961,15 @@ function FeaturedProductsSection({
         };
         with: {
           images: true;
+          discount: true;
           pieces: {
-            with: { images: true; brand: true; size: true; category: true };
+            with: {
+              images: true;
+              brand: true;
+              size: true;
+              category: true;
+              discount: true;
+            };
           };
         };
       }
@@ -999,20 +1060,45 @@ function FeaturedProductsSection({
               freeMode
               initialSlide={1}
             >
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <SwiperSlide key={product.id} className="basis-[280px]">
                   <MainProductCard
                     product={product}
                     href={`/projekty/${product.slug}`}
+                    onClick={() => {
+                      window.gtag?.("event", "select_item", {
+                        item_list_id: "featured_products",
+                        item_list_name: "Polecane projekty",
+                        items: productToGoogleAnalyticsItem(product, {
+                          item_list_id: "featured_products",
+                          item_list_name: "Polecane projekty",
+                          index,
+                        }),
+                      });
+                    }}
                     onToggleCart={() => {
                       if (isInCart(product.id)) {
-                        removeProduct(product.id);
+                        removeProduct(product.id, true, {
+                          item_list_id: `featured_products`,
+                          item_list_name: "Polecane projekty",
+                          index: index,
+                        });
                       } else {
-                        addProduct(product);
+                        addProduct(product, true, {
+                          item_list_id: `featured_products`,
+                          item_list_name: "Polecane projekty",
+                          index: index,
+                        });
                       }
                     }}
                     isInCart={isInCart(product.id)}
-                    onBuyNow={() => onProductBuyNow(product)}
+                    onBuyNow={() =>
+                      onProductBuyNow(product, {
+                        item_list_id: `featured_products`,
+                        item_list_name: "Polecane projekty",
+                        index: index,
+                      })
+                    }
                   />
                 </SwiperSlide>
               ))}

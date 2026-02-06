@@ -39,7 +39,7 @@ import { MainProductCard } from "~/components/features/product-card/main-product
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
-import { sortFilterOptions } from "~/lib/utils";
+import { productToGoogleAnalyticsItem, sortFilterOptions } from "~/lib/utils";
 import { filterSearchParamsCache } from "~/lib/utils.server";
 
 import type { Route } from "./+types/products-browse.page";
@@ -97,12 +97,14 @@ export async function loader({ request }: Route.LoaderArgs) {
           description: false,
         },
         with: {
+          discount: true,
           images: {
             limit: 1,
             orderBy: asc(schema.images.displayOrder),
           },
           pieces: {
             with: {
+              discount: true,
               images: {
                 limit: 1,
                 orderBy: asc(schema.images.displayOrder),
@@ -135,12 +137,9 @@ export default function ProductsBrowsePage({
   loaderData,
 }: Route.ComponentProps) {
   const {
-    filterData: { brandGroups, sizeGroups, categories, tags, priceRange },
+    filterData: { brandGroups, sizeGroups, tags, priceRange },
     productsPromise,
   } = loaderData;
-
-  const { isInCart, addProduct, removeProduct } = useCart();
-  const { onProductBuyNow } = useCheckoutDialog();
 
   return (
     <FiltersProvider
@@ -165,7 +164,7 @@ export default function ProductsBrowsePage({
                   </Button>
                 </DrawerTrigger>
                 <MultiSelectFilter
-                  label="Tagi"
+                  label="Style"
                   options={tags.map((tag) => ({
                     value: tag.slug,
                     label: tag.name,
@@ -244,7 +243,7 @@ export default function ProductsBrowsePage({
               >
                 <Accordion type="single" collapsible className="w-full">
                   <DrawerMultiSelectFilter
-                    label="Tags"
+                    label="Style"
                     options={tags.map((tag) => ({
                       value: tag.slug,
                       label: tag.name,
@@ -317,37 +316,88 @@ export default function ProductsBrowsePage({
         >
           <Await resolve={productsPromise}>
             {({ products, total }) => (
-              <Container>
-                <section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
-                  {products.map((product) => (
-                    <MainProductCard
-                      product={product}
-                      href={`/projekty/${product.slug}`}
-                      key={product.id}
-                      isInCart={isInCart(product.id)}
-                      onBuyNow={() => onProductBuyNow(product)}
-                      onToggleCart={() => {
-                        if (isInCart(product.id)) {
-                          removeProduct(product.id);
-                        } else {
-                          addProduct(product);
-                        }
-                      }}
-                    />
-                  ))}
-                </section>
-                <div>
-                  <FilterPagination
-                    totalPages={Math.ceil(
-                      Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
-                    )}
-                  />
-                </div>
-              </Container>
+              <ProductsList products={products} total={total} />
             )}
           </Await>
         </React.Suspense>
       </div>
     </FiltersProvider>
+  );
+}
+
+function ProductsList({
+  products,
+  total,
+}: Awaited<Route.ComponentProps["loaderData"]["productsPromise"]>) {
+  const { isInCart, addProduct, removeProduct } = useCart();
+  const { onProductBuyNow } = useCheckoutDialog();
+
+  React.useEffect(() => {
+    window.gtag?.("event", "view_item_list", {
+      currency: "PLN",
+      item_list_name: "Projekty",
+      item_list_id: "projekty",
+      items: products.flatMap((product) =>
+        productToGoogleAnalyticsItem(product, {
+          item_list_id: "projekty",
+          item_list_name: "Projekty",
+        })
+      ),
+    });
+  }, [products, total]);
+
+  return (
+    <Container>
+      <section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+        {products.map((product, index) => (
+          <MainProductCard
+            product={product}
+            href={`/projekty/${product.slug}`}
+            key={product.id}
+            isInCart={isInCart(product.id)}
+            onClick={() => {
+              window.gtag?.("event", "select_item", {
+                item_list_id: "projekty",
+                item_list_name: "Projekty",
+                items: productToGoogleAnalyticsItem(product, {
+                  item_list_id: "projekty",
+                  item_list_name: "Projekty",
+                  index,
+                }),
+              });
+            }}
+            onBuyNow={() =>
+              onProductBuyNow(product, {
+                item_list_id: `projekty`,
+                item_list_name: "Projekty",
+                index: index,
+              })
+            }
+            onToggleCart={() => {
+              if (isInCart(product.id)) {
+                removeProduct(product.id, true, {
+                  item_list_id: `projekty`,
+                  item_list_name: "Projekty",
+                  index: index,
+                });
+              } else {
+                addProduct(product, true, {
+                  item_list_id: `projekty`,
+                  item_list_name: "Projekty",
+                  index: index,
+                });
+              }
+            }}
+          />
+        ))}
+      </section>
+      <div className="mt-8">
+        <FilterPagination
+          totalPages={Math.ceil(
+            Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
+          )}
+        />
+      </div>
+    </Container>
   );
 }

@@ -15,17 +15,27 @@ import {
 } from "~/components/ui/item";
 
 import { OrderData } from "~/components/features/order-data/order-data";
-import { PriceSummary } from "~/components/features/price-summary/price-summary";
-import { PieceInfoCard } from "~/components/features/product-card/piece-info-card/piece-info-card";
-import { ProductInfoCard } from "~/components/features/product-card/product-info-card/product-info-card";
+import {
+  PriceSummary,
+  type PriceSummaryProps,
+} from "~/components/features/price-summary/price-summary";
+import {
+  ProductCardContent,
+  ProductCardImage,
+  ProductCardInfo,
+  ProductCardMedia,
+  ProductCardPrice,
+  ProductCardRoot,
+} from "~/components/features/product-card/product-card-primitives";
 import { authClient } from "~/lib/auth-client";
 import { db } from "~/lib/db";
 import {
-  calculateProductPrice,
   cn,
   formatDate,
-  groupPurchasableItems,
+  groupOrderItems,
   orderDetailsFromOrder,
+  orderItemsToGoogleAnalyticsItems,
+  priceDataToDisplayData,
   priceFromGrosz,
 } from "~/lib/utils";
 
@@ -83,27 +93,29 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
   const isLoggedIn =
     !!session && !session.isPending && !session.data?.user.isAnonymous;
 
-  const { products, pieces } = groupPurchasableItems(order.items);
+  const { products, pieces } = groupOrderItems(order.items);
 
-  const priceSummary = {
-    subtotal: priceFromGrosz(order.subtotalInGrosz),
-    totalDiscount: priceFromGrosz(order.totalDiscountInGrosz),
-    total: priceFromGrosz(order.totalInGrosz),
-    tax: priceFromGrosz(order.taxInGrosz),
-    items: [
-      ...products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        price: priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz),
-        discount: 0,
-      })),
-      ...pieces.map((piece) => ({
-        id: piece.id,
-        name: piece.name,
-        price: priceFromGrosz(piece.priceInGrosz),
-        discount: 0,
-      })),
-    ],
+  const priceSummaryItems: PriceSummaryProps["items"] = [
+    ...products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      ...priceDataToDisplayData(product),
+    })),
+    ...pieces.map((piece) => ({
+      id: piece.id,
+      name: piece.name,
+      ...priceDataToDisplayData(piece),
+    })),
+  ];
+
+  const priceSummary: PriceSummaryProps = {
+    items: priceSummaryItems,
+    subtotal: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    total: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    totalSavings: priceSummaryItems.reduce(
+      (acc, item) => acc + item.savings,
+      0
+    ),
   };
 
   useEffect(() => {
@@ -113,17 +125,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
       tax: priceFromGrosz(order.taxInGrosz),
       shipping: 0,
       value: priceFromGrosz(order.totalInGrosz),
-      items: order.items.map((item) => ({
-        item_id: item.piece.id,
-        item_name: item.piece.name,
-        item_brand: item.piece.brand?.name,
-        item_category: item.piece.category?.path[0]?.name,
-        item_category2: item.piece.category?.path[1]?.name,
-        item_category3: item.piece.category?.path[2]?.name,
-        item_category4: item.piece.category?.path[3]?.name,
-        item_category5: item.piece.category?.path[4]?.name,
-        price: priceFromGrosz(item.piece.priceInGrosz),
-      })),
+      items: order.items.map((item) => orderItemsToGoogleAnalyticsItems(item)),
     });
   }, [order]);
 
@@ -211,12 +213,42 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
             </ItemHeader>
             <ItemContent>
               <ItemGroup>
-                {products.map((product) => (
-                  <ProductInfoCard key={product.id} product={product} />
-                ))}
-                {pieces.map((piece) => (
-                  <PieceInfoCard key={piece.id} piece={piece} />
-                ))}
+                {products.map((product) => {
+                  const [primaryImage] = product.images;
+                  const pricing = priceDataToDisplayData(product);
+                  return (
+                    <ProductCardRoot size="sm" key={product.id}>
+                      <ProductCardMedia size="md">
+                        <ProductCardImage
+                          url={primaryImage?.url || ""}
+                          alt={primaryImage?.alt || ""}
+                        />
+                      </ProductCardMedia>
+                      <ProductCardContent>
+                        <ProductCardInfo name={product.name} />
+                        <ProductCardPrice pricing={pricing} />
+                      </ProductCardContent>
+                    </ProductCardRoot>
+                  );
+                })}
+                {pieces.map((piece) => {
+                  const [primaryImage] = piece.images;
+                  const pricing = priceDataToDisplayData(piece);
+                  return (
+                    <ProductCardRoot size="sm" key={piece.id}>
+                      <ProductCardMedia size="md">
+                        <ProductCardImage
+                          url={primaryImage?.url || ""}
+                          alt={primaryImage?.alt || ""}
+                        />
+                      </ProductCardMedia>
+                      <ProductCardContent>
+                        <ProductCardInfo name={piece.name} />
+                        <ProductCardPrice pricing={pricing} />
+                      </ProductCardContent>
+                    </ProductCardRoot>
+                  );
+                })}
               </ItemGroup>
             </ItemContent>
           </Item>

@@ -6,6 +6,12 @@ import { toast } from "sonner";
 import type { CartPiece, CartProduct } from "~/api/cart";
 import { useLocalStorage } from "~/hooks/use-local-storage";
 import type { LocalStorageCart } from "~/lib/types";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+  pieceToGoogleAnalyticsItem,
+  productToGoogleAnalyticsItem,
+} from "~/lib/utils";
 
 type CartContextType = {
   items: {
@@ -15,11 +21,42 @@ type CartContextType = {
   isLoading: boolean;
   error?: string;
   refetch: () => void;
-  addPiece: (piece: CartPiece) => void;
-  addProduct: (product: CartProduct) => void;
-  removePiece: (id: string) => void;
-  removeProduct: (id: string) => void;
-  clearCart: () => void;
+  addPiece: (
+    piece: CartPiece,
+    emitEvent: boolean,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
+  addProduct: (
+    product: CartProduct,
+    emitEvent: boolean,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
+  removePiece: (
+    id: string,
+    emitEvent: boolean,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
+  removeProduct: (
+    id: string,
+    emitEvent: boolean,
+    details?: Partial<{
+      item_list_id: string;
+      item_list_name: string;
+      index: number;
+    }>
+  ) => void;
   isInCart: (id: string) => boolean;
   cartCount: number;
 };
@@ -39,8 +76,10 @@ const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 function CartProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
-  const [localCart, setLocalCart, removeLocalCart] =
-    useLocalStorage<LocalStorageCart>("cart", []);
+  const [localCart, setLocalCart] = useLocalStorage<LocalStorageCart>(
+    "cart",
+    []
+  );
 
   const [items, setItems] = React.useState<{
     products: CartProduct[];
@@ -134,12 +173,29 @@ function CartProvider({ children }: { children: React.ReactNode }) {
   }, [isLoading, error]);
 
   const addPiece = React.useCallback(
-    (piece: CartPiece) => {
+    (
+      piece: CartPiece,
+      emitEvent: boolean,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
       if (localCart.some((item) => item.pieceId === piece.id)) {
         return;
       }
 
       setLocalCart((prev) => [...prev, { pieceId: piece.id }]);
+
+      if (emitEvent) {
+        const pricing = calculatePiecePriceDisplayData(piece);
+        window.gtag?.("event", "add_to_cart", {
+          currency: "PLN",
+          value: pricing.finalPrice,
+          items: [pieceToGoogleAnalyticsItem(piece, details)],
+        });
+      }
 
       // Optimistically add to items
       setItems((prev) => ({
@@ -155,7 +211,15 @@ function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const addProduct = React.useCallback(
-    (product: CartProduct) => {
+    (
+      product: CartProduct,
+      emitEvent: boolean,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
       const productPieceIds = new Set(product.pieces.map((p) => p.id));
 
       // Remove any existing pieces that reference this product or are part of it, then add fresh
@@ -169,6 +233,15 @@ function CartProvider({ children }: { children: React.ReactNode }) {
           productId: product.id,
         })),
       ]);
+
+      if (emitEvent) {
+        const pricing = calculateProductPriceDisplayData(product);
+        window.gtag?.("event", "add_to_cart", {
+          currency: "PLN",
+          value: pricing.finalPrice,
+          items: productToGoogleAnalyticsItem(product, details),
+        });
+      }
 
       // Optimistically update items - remove any standalone pieces that are now part of product
       setItems((prev) => ({
@@ -188,8 +261,28 @@ function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const removePiece = React.useCallback(
-    (id: string) => {
+    (
+      id: string,
+      emitEvent: boolean,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
       setLocalCart((prev) => prev.filter((item) => item.pieceId !== id));
+
+      if (emitEvent) {
+        const piece = items.pieces.find((piece) => piece.id === id);
+        if (piece) {
+          const pricing = calculatePiecePriceDisplayData(piece);
+          window.gtag?.("event", "remove_from_cart", {
+            currency: "PLN",
+            value: pricing.finalPrice,
+            items: [pieceToGoogleAnalyticsItem(piece, details)],
+          });
+        }
+      }
 
       // Optimistically remove from items
       setItems((prev) => ({
@@ -201,8 +294,28 @@ function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const removeProduct = React.useCallback(
-    (id: string) => {
+    (
+      id: string,
+      emitEvent: boolean,
+      details: Partial<{
+        item_list_id: string;
+        item_list_name: string;
+        index: number;
+      }> = {}
+    ) => {
       setLocalCart((prev) => prev.filter((item) => item.productId !== id));
+
+      if (emitEvent) {
+        const product = items.products.find((product) => product.id === id);
+        if (product) {
+          const pricing = calculateProductPriceDisplayData(product);
+          window.gtag?.("event", "remove_from_cart", {
+            currency: "PLN",
+            value: pricing.finalPrice,
+            items: productToGoogleAnalyticsItem(product, details),
+          });
+        }
+      }
 
       // Optimistically remove from items
       setItems((prev) => ({
@@ -212,14 +325,6 @@ function CartProvider({ children }: { children: React.ReactNode }) {
     },
     [setLocalCart]
   );
-
-  const clearCart = React.useCallback(() => {
-    removeLocalCart();
-    setItems({ products: [], pieces: [] });
-    toast.success("Koszyk wyczyszczony", {
-      duration: 2000,
-    });
-  }, [removeLocalCart]);
 
   const isInCart = React.useCallback(
     (id: string) => {
@@ -246,7 +351,6 @@ function CartProvider({ children }: { children: React.ReactNode }) {
         addProduct,
         removePiece,
         removeProduct,
-        clearCart,
         isInCart,
         cartCount,
       }}

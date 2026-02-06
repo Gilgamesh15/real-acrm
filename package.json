@@ -109,6 +109,7 @@
     "react-dom": "^19.2.3",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.69.0",
+    "react-hotkeys-hook": "^5.2.4",
     "react-leaflet": "^5.0.0",
     "react-number-format": "^5.4.4",
     "react-resizable-panels": "^4.0.3",

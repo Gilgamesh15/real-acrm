@@ -1,8 +1,10 @@
+import { APIError } from "better-auth";
 import { CheckCircle, Send, XOctagon } from "lucide-react";
 import React from "react";
 import {
   Link,
   type LoaderFunctionArgs,
+  data,
   isRouteErrorResponse,
   useNavigate,
   useRouteError,
@@ -42,11 +44,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return;
   }
 
-  await auth.api.verifyEmail({
-    query: {
-      token,
-    },
-  });
+  try {
+    await auth.api.verifyEmail({
+      query: {
+        token,
+      },
+    });
+  } catch (error) {
+    if (error instanceof APIError) {
+      throw data(
+        {
+          message: error.body?.message || error.message,
+          code: error.status,
+        },
+        { status: error.statusCode }
+      );
+    }
+    return data(
+      {
+        message:
+          "Wystąpił nieoczekiwany błąd podczas weryfikacji adresu email.",
+        code: 500,
+      },
+      { status: 500 }
+    );
+  }
 };
 
 const COUNTDOWN_DURATION = 60;
@@ -58,7 +80,7 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") ?? undefined;
-  // if has token then its valid and we show success state otherwise an error must have occured or no token was provided
+  // if has token then its valid and we show success state otherwise an error must have occurred or no token was provided
   const hasToken = searchParams.get("token") === null ? false : true;
 
   const [countdown, { startCountdown }] = useCountdown({
@@ -85,7 +107,13 @@ export default function VerifyEmailPage() {
         });
 
         if (error) {
-          throw error;
+          throw data(
+            {
+              message: error.message,
+              code: error.code,
+            },
+            { status: error.status, statusText: error.statusText }
+          );
         }
       },
       {
@@ -224,7 +252,13 @@ export function ErrorBoundary() {
         });
 
         if (error) {
-          throw error;
+          throw data(
+            {
+              message: error.message,
+              code: error.code,
+            },
+            { status: error.status, statusText: error.statusText }
+          );
         }
       },
       {
@@ -259,23 +293,23 @@ export function ErrorBoundary() {
     navigate("/zarejestruj-sie");
   };
 
-  if (isRouteErrorResponse(error) && error instanceof Error) {
-    const errorType = (error as Error).body?.code as
+  if (isRouteErrorResponse(error)) {
+    const errorType = error.data?.code as
       | "TOKEN_EXPIRED"
       | "INVALID_TOKEN"
       | "USER_NOT_FOUND"
       | "INVALID_USER"
       | "FAILED_TO_CREATE_SESSION";
 
-    const title = error.body?.message ?? "Coś poszło nie tak";
+    const title = error.data?.message ?? "Coś poszło nie tak";
     const description = {
       TOKEN_EXPIRED:
         "Link weryfikacyjny jest ważny przez 24 godziny. Wyślij nowy link, aby dokończyć weryfikację.",
       INVALID_TOKEN: "Link weryfikacyjny jest nieprawidłowy. Spróbuj ponownie.",
-      USER_NOT_FOUND: "Nie możemy zweryfować adresu. Spróbuj ponownie.",
-      INVALID_USER: "Nie możemy zweryfować adresu. Spróbuj ponownie.",
+      USER_NOT_FOUND: "Nie możemy znaleźć adresu email. Spróbuj ponownie.",
+      INVALID_USER: "Nie możemy znaleźć adresu email. Spróbuj ponownie.",
       FAILED_TO_CREATE_SESSION:
-        "Nie możemy zweryfować adresu. Spróbuj ponownie.",
+        "Nie możemy znaleźć adresu email. Spróbuj ponownie.",
     }[errorType];
 
     const primaryAction = {
@@ -294,13 +328,13 @@ export function ErrorBoundary() {
       FAILED_TO_CREATE_SESSION: "Odśwież stronę",
     }[errorType];
 
-    const secondaryAction = {
-      TOKEN_EXPIRED: () => navigate("/zarejestruj-sie"),
-      INVALID_TOKEN: () => navigate("/zarejestruj-sie"),
-      USER_NOT_FOUND: undefined,
-      INVALID_USER: undefined,
-      FAILED_TO_CREATE_SESSION: undefined,
-    }[errorType];
+    //const secondaryAction = {
+    //  TOKEN_EXPIRED: () => navigate("/zarejestruj-sie"),
+    //  INVALID_TOKEN: () => navigate("/zarejestruj-sie"),
+    //  USER_NOT_FOUND: undefined,
+    //  INVALID_USER: undefined,
+    //  FAILED_TO_CREATE_SESSION: undefined,
+    //}[errorType];
 
     const secondaryActionText = {
       TOKEN_EXPIRED: "Zarejestruj się",

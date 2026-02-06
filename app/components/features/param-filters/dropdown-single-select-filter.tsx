@@ -43,6 +43,7 @@ export function SingleSelectFilter({
           const isSelected = value === option.value;
           return (
             <Button
+              key={option.value}
               variant="ghost"
               size="sm"
               className="flex w-full items-center justify-between"

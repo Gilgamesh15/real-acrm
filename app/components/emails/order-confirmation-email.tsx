@@ -3,10 +3,10 @@ import { Fragment } from "react";
 
 import type { DBQueryResult } from "~/lib/types";
 import {
-  calculateProductPrice,
   formatCurrency,
-  groupPurchasableItems,
+  groupOrderItems,
   orderDetailsFromOrder,
+  priceDataToDisplayData,
   priceFromGrosz,
 } from "~/lib/utils";
 
@@ -18,6 +18,7 @@ const ORDER_CONFIRMATION_ICON_URL =
   "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975334/Adobe_Express_-_file_qtvusb_bwcgiv.png";
 const ORDER_CONFIRMATION_TITLE = "Potwierdzenie zamówienia";
 
+//TODO Add discount display data
 interface OrderConfirmationEmailProps {
   order: DBQueryResult<
     "orders",
@@ -52,7 +53,7 @@ const OrderConfirmationEmail = ({
 }: OrderConfirmationEmailProps) => {
   const orderDetails = orderDetailsFromOrder(order);
 
-  const { products, pieces } = groupPurchasableItems(order.items);
+  const { products, pieces } = groupOrderItems(order.items);
 
   return (
     <EmailBase
@@ -126,8 +127,10 @@ const OrderConfirmationEmail = ({
       {products.map((product, index) => {
         const [primaryImage] = product.images;
 
+        const pricing = priceDataToDisplayData(product);
+
         return (
-          <Fragment key={index}>
+          <Fragment key={product.id}>
             <table style={{ width: "100%", marginBottom: "10px" }}>
               <tr>
                 <td
@@ -147,8 +150,8 @@ const OrderConfirmationEmail = ({
                 </td>
                 <td style={{ verticalAlign: "top" }}>
                   <Text style={itemName}>{product.name}</Text>
-                  {product.pieces?.map((piece, pieceIndex) => (
-                    <Text key={pieceIndex} style={pieceName}>
+                  {product.pieces?.map((piece) => (
+                    <Text key={piece.id} style={pieceName}>
                       • {piece.name}
                     </Text>
                   ))}
@@ -160,13 +163,28 @@ const OrderConfirmationEmail = ({
                     width: "80px",
                   }}
                 >
-                  <Text style={itemPrice}>
-                    {formatCurrency(
-                      priceFromGrosz(
-                        calculateProductPrice(product).lineTotalInGrosz
-                      )
-                    )}
-                  </Text>
+                  {pricing.hasDiscount ? (
+                    <>
+                      <Text
+                        style={{ ...itemPrice, textDecoration: "line-through" }}
+                      >
+                        {formatCurrency(pricing.originalPrice)}
+                      </Text>
+                      <Text
+                        style={{
+                          ...itemPrice,
+                          fontWeight: "bold",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        {formatCurrency(pricing.finalPrice)}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={itemPrice}>
+                      {formatCurrency(pricing.finalPrice)}
+                    </Text>
+                  )}
                 </td>
               </tr>
             </table>
@@ -188,8 +206,10 @@ const OrderConfirmationEmail = ({
       {pieces.map((piece, index) => {
         const [primaryImage] = piece.images;
 
+        const pricing = priceDataToDisplayData(piece);
+
         return (
-          <Fragment key={index}>
+          <Fragment key={piece.id}>
             <table style={{ width: "100%", marginBottom: "10px" }}>
               <tr>
                 <td
@@ -217,9 +237,28 @@ const OrderConfirmationEmail = ({
                     width: "80px",
                   }}
                 >
-                  <Text style={itemPrice}>
-                    {formatCurrency(priceFromGrosz(piece.priceInGrosz))}
-                  </Text>
+                  {pricing.hasDiscount ? (
+                    <>
+                      <Text
+                        style={{ ...itemPrice, textDecoration: "line-through" }}
+                      >
+                        {formatCurrency(pricing.originalPrice)}
+                      </Text>
+                      <Text
+                        style={{
+                          ...itemPrice,
+                          fontWeight: "bold",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        {formatCurrency(pricing.finalPrice)}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={itemPrice}>
+                      {formatCurrency(pricing.finalPrice)}
+                    </Text>
+                  )}
                 </td>
               </tr>
             </table>

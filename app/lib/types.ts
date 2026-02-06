@@ -172,3 +172,25 @@ export type LocalStorageCart = Array<{
   pieceId: string;
   productId?: string;
 }>;
+
+export type DiscountType = "percentage" | "fixed" | "none";
+
+export type DiscountInfo =
+  | { type: "percentage"; percentOff: number }
+  | { type: "fixed"; amountOffInGrosz: number }
+  | { type: "none" };
+
+export type PriceData = {
+  taxInGrosz: number;
+  lineTotalInGrosz: number;
+  discountAmountInGrosz: number;
+  unitPriceInGrosz: number;
+};
+
+export interface PriceDisplayData {
+  originalPrice: number; // Price BEFORE discount
+  finalPrice: number; // Price AFTER discount (what customer pays)
+  savings: number; // Amount saved
+  discount: DiscountInfo; // For badge display
+  hasDiscount: boolean; // Quick check
+}

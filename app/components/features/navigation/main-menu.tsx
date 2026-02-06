@@ -113,8 +113,8 @@ const MainMenu = ({
                             mode="cover"
                             className="absolute inset-0 size-full z-10 object-cover"
                           />
-                          <span className="absolute inset-0 flex items-center justify-center pt-[50%] z-20 z-20 px-2">
-                            <span className="text-lg text-shadow-2xs font-secondary tracking-wide text-center break-words">
+                          <span className="absolute inset-0 flex items-center justify-center pt-[50%] z-20 px-2">
+                            <span className="text-lg text-shadow-2xs font-secondary tracking-wide text-center wrap-break-word">
                               {cat.name}
                             </span>
                           </span>

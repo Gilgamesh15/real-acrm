@@ -242,7 +242,6 @@ function DeleteActionDialogContent({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FormActionDialogContent({
   action,
   title,

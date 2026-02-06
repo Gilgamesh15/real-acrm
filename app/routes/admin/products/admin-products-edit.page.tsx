@@ -93,7 +93,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
       type: "doc",
       content: [],
     },
-    pricePercentageSkew: product.pricePercentageSkew,
     images: product.images.map((img) => ({
       id: img.id,
       url: img.url,
@@ -166,7 +165,6 @@ export async function action({ request, params, context }: Route.ActionArgs) {
           slug,
           keywords: args.keywords,
           description: args.description,
-          pricePercentageSkew: args.pricePercentageSkew,
           homeFeaturedOrder: args.homeFeaturedOrder ?? -1,
         })
         .where(eq(schema.products.id, productId))
@@ -361,18 +359,6 @@ export default function AdminProductsEditPage({
                     label="Słowa kluczowe"
                     description="Tagi ułatwiające wyszukiwanie produktu przez klientów"
                     suggestions={keywordSuggestions}
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="pricePercentageSkew">
-                {(field) => (
-                  <field.NumberField
-                    label="Procentowy zmiana ceny"
-                    description="Procentowy zmiana ceny produktu"
-                    min={0}
-                    max={100}
-                    stepper={1}
-                    placeholder="0"
                   />
                 )}
               </form.AppField>

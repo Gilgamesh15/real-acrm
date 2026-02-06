@@ -212,6 +212,38 @@ export default [
           "./routes/admin/returns/admin-returns-detail.page.tsx"
         ),
       ]),
+
+      // Discounts
+      ...prefix("/rabaty", [
+        index("./routes/admin/discounts/admin-discounts-list.page.tsx"),
+        route(
+          "utworz",
+          "./routes/admin/discounts/admin-discounts-create.page.tsx"
+        ),
+        route(
+          ":discountId/edytuj",
+          "./routes/admin/discounts/admin-discounts-edit.page.tsx"
+        ),
+      ]),
+      // Coupons
+      ...prefix("/kupony", [
+        index("./routes/admin/coupons/admin-coupons-list.page.tsx"),
+        route("utworz", "./routes/admin/coupons/admin-coupons-create.page.tsx"),
+        route(
+          ":couponId/edytuj",
+          "./routes/admin/coupons/admin-coupons-edit.page.tsx"
+        ),
+      ]),
+      // Discount codes
+      ...prefix("/kody-rabatowe", [
+        index(
+          "./routes/admin/discount-codes/admin-discount-codes-list.page.tsx"
+        ),
+        route(
+          "utworz",
+          "./routes/admin/discount-codes/admin-discount-codes-create.page.tsx"
+        ),
+      ]),
     ]),
   ]),
 

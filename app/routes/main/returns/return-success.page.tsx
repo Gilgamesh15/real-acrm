@@ -15,9 +15,21 @@ import {
 } from "~/components/ui/item";
 
 import { PersonalData } from "~/components/features/personal-data/personal-data";
-import { PieceInfoCard } from "~/components/features/product-card/piece-info-card/piece-info-card";
-import { ProductInfoCard } from "~/components/features/product-card/product-info-card/product-info-card";
-import { cn, formatDate, returnDetailsFromReturn } from "~/lib/utils";
+import {
+  ProductCardContent,
+  ProductCardImage,
+  ProductCardInfo,
+  ProductCardMedia,
+  ProductCardPrice,
+  ProductCardRoot,
+} from "~/components/features/product-card/product-card-primitives";
+import {
+  cn,
+  formatDate,
+  groupOrderItems,
+  priceDataToDisplayData,
+  returnDetailsFromReturn,
+} from "~/lib/utils";
 
 import type { Route } from "./+types/return-success.page";
 
@@ -73,12 +85,9 @@ export default function ReturnSuccessPage({
 }: Route.ComponentProps) {
   const { returnRequest } = loaderData;
 
-  const products = returnRequest.items
-    .map((item) => item.orderItem?.product)
-    .filter((product) => product !== null);
-  const pieces = returnRequest.items
-    .map((item) => item.orderItem?.piece)
-    .filter((piece) => piece !== null);
+  const { products, pieces } = groupOrderItems(
+    returnRequest.items.map((item) => item.orderItem)
+  );
 
   return (
     <main>
@@ -194,10 +203,36 @@ export default function ReturnSuccessPage({
             <ItemContent>
               <ItemGroup>
                 {products.map((product) => (
-                  <ProductInfoCard key={product.id} product={product} />
+                  <ProductCardRoot size="sm" key={product.id}>
+                    <ProductCardMedia size="md">
+                      <ProductCardImage
+                        url={product.images[0]?.url || ""}
+                        alt={product.images[0]?.alt || ""}
+                      />
+                    </ProductCardMedia>
+                    <ProductCardContent>
+                      <ProductCardInfo name={product.name} />
+                      <ProductCardPrice
+                        pricing={priceDataToDisplayData(product)}
+                      />
+                    </ProductCardContent>
+                  </ProductCardRoot>
                 ))}
                 {pieces.map((piece) => (
-                  <PieceInfoCard key={piece.id} piece={piece} />
+                  <ProductCardRoot size="sm" key={piece.id}>
+                    <ProductCardMedia size="md">
+                      <ProductCardImage
+                        url={piece.images[0]?.url || ""}
+                        alt={piece.images[0]?.alt || ""}
+                      />
+                    </ProductCardMedia>
+                    <ProductCardContent>
+                      <ProductCardInfo name={piece.name} />
+                      <ProductCardPrice
+                        pricing={priceDataToDisplayData(piece)}
+                      />
+                    </ProductCardContent>
+                  </ProductCardRoot>
                 ))}
               </ItemGroup>
             </ItemContent>

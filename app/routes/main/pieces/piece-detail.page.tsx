@@ -10,6 +10,7 @@ import { SwiperSlide } from "swiper/react";
 import { Swiper as SwiperComponent } from "swiper/react";
 import type { Swiper } from "swiper/types";
 
+import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Image } from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
@@ -21,7 +22,13 @@ import { useCheckoutDialog } from "~/components/features/providers/checkout-dial
 import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generatePieceStructuredData } from "~/lib/seo";
-import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
+import {
+  calculatePiecePriceDisplayData,
+  cn,
+  formatCurrency,
+  formatDiscountLabel,
+  pieceToGoogleAnalyticsItem,
+} from "~/lib/utils";
 
 import type { Route } from "./+types/piece-detail.page";
 
@@ -53,6 +60,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       )
     ),
     with: {
+      discount: true,
       product: {
         columns: {
           name: true,
@@ -86,6 +94,7 @@ export async function loader({ params }: Route.LoaderArgs) {
           limit: 1,
           orderBy: asc(schema.images.displayOrder),
         },
+        discount: true,
         brand: true,
         size: true,
         category: true,
@@ -98,17 +107,13 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { piece, similarPiecesPromise };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => {
-  if (!data) return [];
-
-  const { piece } = data;
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  const { piece } = loaderData;
   const pageTitle = `${piece.name} | ACRM`;
-  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${(piece.priceInGrosz / 100).toFixed(2)} zł. Darmowa dostawa InPost.`;
+  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(piece.priceInGrosz)}. Darmowa dostawa InPost.`;
   const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
-  const price = (piece.priceInGrosz / 100).toFixed(2);
-  const availability =
-    piece.status === "published" ? "in stock" : "out of stock";
+  const pricingData = calculatePiecePriceDisplayData(piece);
 
   return [
     { title: pageTitle },
@@ -121,9 +126,12 @@ export const meta: Route.MetaFunction = ({ data }) => {
     { property: "og:image", content: pageImage },
     { property: "og:site_name", content: "ACRM | Fashion Projects" },
     { property: "og:locale", content: "pl_PL" },
-    { property: "product:price:amount", content: price },
+    { property: "product:price:amount", content: pricingData.finalPrice },
     { property: "product:price:currency", content: "PLN" },
-    { property: "product:availability", content: availability },
+    {
+      property: "product:availability",
+      content: piece.status === "published" ? "in stock" : "out of stock",
+    },
     { property: "product:brand", content: piece.brand.name },
     { property: "product:condition", content: "used" },
     { name: "twitter:card", content: "summary_large_image" },
@@ -142,21 +150,17 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
     "piece-structured-data"
   );
 
+  const pricingData = React.useMemo(() => {
+    return calculatePiecePriceDisplayData(piece);
+  }, [piece]);
+
   React.useEffect(() => {
     window.gtag?.("event", "view_item", {
       currency: "PLN",
-      value: priceFromGrosz(piece.priceInGrosz),
-      items: [
-        {
-          item_id: piece.id,
-          item_name: piece.name,
-          item_brand: piece.brand.name,
-          item_category: piece.category?.name,
-          price: priceFromGrosz(piece.priceInGrosz),
-        },
-      ],
+      value: pricingData.finalPrice,
+      items: [pieceToGoogleAnalyticsItem(piece)],
     });
-  }, [piece]);
+  }, [piece, pricingData]);
 
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();
@@ -206,7 +210,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                       aspectRatio={6 / 5}
                       priority={index === 0}
                       mode="contain"
-                      className="aspect-6/5 size-full"
+                      className="aspect-6/5 size-full object-contain"
+                      quality="auto:good"
+                      responsive
                     />
                   </SwiperSlide>
                 ))}
@@ -249,7 +255,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                         alt={image.alt}
                         aspectRatio={1}
                         mode="cover"
-                        className="size-full"
+                        className="size-full object-cover"
+                        quality="auto"
+                        responsive
                       />
                     </div>
                   </SwiperSlide>
@@ -263,9 +271,25 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                   <h1 className="text-4xl leading-none font-normal lg:text-7xl">
                     {piece.name}
                   </h1>
-                  <p className="text-3xl font-bold">
-                    {formatCurrency(priceFromGrosz(piece.priceInGrosz))}
-                  </p>
+                  {pricingData.hasDiscount ? (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold line-through">
+                          {formatCurrency(pricingData.originalPrice)}
+                        </span>
+                        <Badge variant="success">
+                          {formatDiscountLabel(pricingData.discount)}
+                        </Badge>
+                      </div>
+                      <span className="text-3xl font-bold">
+                        {formatCurrency(pricingData.finalPrice)}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-3xl font-bold">
+                      {formatCurrency(pricingData.finalPrice)}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-row gap-4 md:flex-col items-center md:items-start justify-between mt-4">
                   <div className="flex items-center gap-2 text-lg font-secondary">
@@ -301,9 +325,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                     variant={isInCart(piece.id) ? "default" : "secondary"}
                     onClick={() => {
                       if (isInCart(piece.id)) {
-                        removePiece(piece.id);
+                        removePiece(piece.id, true);
                       } else {
-                        addPiece(piece);
+                        addPiece(piece, true);
                       }
                     }}
                   >
@@ -379,18 +403,45 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                   spaceBetween={10}
                   freeMode
                 >
-                  {similarPieces.map((piece) => (
-                    <SwiperSlide key={piece.id}>
+                  {similarPieces.map((similarPiece, index) => (
+                    <SwiperSlide key={similarPiece.id}>
                       <MainPieceCard
-                        piece={piece}
-                        href={`/ubrania/${piece.slug}`}
-                        isInCart={isInCart(piece.id)}
-                        onBuyNow={() => onPieceBuyNow(piece)}
+                        piece={similarPiece}
+                        href={`/ubrania/${similarPiece.slug}`}
+                        isInCart={isInCart(similarPiece.id)}
+                        onClick={() => {
+                          window.gtag?.("event", "select_item", {
+                            item_list_id: `similar_${piece.id}`,
+                            item_list_name: `Podobne do ${piece.name}`,
+                            items: [
+                              pieceToGoogleAnalyticsItem(similarPiece, {
+                                item_list_id: `similar_${piece.id}`,
+                                item_list_name: `Podobne do ${piece.name}`,
+                                index,
+                              }),
+                            ],
+                          });
+                        }}
+                        onBuyNow={() =>
+                          onPieceBuyNow(similarPiece, {
+                            item_list_id: `similar_${piece.id}`,
+                            item_list_name: `Podobne do ${piece.name}`,
+                            index: index,
+                          })
+                        }
                         onToggleCart={() => {
-                          if (isInCart(piece.id)) {
-                            removePiece(piece.id);
+                          if (isInCart(similarPiece.id)) {
+                            removePiece(similarPiece.id, true, {
+                              item_list_id: `similar_${piece.id}`,
+                              item_list_name: `Podobne do ${piece.name}`,
+                              index: index,
+                            });
                           } else {
-                            addPiece(piece);
+                            addPiece(similarPiece, true, {
+                              item_list_id: `similar_${piece.id}`,
+                              item_list_name: `Podobne do ${piece.name}`,
+                              index: index,
+                            });
                           }
                         }}
                       />

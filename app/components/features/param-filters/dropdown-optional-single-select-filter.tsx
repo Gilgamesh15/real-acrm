@@ -52,6 +52,7 @@ export function OptionalSingleSelectFilter({
           const isSelected = value ? value === option.value : false;
           return (
             <Button
+              key={option.value}
               variant="ghost"
               size="sm"
               className="flex w-full items-center justify-between"

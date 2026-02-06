@@ -12,7 +12,10 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 
-import { calculateProductPrice, priceFromGrosz } from "~/lib/utils";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+} from "~/lib/utils";
 
 import {
   ProductCardContent,
@@ -127,20 +130,14 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                     <ProductCardRoot>
                       <ProductCardMedia>
                         <ProductCardImage
-                          to={`/projekty/${product.slug}`}
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                         />
                       </ProductCardMedia>
                       <ProductCardContent>
-                        <ProductCardInfo
-                          name={product.name}
-                          to={`/projekty/${product.slug}`}
-                        />
+                        <ProductCardInfo name={product.name} />
                         <ProductCardPrice
-                          price={priceFromGrosz(
-                            calculateProductPrice(product).lineTotalInGrosz
-                          )}
+                          pricing={calculateProductPriceDisplayData(product)}
                         />
                       </ProductCardContent>
 
@@ -189,7 +186,6 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                       )}
                       <ProductCardMedia size="sm">
                         <ProductCardImage
-                          to={`/ubrania/${piece.slug}`}
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                         />
@@ -200,10 +196,9 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                           name={piece.name}
                           brand={piece.brand.name}
                           size={piece.size.name}
-                          to={`/ubrania/${piece.slug}`}
                         />
                         <ProductCardPrice
-                          price={priceFromGrosz(piece.priceInGrosz)}
+                          pricing={calculatePiecePriceDisplayData(piece)}
                         />
                       </ProductCardContent>
                     </ProductCardRoot>

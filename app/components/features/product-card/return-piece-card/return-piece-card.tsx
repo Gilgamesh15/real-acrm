@@ -1,3 +1,6 @@
+import type { DBQueryResult } from "~/lib/types";
+import { calculatePiecePriceDisplayData } from "~/lib/utils";
+
 import {
   ProductCardContent,
   ProductCardImage,
@@ -16,23 +19,17 @@ const ReturnPieceCard = ({
   id,
   name,
 }: {
-  piece: {
-    id: string;
-    name: string;
-    price: number;
-    primaryImage: {
-      url: string;
-      alt: string;
-    };
-    brand: { name: string };
-    size: { name: string };
-  };
+  piece: DBQueryResult<
+    "pieces",
+    { with: { discount: true; images: true; brand: true; size: true } }
+  >;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   ariaInvalid?: boolean;
   id?: string;
   name?: string;
 }) => {
+  const [primaryImage] = piece.images;
   return (
     <ProductCardRoot size="sm">
       <ProductCardMedia size="sm">
@@ -44,8 +41,8 @@ const ReturnPieceCard = ({
           name={name}
         />
         <ProductCardImage
-          url={piece.primaryImage.url}
-          alt={piece.primaryImage.alt}
+          url={primaryImage?.url || ""}
+          alt={primaryImage?.alt || ""}
         />
       </ProductCardMedia>
       <ProductCardContent orientation="horizontal">
@@ -55,7 +52,7 @@ const ReturnPieceCard = ({
           brand={piece.brand.name}
           size={piece.size.name}
         />
-        <ProductCardPrice price={piece.price} />
+        <ProductCardPrice pricing={calculatePiecePriceDisplayData(piece)} />
       </ProductCardContent>
     </ProductCardRoot>
   );

@@ -120,7 +120,6 @@ export async function action({ request, context }: Route.ActionArgs) {
           slug,
           keywords: args.keywords,
           description: args.description,
-          pricePercentageSkew: args.pricePercentageSkew,
           homeFeaturedOrder: args.homeFeaturedOrder ?? -1,
         })
         .returning();
@@ -212,7 +211,6 @@ export default function AdminProductsCreatePage({
         type: "doc",
         content: [],
       },
-      pricePercentageSkew: 0,
       images: [],
       piecesIds: [],
       homeFeaturedOrder: -1,
@@ -270,18 +268,6 @@ export default function AdminProductsCreatePage({
                     label="Słowa kluczowe"
                     description="Tagi ułatwiające wyszukiwanie produktu przez klientów"
                     suggestions={keywordSuggestions}
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="pricePercentageSkew">
-                {(field) => (
-                  <field.NumberField
-                    label="Procentowy zmiana ceny"
-                    description="Procentowy zmiana ceny produktu"
-                    min={0}
-                    max={100}
-                    stepper={1}
-                    placeholder="0"
                   />
                 )}
               </form.AppField>

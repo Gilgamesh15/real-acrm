@@ -10,7 +10,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
-  const take = parseInt(url.searchParams.get("take") || "10");
+  const take = parseInt(url.searchParams.get("take") || "10", 10);
 
   try {
     const results = await filterService.findFiltered(
@@ -22,6 +22,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
               limit: 1,
               orderBy: asc(schema.images.displayOrder),
             },
+            discount: true,
             pieces: {
               with: {
                 brand: true,
@@ -31,12 +32,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
                   limit: 1,
                   orderBy: asc(schema.images.displayOrder),
                 },
+                discount: true,
               },
             },
           },
         },
         piece: {
           with: {
+            discount: true,
             category: true,
             brand: true,
             size: true,

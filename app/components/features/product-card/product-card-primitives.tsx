@@ -1,5 +1,5 @@
 import { differenceInSeconds } from "date-fns";
-import { ChevronDown, InfoIcon, XIcon } from "lucide-react";
+import { ChevronDown, XIcon } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router";
 
@@ -20,7 +20,8 @@ import {
 } from "~/components/ui/tooltip";
 
 import { useCountdown } from "~/hooks/use-countdown";
-import { cn, formatCurrency } from "~/lib/utils";
+import type { PriceDisplayData } from "~/lib/types";
+import { cn, formatCurrency, formatDiscountLabel } from "~/lib/utils";
 
 const ProductCardRoot = ({
   size = "default",
@@ -297,12 +298,22 @@ const ProductCardPiecesSkeleton = () => {
   );
 };
 
-const ProductCardPrice = ({ price }: { price: number }) => {
+const ProductCardPrice = ({ pricing }: { pricing: PriceDisplayData }) => {
   return (
-    <div className="flex flex-1 flex-col gap-1 items-end text-right">
+    <div className="flex flex-1 flex-col gap-0.5 items-end text-right">
       <p className="w-fit leading-snug text-base font-medium">
-        {formatCurrency(price)}
+        {formatCurrency(pricing.finalPrice)}
       </p>
+      {pricing.hasDiscount && (
+        <>
+          <span className="text-xs text-muted-foreground line-through">
+            {formatCurrency(pricing.originalPrice)}
+          </span>
+          <Badge variant="success" className="text-xs">
+            {formatDiscountLabel(pricing.discount)}
+          </Badge>
+        </>
+      )}
     </div>
   );
 };
@@ -331,14 +342,13 @@ const ProductCardCountdown = ({ expiresAt }: { expiresAt: Date }) => {
     <Badge className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2">
       <Tooltip>
         <TooltipTrigger>
-          <InfoIcon />
+          <span>
+            {minutes.toString().padStart(2, "0")}:
+            {seconds.toString().padStart(2, "0")}
+          </span>
         </TooltipTrigger>
         <TooltipContent>Ten przedmiot jest zarezerwowany</TooltipContent>
       </Tooltip>
-      <span>
-        {minutes.toString().padStart(2, "0")}:
-        {seconds.toString().padStart(2, "0")}
-      </span>
     </Badge>
   );
 };

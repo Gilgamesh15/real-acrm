@@ -30,7 +30,10 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { OrderData } from "~/components/features/order-data/order-data";
-import { PriceSummary } from "~/components/features/price-summary/price-summary";
+import {
+  PriceSummary,
+  type PriceSummaryProps,
+} from "~/components/features/price-summary/price-summary";
 import { OrderTimeline } from "~/components/features/timeline/order-timeline";
 import {
   ActionDialog,
@@ -42,7 +45,11 @@ import { sessionContext } from "~/context/session-context.server";
 import { useDialogState } from "~/hooks/use-dialog-state";
 import { auth } from "~/lib/auth";
 import { db } from "~/lib/db";
-import { calculateProductPrice, formatDate, priceFromGrosz } from "~/lib/utils";
+import {
+  formatDate,
+  groupOrderItems,
+  priceDataToDisplayData,
+} from "~/lib/utils";
 import { cn } from "~/lib/utils";
 import { orderDetailsFromOrder, orderStatusFromOrder } from "~/lib/utils";
 
@@ -74,11 +81,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           product: {
             with: {
               images: true,
-              pieces: {
-                with: {
-                  images: true,
-                },
-              },
             },
           },
           piece: {
@@ -301,28 +303,29 @@ export default function OrderDetailPage({ loaderData }: Route.ComponentProps) {
     );
   };
 
-  const products = order.items
-    .map((item) => item.product)
-    .filter((product) => product !== null);
-  const pieces = order.items
-    .map((item) => item.piece)
-    .filter((piece) => piece !== null);
+  const { products, pieces } = groupOrderItems(order.items);
 
-  const priceSummary = {
-    subtotal: priceFromGrosz(order.subtotalInGrosz),
-    total: priceFromGrosz(order.totalInGrosz),
-    items: [
-      ...products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        price: priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz),
-      })),
-      ...pieces.map((piece) => ({
-        id: piece.id,
-        name: piece.name,
-        price: priceFromGrosz(piece.priceInGrosz),
-      })),
-    ],
+  const priceSummaryItems: PriceSummaryProps["items"] = [
+    ...products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      ...priceDataToDisplayData(product),
+    })),
+    ...pieces.map((piece) => ({
+      id: piece.id,
+      name: piece.name,
+      ...priceDataToDisplayData(piece),
+    })),
+  ];
+
+  const priceSummary: PriceSummaryProps = {
+    items: priceSummaryItems,
+    subtotal: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    total: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    totalSavings: priceSummaryItems.reduce(
+      (acc, item) => acc + item.savings,
+      0
+    ),
   };
 
   const orderDetails = orderDetailsFromOrder(order);

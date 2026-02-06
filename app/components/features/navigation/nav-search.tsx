@@ -1,5 +1,6 @@
 import { AlertCircleIcon, SearchIcon } from "lucide-react";
 import React from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
@@ -33,7 +34,12 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 
 import { useSearch } from "~/hooks/use-search";
-import { calculateProductPrice, priceFromGrosz } from "~/lib/utils";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+  pieceToGoogleAnalyticsItem,
+  productToGoogleAnalyticsItem,
+} from "~/lib/utils";
 
 import {
   ProductCardContent,
@@ -49,6 +55,34 @@ function NavSearch({ className }: { className?: string }) {
   const [open, setOpen] = React.useState(false);
   const { search, setSearch, data, isLoading, error, isError, hasSearch } =
     useSearch();
+
+  // Track last fired search term to avoid duplicate events
+  const lastFiredSearch = React.useRef<string>("");
+
+  // Fire search event when search is performed with results
+  React.useEffect(() => {
+    if (
+      hasSearch &&
+      data &&
+      data.length > 0 &&
+      search !== lastFiredSearch.current
+    ) {
+      lastFiredSearch.current = search;
+      window.gtag?.("event", "search", {
+        search_term: search,
+      });
+    }
+  }, [hasSearch, data, search]);
+
+  useHotkeys(
+    "Enter",
+    () => {
+      setOpen(false);
+      navigate(`/kategorie?search=${search}`);
+    },
+    { enabled: open, enableOnFormTags: true },
+    [search, navigate]
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -130,66 +164,70 @@ function NavSearch({ className }: { className?: string }) {
               </div>
             ) : data && data.length > 0 ? (
               <div className="space-y-1">
-                {data.map((item) => {
+                {data.map((item, index) => {
                   if (item._type === "piece") {
                     const [primaryImage] = item.images;
+                    const handlePieceClick = () => {
+                      window.gtag?.("event", "select_item", {
+                        item_list_id: "search_results",
+                        item_list_name: "Wyniki wyszukiwania",
+                        items: [pieceToGoogleAnalyticsItem(item, { index })],
+                      });
+                      navigate(`/ubrania/${item.slug}`);
+                      setOpen(false);
+                    };
                     return (
-                      <ProductCardRoot size="sm">
+                      <ProductCardRoot size="sm" key={item.id}>
                         <ProductCardMedia size="md">
                           <ProductCardImage
                             url={primaryImage?.url || ""}
                             alt={primaryImage?.alt || ""}
-                            onClick={() => {
-                              navigate(`/ubrania/${item.slug}`);
-                              setOpen(false);
-                            }}
+                            onClick={handlePieceClick}
                           />
                         </ProductCardMedia>
                         <ProductCardContent orientation="horizontal">
                           <ProductCardInfo
                             orientation="vertical"
                             name={item.name}
-                            onClick={() => {
-                              navigate(`/ubrania/${item.slug}`);
-                              setOpen(false);
-                            }}
+                            onClick={handlePieceClick}
                             brand={item.brand.name}
                             size={item.size.name}
                           />
                           <ProductCardPrice
-                            price={priceFromGrosz(item.priceInGrosz)}
+                            pricing={calculatePiecePriceDisplayData(item)}
                           />
                         </ProductCardContent>
                       </ProductCardRoot>
                     );
                   }
                   const [primaryImage] = item.images;
+                  const handleProductClick = () => {
+                    window.gtag?.("event", "select_item", {
+                      item_list_id: "search_results",
+                      item_list_name: "Wyniki wyszukiwania",
+                      items: productToGoogleAnalyticsItem(item, { index }),
+                    });
+                    navigate(`/projekty/${item.slug}`);
+                    setOpen(false);
+                  };
                   return (
-                    <ProductCardRoot size="sm">
+                    <ProductCardRoot size="sm" key={item.id}>
                       <ProductCardMedia size="md">
                         <ProductCardImage
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
-                          onClick={() => {
-                            navigate(`/projekty/${item.slug}`);
-                            setOpen(false);
-                          }}
+                          onClick={handleProductClick}
                         />
                       </ProductCardMedia>
                       <ProductCardContent orientation="horizontal">
                         <ProductCardInfo
                           orientation="vertical"
                           name={item.name}
-                          onClick={() => {
-                            navigate(`/projekty/${item.slug}`);
-                            setOpen(false);
-                          }}
+                          onClick={handleProductClick}
                           textSize="default"
                         />
                         <ProductCardPrice
-                          price={priceFromGrosz(
-                            calculateProductPrice(item).lineTotalInGrosz
-                          )}
+                          pricing={calculateProductPriceDisplayData(item)}
                         />
                       </ProductCardContent>
                     </ProductCardRoot>

@@ -3,7 +3,7 @@ import { filterService } from "db/services/filter.service";
 import { asc } from "drizzle-orm";
 import { ChevronsRightIcon, FilterIcon } from "lucide-react";
 import React from "react";
-import { Await, Link, useLocation } from "react-router";
+import { Await, Link } from "react-router";
 
 import { Accordion } from "~/components/ui/accordion";
 import { Button, buttonVariants } from "~/components/ui/button";
@@ -42,7 +42,12 @@ import { useCheckoutDialog } from "~/components/features/providers/checkout-dial
 import { useStructuredData } from "~/hooks/use-structured-data";
 import { generateBreadcrumbListStructuredData } from "~/lib/seo";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
-import { cn, getSlugPath, sortFilterOptions } from "~/lib/utils";
+import {
+  cn,
+  getSlugPath,
+  pieceToGoogleAnalyticsItem,
+  sortFilterOptions,
+} from "~/lib/utils";
 import { filterSearchParamsCache } from "~/lib/utils.server";
 
 import type { Route } from "./+types/pieces-browse.page";
@@ -68,7 +73,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (category === "kategorie") {
     category = undefined;
   }
-  const filterData = await filterService.getPieceFilterData(category);
+  const filterData = await filterService.getPieceFilterData();
 
   const piecesPromise = filterService
     .findFilteredPieces(
@@ -81,6 +86,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           category: true,
           brand: true,
           size: true,
+          discount: true,
         },
       },
       {
@@ -101,6 +107,44 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+export const meta: Route.MetaFunction = ({ loaderData, params }) => {
+  const {
+    filterData: { categories },
+  } = loaderData;
+
+  const pathSegments = params["*"].split("/").filter(Boolean);
+  const categorySlug = pathSegments[pathSegments.length - 1];
+  const isRoot = categorySlug === "kategorie";
+  const category = categorySlug
+    ? categories.find((category) => category.slug === categorySlug)
+    : undefined;
+
+  const categoryName = category?.name ?? "Przeglądaj ubrania | ACRM";
+  const pageTitle = isRoot
+    ? "Przeglądaj ubrania | ACRM"
+    : `${categoryName} | ACRM`;
+  const pageDescription = `Przeglądaj ${categoryName.toLowerCase()}. Marki premium w przystępnych cenach. Darmowa dostawa. Zwroty do 14 dni.`;
+  const pageUrl = `${BASE_URL}/kategorie${category ? `/${getSlugPath(category)}` : ""}`;
+
+  return [
+    { title: pageTitle },
+    { name: "description", content: pageDescription },
+    { name: "robots", content: "index, follow" },
+    { property: "og:type", content: "website" },
+    { property: "og:title", content: pageTitle },
+    { property: "og:description", content: pageDescription },
+    { property: "og:url", content: pageUrl },
+    { property: "og:site_name", content: "ACRM | Fashion Projects" },
+    { property: "og:locale", content: "pl_PL" },
+    { property: "og:image", content: "https://acrm.pl/logo-light.png" },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: "ACRM | Fashion Projects" },
+    { property: "og:image:type", content: "image/png" },
+    { property: "og:image:url", content: "https://acrm.pl/logo-light.png" },
+  ];
+};
+
 export default function ProductsBrowsePage({
   loaderData,
   params,
@@ -110,30 +154,12 @@ export default function ProductsBrowsePage({
     piecesPromise,
   } = loaderData;
 
-  const { isInCart, addPiece, removePiece } = useCart();
-  const { onPieceBuyNow } = useCheckoutDialog();
-
-  const location = useLocation();
-  const pathSegments = location.pathname.split("/").filter(Boolean);
+  const pathSegments = params["*"].split("/").filter(Boolean);
   const categorySlug = pathSegments[pathSegments.length - 1];
-  const isRoot = categorySlug === "kategorie";
 
-  const categoryName = isRoot
-    ? "Wszystkie ubrania"
-    : categorySlug
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-  const pageTitle = isRoot
-    ? "Przeglądaj ubrania | ACRM"
-    : `${categoryName} | Ubrania | ACRM`;
-  const pageDescription = `Przeglądaj ${categoryName.toLowerCase()}. Marki premium w przystępnych cenach. Darmowa dostawa. Zwroty do 14 dni.`;
-  const pageUrl = `${BASE_URL}${location.pathname}`;
-
-  const catSlug = params["*"].split("/").pop();
-  const category = catSlug
-    ? categories.find((category) => category.slug === catSlug)
-    : undefined;
+  const category = categories.find(
+    (category) => category.slug === categorySlug
+  );
 
   useStructuredData(
     category ? generateBreadcrumbListStructuredData(category) : undefined,
@@ -141,54 +167,115 @@ export default function ProductsBrowsePage({
   );
 
   return (
-    <>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      <meta name="robots" content="index, follow" />
+    <FiltersProvider
+      priceMin={priceRange.min}
+      priceMax={priceRange.max}
+      tags={tags}
+      sizes={sizeGroups}
+      brands={brandGroups}
+    >
+      <div className="flex flex-col gap-4">
+        <Drawer>
+          <Section padding="xs" className="flex flex-col gap-2">
+            <div className="px-2">
+              <FilterSearchBar />
+            </div>
 
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:url" content={pageUrl} />
-      <meta property="og:site_name" content="ACRM | Fashion Projects" />
-      <meta property="og:locale" content="pl_PL" />
-
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-
-      <link rel="canonical" href={pageUrl} />
-
-      <FiltersProvider
-        priceMin={priceRange.min}
-        priceMax={priceRange.max}
-        tags={tags}
-        sizes={sizeGroups}
-        brands={brandGroups}
-      >
-        <div className="flex flex-col gap-4">
-          <Drawer>
-            <Section padding="xs" className="flex flex-col gap-2">
-              <div className="px-2">
-                <FilterSearchBar />
+            <div className="w-full overflow-x-auto flex items-center">
+              <div className="w-fit mx-auto flex gap-2 px-2">
+                <DrawerTrigger asChild>
+                  <Button variant="outline" size="icon-sm">
+                    <FilterIcon />
+                  </Button>
+                </DrawerTrigger>
+                <MultiSelectFilter
+                  label="Style"
+                  options={tags.map((tag) => ({
+                    value: tag.slug,
+                    label: tag.name,
+                  }))}
+                  param="tags"
+                />
+                <MultiSelectFilter
+                  label="Rozmiary"
+                  options={sizeGroups.map((size) => ({
+                    value: size.slug,
+                    label: size.name,
+                  }))}
+                  param="sizes"
+                />
+                <MultiSelectFilter
+                  label="Marki"
+                  options={brandGroups.map((brand) => ({
+                    value: brand.slug,
+                    label: brand.name,
+                  }))}
+                  param="brands"
+                />
+                <RangeFilter
+                  label="Cena"
+                  min={0}
+                  max={500}
+                  paramMin="priceMin"
+                  paramMax="priceMax"
+                />
+                <OptionalSingleSelectFilter
+                  label="Płeć"
+                  options={[
+                    { value: "male", label: "Men" },
+                    { value: "female", label: "Women" },
+                    { value: "unisex", label: "Unisex" },
+                  ]}
+                  param="gender"
+                />
+                <SingleSelectFilter
+                  label="Sortuj według"
+                  options={sortFilterOptions}
+                  param="sortBy"
+                />
               </div>
+            </div>
 
-              <div className="w-full overflow-x-auto flex items-center">
-                <div className="w-fit mx-auto flex gap-2 px-2">
-                  <DrawerTrigger asChild>
-                    <Button variant="outline" size="icon-sm">
-                      <FilterIcon />
-                    </Button>
-                  </DrawerTrigger>
-                  <MultiSelectFilter
-                    label="Tagi"
+            <div className="w-full flex flex-wrap items-center justify-center gap-2">
+              <FilterValues>
+                {(filterValues) =>
+                  filterValues.map((filter, i) => (
+                    <FilterValue
+                      key={i}
+                      label={filter.label}
+                      param={filter.param}
+                      value={filter.value}
+                    />
+                  ))
+                }
+              </FilterValues>
+            </div>
+          </Section>
+
+          <DrawerContent className="font-secondary">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>Filtry</DrawerTitle>
+              <DrawerDescription>
+                Dostosuj wyszukiwanie za pomocą filtrów
+              </DrawerDescription>
+            </DrawerHeader>
+            <ScrollArea className="h-[60vh] px-4 py-2">
+              <div
+                style={{
+                  display: "table",
+                  minWidth: "100%",
+                }}
+              >
+                <Accordion type="single" collapsible className="w-full">
+                  <DrawerMultiSelectFilter
+                    label="Style"
                     options={tags.map((tag) => ({
                       value: tag.slug,
                       label: tag.name,
                     }))}
                     param="tags"
                   />
-                  <MultiSelectFilter
+                  <DrawerMultiSelectFilter
                     label="Rozmiary"
                     options={sizeGroups.map((size) => ({
                       value: size.slug,
@@ -196,7 +283,7 @@ export default function ProductsBrowsePage({
                     }))}
                     param="sizes"
                   />
-                  <MultiSelectFilter
+                  <DrawerMultiSelectFilter
                     label="Marki"
                     options={brandGroups.map((brand) => ({
                       value: brand.slug,
@@ -204,194 +291,178 @@ export default function ProductsBrowsePage({
                     }))}
                     param="brands"
                   />
-                  <RangeFilter
+                  <DrawerOptionalSingleSelectFilter
+                    label="Płeć"
+                    options={[
+                      { value: "male", label: "Mężczyzna" },
+                      { value: "female", label: "Kobieta" },
+                      { value: "unisex", label: "Unisex" },
+                    ]}
+                    param="gender"
+                  />
+                  <DrawerRangeFilter
                     label="Cena"
                     min={0}
                     max={500}
                     paramMin="priceMin"
                     paramMax="priceMax"
                   />
-                  <OptionalSingleSelectFilter
-                    label="Płeć"
-                    options={[
-                      { value: "male", label: "Men" },
-                      { value: "female", label: "Women" },
-                      { value: "unisex", label: "Unisex" },
-                    ]}
-                    param="gender"
-                  />
-                  <SingleSelectFilter
-                    label="Sortuj według"
-                    options={sortFilterOptions}
-                    param="sortBy"
-                  />
-                </div>
+                </Accordion>
               </div>
-
-              <div className="w-full flex flex-wrap items-center justify-center gap-2">
-                <FilterValues>
-                  {(filterValues) =>
-                    filterValues.map((filter, i) => (
-                      <FilterValue
-                        key={i}
-                        label={filter.label}
-                        param={filter.param}
-                        value={filter.value}
-                      />
-                    ))
-                  }
-                </FilterValues>
-              </div>
-            </Section>
-
-            <DrawerContent className="font-secondary">
-              <DrawerHeader className="border-b pb-4">
-                <DrawerTitle>Filtry</DrawerTitle>
-                <DrawerDescription>
-                  Dostosuj wyszukiwanie za pomocą filtrów
-                </DrawerDescription>
-              </DrawerHeader>
-              <ScrollArea className="h-[60vh] px-4 py-2">
-                <div
-                  style={{
-                    display: "table",
-                    minWidth: "100%",
-                  }}
-                >
-                  <Accordion type="single" collapsible className="w-full">
-                    <DrawerMultiSelectFilter
-                      label="Tags"
-                      options={tags.map((tag) => ({
-                        value: tag.slug,
-                        label: tag.name,
-                      }))}
-                      param="tags"
-                    />
-                    <DrawerMultiSelectFilter
-                      label="Rozmiary"
-                      options={sizeGroups.map((size) => ({
-                        value: size.slug,
-                        label: size.name,
-                      }))}
-                      param="sizes"
-                    />
-                    <DrawerMultiSelectFilter
-                      label="Marki"
-                      options={brandGroups.map((brand) => ({
-                        value: brand.slug,
-                        label: brand.name,
-                      }))}
-                      param="brands"
-                    />
-                    <DrawerOptionalSingleSelectFilter
-                      label="Płeć"
-                      options={[
-                        { value: "male", label: "Mężczyzna" },
-                        { value: "female", label: "Kobieta" },
-                        { value: "unisex", label: "Unisex" },
-                      ]}
-                      param="gender"
-                    />
-                    <DrawerRangeFilter
-                      label="Cena"
-                      min={0}
-                      max={500}
-                      paramMin="priceMin"
-                      paramMax="priceMax"
-                    />
-                  </Accordion>
-                </div>
-              </ScrollArea>
-              <DrawerFooter className="border-t pt-4">
-                <div className="flex w-full items-center justify-between">
-                  <Button variant="outline" size="sm">
-                    Wyczyść filtry
+            </ScrollArea>
+            <DrawerFooter className="border-t pt-4">
+              <div className="flex w-full items-center justify-between">
+                <Button variant="outline" size="sm">
+                  Wyczyść filtry
+                </Button>
+                <DrawerClose asChild>
+                  <Button size="sm" variant="default">
+                    Zastosuj filtry
                   </Button>
-                  <DrawerClose asChild>
-                    <Button size="sm" variant="default">
-                      Zastosuj filtry
-                    </Button>
-                  </DrawerClose>
-                </div>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
+                </DrawerClose>
+              </div>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
-          <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4 w-full px-4 md:px-6 lg:px-8">
-            {categories.map((category) => {
-              return (
-                <Link
-                  to={`/kategorie/${getSlugPath(category)}`}
-                  key={category.id}
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "lg" }),
-                    "relative h-14 w-full"
-                  )}
-                >
-                  <Image
-                    src={category.image || ""}
-                    alt={category.name}
-                    mode="cover"
-                    className="absolute inset-0 size-full -z-10 object-cover"
-                  />
-                  <h2 className="text-lg text-shadow-2xs font-secondary tracking-wide">
-                    {category.name}
-                  </h2>
-                  <ChevronsRightIcon />
-                </Link>
-              );
-            })}
-          </div>
-
-          <React.Suspense
-            fallback={
-              <Container>
-                <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
-                  {Array.from({ length: 10 }).map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] aspect-5/8"
-                    />
-                  ))}
-                </Section>
-              </Container>
-            }
-          >
-            <Await resolve={piecesPromise}>
-              {({ pieces, total }) => (
-                <Container>
-                  <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
-                    {pieces.map((piece) => (
-                      <MainPieceCard
-                        className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)]"
-                        key={piece.id}
-                        piece={piece}
-                        href={`/ubrania/${piece.slug}`}
-                        isInCart={isInCart(piece.id)}
-                        onBuyNow={() => onPieceBuyNow(piece)}
-                        onToggleCart={() => {
-                          if (isInCart(piece.id)) {
-                            removePiece(piece.id);
-                          } else {
-                            addPiece(piece);
-                          }
-                        }}
-                      />
-                    ))}
-                  </Section>
-                  <div>
-                    <FilterPagination
-                      totalPages={Math.ceil(
-                        Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
-                      )}
-                    />
-                  </div>
-                </Container>
-              )}
-            </Await>
-          </React.Suspense>
+        <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4 w-full px-4 md:px-6 lg:px-8">
+          {categories.map((category) => {
+            return (
+              <Link
+                to={`/kategorie/${getSlugPath(category)}`}
+                key={category.id}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "relative h-14 w-full"
+                )}
+              >
+                <Image
+                  src={category.image || ""}
+                  alt={category.name}
+                  mode="cover"
+                  className="absolute inset-0 size-full -z-10 object-cover"
+                />
+                <h2 className="text-lg text-shadow-2xs font-secondary tracking-wide">
+                  {category.name}
+                </h2>
+                <ChevronsRightIcon />
+              </Link>
+            );
+          })}
         </div>
-      </FiltersProvider>
-    </>
+
+        <React.Suspense
+          fallback={
+            <Container>
+              <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] aspect-5/8"
+                  />
+                ))}
+              </Section>
+            </Container>
+          }
+        >
+          <Await resolve={piecesPromise}>
+            {({ pieces, total }) => (
+              <PiecesList
+                pieces={pieces}
+                total={total}
+                categoryName={category?.name ?? "Kategorie"}
+                categorySlug={category?.slug ?? "kategorie"}
+              />
+            )}
+          </Await>
+        </React.Suspense>
+      </div>
+    </FiltersProvider>
+  );
+}
+
+function PiecesList({
+  pieces,
+  total,
+  categoryName,
+  categorySlug,
+}: {
+  categoryName: string;
+  categorySlug: string;
+} & Awaited<Route.ComponentProps["loaderData"]["piecesPromise"]>) {
+  const { isInCart, addPiece, removePiece } = useCart();
+  const { onPieceBuyNow } = useCheckoutDialog();
+
+  React.useEffect(() => {
+    window.gtag?.("event", "view_item_list", {
+      currency: "PLN",
+      item_list_name: categoryName,
+      item_list_id: `category_${categorySlug}`,
+      items: pieces.map((piece, index) =>
+        pieceToGoogleAnalyticsItem(piece, {
+          item_list_id: `category_${categorySlug}`,
+          item_list_name: categoryName,
+          index: index,
+        })
+      ),
+    });
+  }, [categoryName, categorySlug, pieces]);
+
+  return (
+    <Container>
+      <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+        {pieces.map((piece, index) => (
+          <MainPieceCard
+            className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)]"
+            key={piece.id}
+            piece={piece}
+            href={`/ubrania/${piece.slug}`}
+            isInCart={isInCart(piece.id)}
+            onClick={() => {
+              window.gtag?.("event", "select_item", {
+                item_list_id: `category_${categorySlug}`,
+                item_list_name: categoryName,
+                items: [
+                  pieceToGoogleAnalyticsItem(piece, {
+                    item_list_id: `category_${categorySlug}`,
+                    item_list_name: categoryName,
+                    index,
+                  }),
+                ],
+              });
+            }}
+            onBuyNow={() =>
+              onPieceBuyNow(piece, {
+                item_list_id: `category_${categorySlug}`,
+                item_list_name: categoryName,
+                index: index,
+              })
+            }
+            onToggleCart={() => {
+              if (isInCart(piece.id)) {
+                removePiece(piece.id, true, {
+                  item_list_id: `category_${categorySlug}`,
+                  item_list_name: categoryName,
+                  index: index,
+                });
+              } else {
+                addPiece(piece, true, {
+                  item_list_id: `category_${categorySlug}`,
+                  item_list_name: categoryName,
+                  index: index,
+                });
+              }
+            }}
+          />
+        ))}
+      </Section>
+      <div className="mt-8">
+        <FilterPagination
+          totalPages={Math.ceil(
+            Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE))
+          )}
+        />
+      </div>
+    </Container>
   );
 }

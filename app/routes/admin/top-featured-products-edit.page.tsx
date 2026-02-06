@@ -57,6 +57,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const products = await db.query.products.findMany({
     orderBy: asc(schema.products.homeFeaturedOrder),
     with: {
+      discount: true,
       images: {
         limit: 1,
         orderBy: asc(schema.images.displayOrder),
@@ -64,6 +65,7 @@ export async function loader({ context }: Route.LoaderArgs) {
       pieces: {
         orderBy: asc(schema.pieces.productDisplayOrder),
         with: {
+          discount: true,
           images: {
             limit: 1,
             orderBy: asc(schema.images.displayOrder),

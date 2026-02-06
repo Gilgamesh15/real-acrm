@@ -1,8 +1,8 @@
 import { type ColumnDef } from "@tanstack/react-table";
+import { productStatusEnum } from "db/schema";
 import {
   BadgeIcon,
   CalendarIcon,
-  DollarSignIcon,
   Edit,
   Eye,
   EyeOff,
@@ -35,10 +35,9 @@ import type { DBQueryResult } from "~/lib/types";
 import {
   PRODUCT_STATUS_BADGE_TEXT_MAP,
   PRODUCT_STATUS_BADGE_VARIANT_MAP,
-  calculateProductPrice,
+  calculateProductPriceDisplayData,
   formatCurrency,
   formatDate,
-  priceFromGrosz,
 } from "~/lib/utils";
 
 import type { AdminProductsDataTableMeta } from "./admin-products-list.page";
@@ -55,7 +54,17 @@ type Product = DBQueryResult<
   {
     with: {
       images: true;
-      pieces: true;
+      pieces: {
+        with: {
+          discount: true;
+        };
+      };
+      discount: {
+        columns: {
+          amountOffInGrosz: true;
+          percentOff: true;
+        };
+      };
     };
   }
 >;
@@ -100,21 +109,12 @@ export const columnsConfig = [
     .icon(ShirtIcon)
     .build(),
   dtf
-    .number()
-    .id("price")
-    .accessor((row) =>
-      priceFromGrosz(calculateProductPrice(row).lineTotalInGrosz)
-    )
-    .displayName("Cena")
-    .icon(DollarSignIcon)
-    .build(),
-  dtf
     .option()
     .id("status")
     .accessor((row) => row.status)
     .displayName("Status")
     .options(
-      ["draft", "published", "archived"].map((status) => ({
+      Object.values(productStatusEnum.enumValues).map((status) => ({
         value: status,
         label:
           PRODUCT_STATUS_BADGE_TEXT_MAP[
@@ -184,11 +184,20 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "price",
     header: "Cena",
     cell: ({ row }) => {
-      const price = priceFromGrosz(
-        calculateProductPrice(row.original).lineTotalInGrosz
+      const product = row.original;
+      const price = calculateProductPriceDisplayData(product);
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">
+            {formatCurrency(price.finalPrice)}
+          </span>
+          {price.hasDiscount && (
+            <span className="text-sm text-gray-500">
+              {formatCurrency(price.originalPrice)}
+            </span>
+          )}
+        </div>
       );
-      // TODO: Handle discount when discount service is available
-      return formatCurrency(price);
     },
   },
   {

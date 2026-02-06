@@ -37,6 +37,7 @@ const getCartProductSelect = (ids: string[]) =>
             limit: 1,
             orderBy: asc(schema.images.displayOrder),
           },
+          discount: true,
         },
         orderBy: asc(schema.pieces.productDisplayOrder),
       },
@@ -44,6 +45,7 @@ const getCartProductSelect = (ids: string[]) =>
         limit: 1,
         orderBy: asc(schema.images.displayOrder),
       },
+      discount: true,
     },
   }) satisfies DBQueryArgs<"products">;
 
@@ -80,6 +82,7 @@ const getCartPieceSelect = (ids: string[]) =>
       brand: true,
       category: true,
       size: true,
+      discount: true,
     },
   }) satisfies DBQueryArgs<"pieces">;
 

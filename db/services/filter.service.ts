@@ -5,11 +5,9 @@ import {
   desc,
   eq,
   exists,
-  gte,
   inArray,
   isNull,
   lte,
-  ne,
   notExists,
   or,
   sql,
@@ -17,13 +15,15 @@ import {
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "~/lib/db";
-import type { Logger } from "~/lib/logger.server";
-import { logger } from "~/lib/logger.server";
+//import type { Logger } from "~/lib/logger.server";
+//import { logger } from "~/lib/logger.server";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
 import { type FilterArgs, priceFromGrosz } from "~/lib/utils";
 
 class FilterService {
-  constructor(private logger: Logger) {}
+  constructor() {
+    //private logger: Logger
+  }
 
   static SIMILARITY_LOWER_BOUND = 0.12; // Lowered to catch more results
 
@@ -61,6 +61,44 @@ class FilterService {
         ELSE 0
       END
     ) * ${lengthBoost}`;
+  }
+
+  private getPieceEffectivePriceExpr() {
+    return sql`COALESCE(
+      (SELECT CASE
+        WHEN d.amount_off_in_grosz IS NOT NULL AND d.amount_off_in_grosz > 0 THEN
+          GREATEST(${schema.pieces.priceInGrosz} - d.amount_off_in_grosz, 0)
+        WHEN d.percent_off IS NOT NULL AND d.percent_off > 0 THEN
+          ${schema.pieces.priceInGrosz} - ROUND(${schema.pieces.priceInGrosz} * d.percent_off / 100.0)
+        ELSE ${schema.pieces.priceInGrosz}
+      END FROM ${schema.discounts} d WHERE d.id = ${schema.pieces.discountId}),
+      ${schema.pieces.priceInGrosz}
+    )`;
+  }
+
+  private getProductEffectivePriceExpr() {
+    return sql`(SELECT CASE
+        WHEN d.amount_off_in_grosz IS NOT NULL AND d.amount_off_in_grosz > 0 THEN
+          GREATEST(sub.piece_total - d.amount_off_in_grosz, 0)
+        WHEN d.percent_off IS NOT NULL AND d.percent_off > 0 THEN
+          sub.piece_total - ROUND(sub.piece_total * d.percent_off / 100.0)
+        ELSE sub.piece_total
+      END
+      FROM (
+        SELECT COALESCE(SUM(CASE
+            WHEN pd.amount_off_in_grosz IS NOT NULL AND pd.amount_off_in_grosz > 0 THEN
+              GREATEST(p.price_in_grosz - pd.amount_off_in_grosz, 0)
+            WHEN pd.percent_off IS NOT NULL AND pd.percent_off > 0 THEN
+              p.price_in_grosz - ROUND(p.price_in_grosz * pd.percent_off / 100.0)
+            ELSE p.price_in_grosz
+          END), 0) AS piece_total
+        FROM ${schema.pieces} p LEFT JOIN ${schema.discounts} pd ON p.discount_id = pd.id
+        WHERE p.product_id = ${schema.products.id}
+          AND p.status = 'published'
+          AND (p.reserved_until IS NULL OR p.reserved_until > NOW())
+      ) sub
+      LEFT JOIN ${schema.discounts} d ON d.id = ${schema.products.discountId}
+    )`;
   }
 
   private getProductScoreExpression(search: string) {
@@ -116,7 +154,7 @@ class FilterService {
     }: { product: TProductArgs; piece: TPieceArgs },
     take: number = 10
   ) {
-    // Length penalty factor: shorter queries get boosted
+    search = search.trim().slice(0, 100);
     const searchLength = search.length;
     const lengthBoost = sql<number>`GREATEST(1.0, 1.5 - (${searchLength}::float / 20.0))`;
     const rankedPieces = db.$with("ranked_pieces").as(
@@ -454,14 +492,15 @@ class FilterService {
       conditions.push(eq(schema.pieces.gender, gender));
     }
 
-    // Price range filters
-    if (priceMin !== undefined) {
-      console.log("priceMin", priceMin);
-      conditions.push(gte(schema.pieces.priceInGrosz, priceMin * 100));
-    }
-    if (priceMax !== undefined) {
-      console.log("priceMax", priceMax);
-      conditions.push(lte(schema.pieces.priceInGrosz, priceMax * 100));
+    // Price range filters (using effective price after discounts)
+    if (priceMin !== undefined || priceMax !== undefined) {
+      const effectivePrice = this.getPieceEffectivePriceExpr();
+      if (priceMin !== undefined) {
+        conditions.push(sql`${effectivePrice} >= ${priceMin * 100}`);
+      }
+      if (priceMax !== undefined) {
+        conditions.push(sql`${effectivePrice} <= ${priceMax * 100}`);
+      }
     }
 
     // Category filter - find pieces whose category matches the slug
@@ -521,11 +560,9 @@ class FilterService {
     let orderByClause;
     const direction = sortOrder === "desc" ? desc : asc;
 
-    console.log("sortBy", sortBy);
     switch (sortBy) {
       case "price":
-        console.log("sortBy", sortBy);
-        orderByClause = direction(schema.pieces.priceInGrosz);
+        orderByClause = direction(this.getPieceEffectivePriceExpr());
         break;
       case "alphabetical":
         orderByClause = direction(schema.pieces.name);
@@ -569,7 +606,6 @@ class FilterService {
   async findFilteredProducts<TArgs extends DBQueryArgs<"products", "one">>(
     args: TArgs = {} as TArgs,
     {
-      category,
       brands: brandGroups,
       sizes: sizeGroups,
       tags,
@@ -661,38 +697,6 @@ class FilterService {
       );
     }
 
-    // Category filter - product must have at least one piece in this category or its descendants (by slug)
-    if (category !== undefined) {
-      conditions.push(
-        exists(
-          db
-            .select({ id: schema.pieces.id })
-            .from(schema.pieces)
-            .innerJoin(
-              schema.categories,
-              eq(schema.pieces.categoryId, schema.categories.id)
-            )
-            .where(
-              and(
-                eq(schema.pieces.productId, schema.products.id),
-                eq(schema.pieces.status, "published"),
-                or(
-                  isNull(schema.pieces.reservedUntil),
-                  lte(schema.pieces.reservedUntil, new Date())
-                ),
-                or(
-                  eq(schema.categories.slug, category),
-                  sql`EXISTS (
-                    SELECT 1 FROM jsonb_array_elements(${schema.categories.path}) AS elem
-                    WHERE (elem->>'slug')::text = ${category}
-                  )`
-                )
-              )
-            )
-        )
-      );
-    }
-
     // Tags filter - product must have at least one piece with any of these tags (by slug)
     if (tags && tags.length > 0) {
       conditions.push(
@@ -723,35 +727,15 @@ class FilterService {
       );
     }
 
-    // Price range filters - calculated from product's pieces with skew applied
-    if (priceMin !== undefined) {
-      conditions.push(
-        sql`(
-          SELECT ROUND(
-            (SUM("pieces"."price_in_grosz") * (100 - ${schema.products.pricePercentageSkew})) / 100
-          )
-          FROM ${schema.pieces}
-          WHERE "pieces"."product_id" = ${schema.products.id}
-            AND ${schema.pieces.status} = 'published'
-            AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW())
-            AND (pieces.product_id IS NULL OR pieces.product_id IN (SELECT id FROM products WHERE status = 'published') AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))
-        ) >= ${priceMin}`
-      );
-    }
-
-    if (priceMax !== undefined) {
-      conditions.push(
-        sql`(
-          SELECT ROUND(
-            (SUM("pieces"."price_in_grosz") * (100 - ${schema.products.pricePercentageSkew})) / 100
-          )
-          FROM ${schema.pieces}
-          WHERE "pieces"."product_id" = ${schema.products.id}
-            AND ${schema.pieces.status} = 'published'
-            AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW())
-            AND (pieces.product_id IS NULL OR pieces.product_id IN (SELECT id FROM products WHERE status = 'published') AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))
-        ) <= ${priceMax}`
-      );
+    // Price range filters - calculated from product's pieces with discounts applied
+    if (priceMin !== undefined || priceMax !== undefined) {
+      const effectivePrice = this.getProductEffectivePriceExpr();
+      if (priceMin !== undefined) {
+        conditions.push(sql`${effectivePrice} >= ${priceMin * 100}`);
+      }
+      if (priceMax !== undefined) {
+        conditions.push(sql`${effectivePrice} <= ${priceMax * 100}`);
+      }
     }
 
     // Fuzzy search filter - filter out results below similarity threshold
@@ -768,19 +752,8 @@ class FilterService {
 
     switch (sortBy) {
       case "price":
-        // Order by calculated price from pieces
-        orderByClause = direction(
-          sql`(
-            SELECT ROUND(
-              (SUM("pieces"."price_in_grosz") * (100 - ${schema.products.pricePercentageSkew})) / 100
-            )
-            FROM ${schema.pieces}
-            WHERE "pieces"."product_id" = ${schema.products.id}
-              AND ${schema.pieces.status} = 'published'
-              AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW())
-              AND (pieces.product_id IS NULL OR pieces.product_id IN (SELECT id FROM products WHERE status = 'published') AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))
-          )`
-        );
+        // Order by calculated price from pieces with discounts applied
+        orderByClause = direction(this.getProductEffectivePriceExpr());
         break;
       case "alphabetical":
         orderByClause = direction(schema.products.name);
@@ -824,83 +797,7 @@ class FilterService {
    * 1. Get all eligible pieces meaning descending from the category we are sent
    * 2. Get all brand groups, size groups, categories(all descending) and tags for these pieces also price range
    */
-  async getPieceFilterData(categorySlug?: string) {
-    // Base condition: piece must be published AND (no product OR product is published)
-    const baseConditions = [
-      eq(schema.pieces.status, "published"),
-      or(
-        isNull(schema.pieces.productId),
-        exists(
-          db
-            .select({ id: schema.products.id })
-            .from(schema.products)
-            .where(
-              and(
-                eq(schema.products.id, schema.pieces.productId),
-                eq(schema.products.status, "published"),
-                or(
-                  isNull(schema.pieces.reservedUntil),
-                  lte(schema.pieces.reservedUntil, new Date())
-                )
-              )
-            )
-        )
-      ),
-    ];
-
-    // Add category filter if provided - piece's category must be the specified category
-    // OR a descendant (category's path contains the specified category)
-    if (categorySlug) {
-      // First get the category ID from the slug
-      const category = await db.query.categories.findFirst({
-        where: eq(schema.categories.slug, categorySlug),
-        columns: { id: true },
-      });
-
-      if (category) {
-        baseConditions.push(
-          and(
-            or(
-              eq(schema.pieces.categoryId, category.id),
-              exists(
-                db
-                  .select({ id: schema.categories.id })
-                  .from(schema.categories)
-                  .where(
-                    and(
-                      eq(schema.categories.id, schema.pieces.categoryId),
-                      sql`EXISTS (
-                    SELECT 1 FROM jsonb_array_elements(${schema.categories.path}) AS elem
-                    WHERE (elem->>'slug')::text = ${categorySlug}
-                    )`
-                    )
-                  )
-              )
-            ),
-            ne(schema.pieces.categoryId, category.id)
-          )
-        );
-      }
-    }
-
-    // Get all eligible piece IDs first
-    const eligiblePieces = await db
-      .select({ id: schema.pieces.id })
-      .from(schema.pieces)
-      .where(and(...baseConditions));
-
-    const pieceIds = eligiblePieces.map((p) => p.id);
-
-    if (pieceIds.length === 0) {
-      return {
-        brandGroups: [],
-        sizeGroups: [],
-        categories: [],
-        tags: [],
-        priceRange: { min: 0, max: 0 },
-      };
-    }
-
+  async getPieceFilterData() {
     const childCategories = alias(schema.categories, "child");
 
     // Get all filter data in parallel
@@ -920,7 +817,6 @@ class FilterService {
             eq(schema.brands.groupId, schema.brandGroups.id)
           )
           .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
-          .where(inArray(schema.pieces.id, pieceIds))
           .orderBy(schema.brandGroups.displayOrder, schema.brandGroups.name),
 
         // Get size groups for eligible pieces
@@ -937,7 +833,6 @@ class FilterService {
             eq(schema.sizes.groupId, schema.sizeGroups.id)
           )
           .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
-          .where(inArray(schema.pieces.id, pieceIds))
           .orderBy(schema.sizeGroups.displayOrder, schema.sizeGroups.name),
         db
           .selectDistinct({
@@ -981,18 +876,19 @@ class FilterService {
             schema.piecesToTags,
             eq(schema.piecesToTags.tagId, schema.tags.id)
           )
-          .where(inArray(schema.piecesToTags.pieceId, pieceIds))
           .orderBy(schema.tags.name),
 
-        // Get price range for eligible pieces
-        db
-          .select({
-            min: sql<number>`MIN(${schema.pieces.priceInGrosz})`,
-            max: sql<number>`MAX(${schema.pieces.priceInGrosz})`,
-          })
-          .from(schema.pieces)
-          .where(inArray(schema.pieces.id, pieceIds))
-          .then((result) => result[0] || { min: 0, max: 0 }),
+        // Get price range for eligible pieces (using effective price after discounts)
+        (() => {
+          const effectivePrice = this.getPieceEffectivePriceExpr();
+          return db
+            .select({
+              min: sql<number>`MIN(${effectivePrice})`,
+              max: sql<number>`MAX(${effectivePrice})`,
+            })
+            .from(schema.pieces)
+            .then((result) => result[0] || { min: 0, max: 0 });
+        })(),
       ]);
 
     return {
@@ -1045,156 +941,107 @@ class FilterService {
       return {
         brandGroups: [],
         sizeGroups: [],
-        categories: [],
         tags: [],
         priceRange: { min: 0, max: 0 },
       };
     }
 
     // Get all filter data in parallel based on the product's pieces
-    const [brandGroups, sizeGroups, categories, tags, priceRange] =
-      await Promise.all([
-        // Get brand groups from pieces of eligible products
-        db
-          .selectDistinct({
-            id: schema.brandGroups.id,
-            name: schema.brandGroups.name,
-            slug: schema.brandGroups.slug,
-            displayOrder: schema.brandGroups.displayOrder,
-          })
-          .from(schema.brandGroups)
-          .innerJoin(
-            schema.brands,
-            eq(schema.brands.groupId, schema.brandGroups.id)
-          )
-          .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
-          .where(
-            and(
-              inArray(schema.pieces.productId, productIds),
-              eq(schema.pieces.status, "published"),
-              or(
-                isNull(schema.pieces.reservedUntil),
-                lte(schema.pieces.reservedUntil, new Date())
-              )
+    const [brandGroups, sizeGroups, tags, priceRange] = await Promise.all([
+      // Get brand groups from pieces of eligible products
+      db
+        .selectDistinct({
+          id: schema.brandGroups.id,
+          name: schema.brandGroups.name,
+          slug: schema.brandGroups.slug,
+          displayOrder: schema.brandGroups.displayOrder,
+        })
+        .from(schema.brandGroups)
+        .innerJoin(
+          schema.brands,
+          eq(schema.brands.groupId, schema.brandGroups.id)
+        )
+        .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
+        .where(
+          and(
+            inArray(schema.pieces.productId, productIds),
+            eq(schema.pieces.status, "published"),
+            or(
+              isNull(schema.pieces.reservedUntil),
+              lte(schema.pieces.reservedUntil, new Date())
             )
           )
-          .orderBy(schema.brandGroups.displayOrder, schema.brandGroups.name),
+        )
+        .orderBy(schema.brandGroups.displayOrder, schema.brandGroups.name),
 
-        // Get size groups from pieces of eligible products
-        db
-          .selectDistinct({
-            id: schema.sizeGroups.id,
-            name: schema.sizeGroups.name,
-            slug: schema.sizeGroups.slug,
-            displayOrder: schema.sizeGroups.displayOrder,
-          })
-          .from(schema.sizeGroups)
-          .innerJoin(
-            schema.sizes,
-            eq(schema.sizes.groupId, schema.sizeGroups.id)
-          )
-          .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
-          .where(
-            and(
-              inArray(schema.pieces.productId, productIds),
-              eq(schema.pieces.status, "published"),
-              or(
-                isNull(schema.pieces.reservedUntil),
-                lte(schema.pieces.reservedUntil, new Date())
-              )
+      // Get size groups from pieces of eligible products
+      db
+        .selectDistinct({
+          id: schema.sizeGroups.id,
+          name: schema.sizeGroups.name,
+          slug: schema.sizeGroups.slug,
+          displayOrder: schema.sizeGroups.displayOrder,
+        })
+        .from(schema.sizeGroups)
+        .innerJoin(schema.sizes, eq(schema.sizes.groupId, schema.sizeGroups.id))
+        .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
+        .where(
+          and(
+            inArray(schema.pieces.productId, productIds),
+            eq(schema.pieces.status, "published"),
+            or(
+              isNull(schema.pieces.reservedUntil),
+              lte(schema.pieces.reservedUntil, new Date())
             )
           )
-          .orderBy(schema.sizeGroups.displayOrder, schema.sizeGroups.name),
+        )
+        .orderBy(schema.sizeGroups.displayOrder, schema.sizeGroups.name),
 
-        // Get categories from pieces of eligible products
-        db
-          .selectDistinct({
-            id: schema.categories.id,
-            name: schema.categories.name,
-            slug: schema.categories.slug,
-          })
-          .from(schema.categories)
-          .innerJoin(
-            schema.pieces,
-            eq(schema.pieces.categoryId, schema.categories.id)
-          )
-          .where(
-            and(
-              inArray(schema.pieces.productId, productIds),
-              eq(schema.pieces.status, "published"),
-              or(
-                isNull(schema.pieces.reservedUntil),
-                lte(schema.pieces.reservedUntil, new Date())
-              )
+      // Get tags from pieces of eligible products
+      db
+        .selectDistinct({
+          id: schema.tags.id,
+          name: schema.tags.name,
+          slug: schema.tags.slug,
+        })
+        .from(schema.tags)
+        .innerJoin(
+          schema.piecesToTags,
+          eq(schema.piecesToTags.tagId, schema.tags.id)
+        )
+        .innerJoin(
+          schema.pieces,
+          eq(schema.pieces.id, schema.piecesToTags.pieceId)
+        )
+        .where(
+          and(
+            inArray(schema.pieces.productId, productIds),
+            eq(schema.pieces.status, "published"),
+            or(
+              isNull(schema.pieces.reservedUntil),
+              lte(schema.pieces.reservedUntil, new Date())
             )
           )
-          .orderBy(schema.categories.name),
+        )
+        .orderBy(schema.tags.name),
 
-        // Get tags from pieces of eligible products
-        db
-          .selectDistinct({
-            id: schema.tags.id,
-            name: schema.tags.name,
-            slug: schema.tags.slug,
-          })
-          .from(schema.tags)
-          .innerJoin(
-            schema.piecesToTags,
-            eq(schema.piecesToTags.tagId, schema.tags.id)
-          )
-          .innerJoin(
-            schema.pieces,
-            eq(schema.pieces.id, schema.piecesToTags.pieceId)
-          )
-          .where(
-            and(
-              inArray(schema.pieces.productId, productIds),
-              eq(schema.pieces.status, "published"),
-              or(
-                isNull(schema.pieces.reservedUntil),
-                lte(schema.pieces.reservedUntil, new Date())
-              )
-            )
-          )
-          .orderBy(schema.tags.name),
-
-        // Get price range from products - calculate dynamically from pieces
-        db
+      // Get price range from products - calculate dynamically from pieces with discounts
+      (() => {
+        const effectivePrice = this.getProductEffectivePriceExpr();
+        return db
           .select({
-            min: sql<number>`MIN(
-          (
-            SELECT ROUND(
-              (SUM("pieces"."price_in_grosz") * (100 - ${schema.products.pricePercentageSkew})) / 100
-            )
-            FROM ${schema.pieces}
-            WHERE "pieces"."product_id" = ${schema.products.id}
-              AND ${schema.pieces.status} = 'published'
-              AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW())
-              AND (pieces.product_id IS NULL OR pieces.product_id IN (SELECT id FROM products WHERE status = 'published') AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))
-          )
-        )`,
-            max: sql<number>`MAX(
-          (
-            SELECT ROUND(
-              (SUM("pieces"."price_in_grosz") * (100 - ${schema.products.pricePercentageSkew})) / 100
-            )
-            FROM ${schema.pieces}
-            WHERE "pieces"."product_id" = ${schema.products.id}
-              AND ${schema.pieces.status} = 'published'
-              AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW())
-              AND (pieces.product_id IS NULL OR pieces.product_id IN (SELECT id FROM products WHERE status = 'published') AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))
-          )
-        )`,
+            min: sql<number>`MIN(${effectivePrice})`,
+            max: sql<number>`MAX(${effectivePrice})`,
           })
           .from(schema.products)
           .where(inArray(schema.products.id, productIds))
-          .then((result) => result[0] || { min: 0, max: 0 }),
-      ]);
+          .then((result) => result[0] || { min: 0, max: 0 });
+      })(),
+    ]);
 
     return {
       brandGroups,
       sizeGroups,
-      categories,
       tags,
       priceRange: {
         min: priceFromGrosz(priceRange.min),
@@ -1359,8 +1206,7 @@ class FilterService {
       .filter((p) => p !== undefined) as DBQueryResult<"pieces", TArgs>[];
   }
 }
-const filterService = new FilterService(
-  logger.child({ service: "FilterService" })
-);
+const filterService = new FilterService();
+//logger.child({ service: "FilterService" })
 
 export { filterService, FilterService };

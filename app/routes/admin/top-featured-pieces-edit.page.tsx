@@ -57,6 +57,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const pieces = await db.query.pieces.findMany({
     orderBy: asc(schema.pieces.homeFeaturedOrder),
     with: {
+      discount: true,
       images: {
         limit: 1,
         orderBy: asc(schema.images.displayOrder),

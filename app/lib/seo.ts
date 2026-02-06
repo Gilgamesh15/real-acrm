@@ -5,7 +5,10 @@ import type {
   RichText,
 } from "~/lib/types";
 
-import { calculateProductPrice, priceFromGrosz } from "./utils";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+} from "./utils";
 
 const BASE_URL = import.meta.env.VITE_APP_URL;
 const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL;
@@ -285,14 +288,41 @@ function generatePieceStructuredData(
   piece: DBQueryResult<
     "pieces",
     {
+      columns: {
+        id: true;
+        name: true;
+        status: true;
+        gender: true;
+        slug: true;
+        priceInGrosz: true;
+      };
       with: {
-        brand: true;
-        images: true;
-        size: true;
+        images: {
+          columns: {
+            url: true;
+          };
+        };
+        brand: {
+          columns: {
+            name: true;
+          };
+        };
+        size: {
+          columns: {
+            name: true;
+          };
+        };
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
       };
     }
   >
 ) {
+  const pricing = calculatePiecePriceDisplayData(piece);
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -300,12 +330,22 @@ function generatePieceStructuredData(
     image: piece.images.map((img) => img.url),
     offers: {
       "@type": "Offer",
-      price: priceFromGrosz(piece.priceInGrosz),
+      price: pricing.finalPrice,
       priceCurrency: "PLN",
       availability:
         AVAILABILITY_MAP[piece.status] || "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/UsedCondition",
       url: `${BASE_URL}/ubrania/${piece.slug}`,
+      ...(pricing.hasDiscount
+        ? {
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              priceType: "https://schema.org/StrikethroughPrice",
+              price: pricing.originalPrice,
+              priceCurrency: "PLN",
+            },
+          }
+        : {}),
     },
     audience: {
       "@type": "PeopleAudience",
@@ -337,13 +377,56 @@ function generateProductStructuredData(
   product: DBQueryResult<
     "products",
     {
+      columns: {
+        id: true;
+        name: true;
+        status: true;
+        slug: true;
+        description: true;
+      };
       with: {
-        images: true;
-        pieces: true;
+        images: {
+          columns: {
+            url: true;
+          };
+        };
+        pieces: {
+          with: {
+            discount: {
+              columns: {
+                amountOffInGrosz: true;
+                percentOff: true;
+              };
+            };
+            images: {
+              columns: {
+                url: true;
+              };
+            };
+            brand: {
+              columns: {
+                name: true;
+              };
+            };
+            size: {
+              columns: {
+                name: true;
+              };
+            };
+          };
+        };
+        discount: {
+          columns: {
+            amountOffInGrosz: true;
+            percentOff: true;
+          };
+        };
       };
     }
   >
 ) {
+  const pricing = calculateProductPriceDisplayData(product);
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -351,12 +434,22 @@ function generateProductStructuredData(
     image: product.images.map((img) => img.url),
     offers: {
       "@type": "Offer",
-      price: priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz),
+      price: pricing.finalPrice,
       priceCurrency: "PLN",
       availability:
         AVAILABILITY_MAP[product.status] || "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/UsedCondition",
       url: `${BASE_URL}/projekty/${product.slug}`,
+      ...(pricing.hasDiscount
+        ? {
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              priceType: "https://schema.org/StrikethroughPrice",
+              price: pricing.originalPrice,
+              priceCurrency: "PLN",
+            },
+          }
+        : {}),
     },
     audience: {
       "@type": "PeopleAudience",

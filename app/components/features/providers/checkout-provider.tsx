@@ -10,7 +10,11 @@ import type {
   loader as pendingOrderLoader,
 } from "~/api/pending-order";
 import type { CreateOrderSchemaType } from "~/lib/schemas";
-import { groupPurchasableItems } from "~/lib/utils";
+import {
+  groupPurchasableItems,
+  orderItemsToGoogleAnalyticsItems,
+  priceDataToDisplayData,
+} from "~/lib/utils";
 
 type CheckoutContextType = {
   items: {
@@ -94,11 +98,11 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
             ReturnType<typeof createOrderAction>
           >["data"];
 
-          if (!result.checkoutSession.url || !result.success) {
+          if (!result.stripeSession.url || !result.success) {
             throw new Error("Nie udało się utworzyć sesji płatności");
           }
 
-          return { url: result.checkoutSession.url, order: result.order };
+          return { url: result.stripeSession.url, order: result.order };
         },
         {
           loading: "Trwa utworzenie zamówienia...",
@@ -113,14 +117,22 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
                   description: "Odśwież stronę i spróbuj ponownie.",
                 };
           },
-          success: ({
-            url,
-            //order
-          }) => {
-            //window.gtag?.("event", "begin_checkout", {
-            //  currency: "PLN",
-            //  value: totalValue,
-            //});
+          success: ({ url, order }) => {
+            const itemsPrices = order.items.map((item) =>
+              priceDataToDisplayData(item)
+            );
+            const totalPrice = itemsPrices.reduce(
+              (acc, item) => acc + item.finalPrice,
+              0
+            );
+
+            window.gtag?.("event", "begin_checkout", {
+              currency: "PLN",
+              value: totalPrice,
+              items: order.items.map((item) =>
+                orderItemsToGoogleAnalyticsItems(item)
+              ),
+            });
 
             setStripeCheckoutUrl(url);
             window.location.href = url;

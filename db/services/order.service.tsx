@@ -11,7 +11,7 @@ import { resend } from "~/lib/resend";
 import type { CreateOrderSchemaType } from "~/lib/schemas";
 import { stripe } from "~/lib/stripe";
 import {
-  calculatePriceData,
+  calculatePiecePrice,
   createIdentificationNumber,
   orderDetailsFromOrder,
   orderStatusFromOrder,
@@ -27,7 +27,7 @@ class OrderService {
     try {
       this.logger.info("Starting order completion", { stripeSessionId });
 
-      const orderId = await db.transaction(async (tx) => {
+      const transactionResult = await db.transaction(async (tx) => {
         this.logger.debug("Starting order completion transaction", {
           stripeSessionId,
         });
@@ -59,6 +59,20 @@ class OrderService {
             },
             { status: 404 }
           );
+        }
+
+        // Check for idempotency - if order already has a "processing" or "completed" event
+        const existingCompletion = order.events.find(
+          (e) => e.status === "processing"
+        );
+        if (existingCompletion) {
+          this.logger.warn("Order already processed, skipping", {
+            stripeSessionId,
+            orderId: order.id,
+            existingStatus: existingCompletion.status,
+          });
+          // Return special marker to indicate already processed
+          return { alreadyProcessed: true, orderId: order.id };
         }
 
         // Extract userId from order (not passed as param since webhook won't have it)
@@ -355,8 +369,24 @@ class OrderService {
           stripeSessionId,
           orderId: order.id,
         });
-        return order.id;
+        return { alreadyProcessed: false, orderId: order.id };
       });
+
+      // Handle idempotency - order was already processed
+      if (transactionResult.alreadyProcessed) {
+        return data(
+          {
+            success: true,
+            order: null,
+            issues: null,
+            message: "Order already processed",
+            alreadyProcessed: true,
+          },
+          { status: 200 }
+        );
+      }
+
+      const orderId = transactionResult.orderId;
 
       // 5. Fetch the completed order with images for email
       const order = await db.query.orders.findFirst({
@@ -452,12 +482,11 @@ class OrderService {
             to: companyEmail,
             subject: `Nowe zamówienie - ${order.orderNumber}`,
             html: `
-            <h1>Powiadomienie o nowym zamówieniu</h1>
-            <p>Numer zamówienia: <strong>${order.orderNumber}</strong></p>
-            <p>Klient: ${orderDetails.email}</p>
-            <p>Liczba przedmiotów: ${order.items.length}</p>
-            <p>Suma: ${(order.totalInGrosz / 100).toFixed(2)} PLN</p>
-          `,
+  <p><strong>Nowe zamówienie #${order.orderNumber}</strong></p>
+  <p>Email: ${orderDetails.email}</p>
+  <p>Przedmioty: ${order.items.length}</p>
+  <p>Suma: ${(order.totalInGrosz / 100).toFixed(2)} PLN</p>
+`,
           })
           .catch((emailError) => {
             this.logger.error("Failed to send admin notification email", {
@@ -752,7 +781,7 @@ class OrderService {
     try {
       this.logger.info("Starting order creation", { pieceArgs, userId });
 
-      return await db.transaction(async (tx) => {
+      const { orderId, stripeSession } = await db.transaction(async (tx) => {
         this.logger.debug("Starting order creation transaction", { pieceArgs });
 
         const issuesBuilder = new CheckoutIssues();
@@ -764,7 +793,16 @@ class OrderService {
             pieceArgs.map((piece) => piece.id)
           ),
           with: {
-            product: true,
+            discount: {
+              columns: { amountOffInGrosz: true, percentOff: true },
+            },
+            product: {
+              with: {
+                discount: {
+                  columns: { amountOffInGrosz: true, percentOff: true },
+                },
+              },
+            },
             brand: true,
             size: true,
             images: true,
@@ -902,43 +940,29 @@ class OrderService {
             (pieceArg) => pieceArg.productId === piece.productId
           );
 
-          if (isWithProduct) {
-            if (!piece.product) {
-              continue;
-            }
+          // For standalone pieces, null out product so only piece discount applies.
+          // For pieces with product, calculatePiecePrice applies both discounts
+          // (piece discount first, then product discount on the result).
+          const priceData = calculatePiecePrice(
+            isWithProduct ? piece : { ...piece, product: null }
+          );
 
-            const {
-              taxInGrosz,
-              lineTotalInGrosz,
-              unitPriceInGrosz,
-              discountAmountInGrosz,
-            } = calculatePriceData(piece.priceInGrosz, {
-              percentOff: piece.product.pricePercentageSkew,
-            });
-            orderItems.push({
-              pieceId: piece.id,
-              productId: piece.product.id,
-              discountAmountInGrosz,
-              taxInGrosz,
-              lineTotalInGrosz,
-              unitPriceInGrosz,
-            });
-          } else {
-            const { taxInGrosz, lineTotalInGrosz, unitPriceInGrosz } =
-              calculatePriceData(piece.priceInGrosz);
-            orderItems.push({
-              pieceId: piece.id,
-              discountAmountInGrosz: 0,
-              taxInGrosz,
-              lineTotalInGrosz,
-              unitPriceInGrosz,
-            });
-          }
+          orderItems.push({
+            pieceId: piece.id,
+            ...(isWithProduct && piece.product
+              ? { productId: piece.product.id }
+              : {}),
+            discountAmountInGrosz: priceData.discountAmountInGrosz,
+            taxInGrosz: priceData.taxInGrosz,
+            lineTotalInGrosz: priceData.lineTotalInGrosz,
+            unitPriceInGrosz: priceData.unitPriceInGrosz,
+          });
         }
 
         const orderNumber = createIdentificationNumber();
         const subtotalInGrosz = orderItems.reduce(
-          (acc, item) => acc + item.lineTotalInGrosz,
+          (acc, item) =>
+            acc + item.lineTotalInGrosz + item.discountAmountInGrosz,
           0
         );
         const taxInGrosz = orderItems.reduce(
@@ -1002,9 +1026,6 @@ class OrderService {
         });
 
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-        const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
-
-        const productCoupons = new Map<string, string>();
 
         for (const item of createdOrderItems) {
           const piece = pieces.find((p) => p.id === item.pieceId);
@@ -1016,100 +1037,27 @@ class OrderService {
             continue;
           }
 
-          // Check if this piece is part of a product with a discount
-          if (item.productId && piece.product) {
-            const skewPercent = piece.product.pricePercentageSkew;
+          const name =
+            item.productId && piece.product
+              ? `${piece.name} (${piece.product.name})`
+              : piece.name;
 
-            if (skewPercent > 0) {
-              // Create or reuse coupon for this product
-              let couponId = productCoupons.get(item.productId);
-
-              if (!couponId) {
-                try {
-                  const coupon = await stripe.coupons.create({
-                    percent_off: skewPercent,
-                    duration: "once",
-                    name: `${piece.product.name} - ${skewPercent}% off`,
-                    metadata: {
-                      orderId: createdOrder.id,
-                      productId: item.productId,
-                      productName: piece.product.name,
-                    },
-                  });
-
-                  couponId = coupon.id;
-                  productCoupons.set(item.productId, couponId);
-
-                  this.logger.info("Created coupon for product discount", {
-                    orderId: createdOrder.id,
-                    couponId: coupon.id,
-                    productId: item.productId,
-                    skewPercent,
-                  });
-                } catch (couponError) {
-                  this.logger.error("Failed to create Stripe coupon", {
-                    err: couponError,
-                    orderId: createdOrder.id,
-                    productId: item.productId,
-                  });
-                }
-              }
-
-              // Add line item with ORIGINAL price (before discount)
-              lineItems.push({
-                price_data: {
-                  currency: "pln",
-                  product_data: {
-                    name: `${piece.name} (${piece.product.name})`,
-                    images: piece.images.map((image) => image.url),
-                    description: `${piece.size.name} - ${piece.brand.name} | ${skewPercent}% off`,
-                  },
-                  unit_amount: item.lineTotalInGrosz, // BEFORE discount
-                },
-                quantity: 1,
-              });
-            } else {
-              // Product has no discount, use regular price
-              lineItems.push({
-                price_data: {
-                  currency: "pln",
-                  product_data: {
-                    name: piece.name,
-                    images: piece.images.map((image) => image.url),
-                    description: `${piece.size.name} - ${piece.brand.name}`,
-                  },
-                  unit_amount: item.lineTotalInGrosz,
-                },
-                quantity: 1,
-              });
-            }
-          } else {
-            // Standalone piece (no product), no discount
-            lineItems.push({
-              price_data: {
-                currency: "pln",
-                product_data: {
-                  name: piece.name,
-                  images: piece.images.map((image) => image.url),
-                  description: `${piece.size.name} - ${piece.brand.name}`,
-                },
-                unit_amount: item.lineTotalInGrosz,
+          lineItems.push({
+            price_data: {
+              currency: "pln",
+              product_data: {
+                name,
+                images: piece.images.map((image) => image.url),
+                description: `${piece.size.name} - ${piece.brand.name}`,
               },
-              quantity: 1,
-            });
-          }
-        }
-
-        // Add all created coupons to the discounts array
-        for (const couponId of productCoupons.values()) {
-          discounts.push({
-            coupon: couponId,
+              unit_amount: item.lineTotalInGrosz,
+            },
+            quantity: 1,
           });
         }
 
-        this.logger.info("Created line items and coupons", {
+        this.logger.info("Created line items", {
           orderId: createdOrder.id,
-          couponCount: discounts.length,
           lineItemCount: lineItems.length,
         });
 
@@ -1119,6 +1067,7 @@ class OrderService {
           locale: "pl",
           expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
           line_items: lineItems,
+          allow_promotion_codes: true,
           phone_number_collection: {
             enabled: true,
           },
@@ -1193,17 +1142,49 @@ class OrderService {
           stripeSessionId: stripeSession.id,
         });
 
-        return data(
-          {
-            success: true,
-            message: "Order created successfully",
-            issues: null,
-            order: createdOrder,
-            checkoutSession: stripeSession,
-          },
-          { status: 200 }
-        );
+        return {
+          orderId,
+          stripeSession,
+        };
       });
+
+      const order = await db.query.orders.findFirst({
+        where: eq(schema.orders.id, orderId),
+        with: {
+          items: {
+            with: {
+              piece: {
+                with: {
+                  brand: true,
+                  category: true,
+                },
+              },
+              product: true,
+            },
+          },
+        },
+      });
+      if (!order) {
+        this.logger.error("Order not found", { orderId });
+        throw data(
+          {
+            success: false,
+            message: "Order not found",
+          },
+          { status: 404 }
+        );
+      }
+
+      return data(
+        {
+          success: true,
+          message: "Order created successfully",
+          issues: null,
+          order,
+          stripeSession,
+        },
+        { status: 200 }
+      );
     } catch (err) {
       // Re-throw if already a data() response
       if (err && typeof err === "object" && "status" in err) {

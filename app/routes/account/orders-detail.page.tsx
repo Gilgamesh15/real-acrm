@@ -15,25 +15,32 @@ import {
 } from "~/components/ui/item";
 
 import { OrderData } from "~/components/features/order-data/order-data";
-import { PriceSummary } from "~/components/features/price-summary/price-summary";
-import { DetailedPieceCard } from "~/components/features/product-card/detailed-piece-card/detailed-piece-card";
-import { DetailedProductCard } from "~/components/features/product-card/detailed-product-card/detailed-product-card";
+import {
+  PriceSummary,
+  type PriceSummaryProps,
+} from "~/components/features/price-summary/price-summary";
+import {
+  ProductCardContent,
+  ProductCardImage,
+  ProductCardInfo,
+  ProductCardMeasurements,
+  ProductCardMedia,
+  ProductCardPieces,
+  ProductCardPrice,
+  ProductCardRoot,
+} from "~/components/features/product-card/product-card-primitives";
 import { OrderTimeline } from "~/components/features/timeline/order-timeline";
 import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import {
   ORDER_STATUS_BADGE_TEXT_MAP,
   ORDER_STATUS_BADGE_VARIANT_MAP,
-  calculateProductPrice,
   cn,
   formatDate,
-  groupPurchasableItems,
+  groupOrderItems,
+  priceDataToDisplayData,
 } from "~/lib/utils";
-import {
-  orderDetailsFromOrder,
-  orderStatusFromOrder,
-  priceFromGrosz,
-} from "~/lib/utils";
+import { orderDetailsFromOrder, orderStatusFromOrder } from "~/lib/utils";
 
 import type { Route } from "./+types/orders-detail.page";
 
@@ -64,14 +71,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
           product: {
             with: {
               images: true,
-              pieces: {
-                with: {
-                  images: true,
-                  brand: true,
-                  size: true,
-                  measurements: true,
-                },
-              },
             },
           },
           piece: {
@@ -108,32 +107,34 @@ export const meta: Route.MetaFunction = ({ data }) => {
 export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
   const { order } = loaderData;
 
-  const { products, pieces } = groupPurchasableItems(order.items);
+  const { products, pieces } = groupOrderItems(order.items);
 
   const canReturnItems = pieces.some(
     (piece) =>
       piece.status !== "returned" && piece.status !== "return_requested"
   );
 
-  const priceSummary = {
-    subtotal: priceFromGrosz(order.subtotalInGrosz),
-    totalDiscount: 0,
-    total: priceFromGrosz(order.totalInGrosz),
-    tax: priceFromGrosz(order.taxInGrosz),
-    items: [
-      ...products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        price: priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz),
-        discount: 0,
-      })),
-      ...pieces.map((piece) => ({
-        id: piece.id,
-        name: piece.name,
-        price: priceFromGrosz(piece.priceInGrosz),
-        discount: 0,
-      })),
-    ],
+  const priceSummaryItems: PriceSummaryProps["items"] = [
+    ...products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      ...priceDataToDisplayData(product),
+    })),
+    ...pieces.map((piece) => ({
+      id: piece.id,
+      name: piece.name,
+      ...priceDataToDisplayData(piece),
+    })),
+  ];
+
+  const priceSummary: PriceSummaryProps = {
+    items: priceSummaryItems,
+    subtotal: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    total: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+    totalSavings: priceSummaryItems.reduce(
+      (acc, item) => acc + item.savings,
+      0
+    ),
   };
 
   const orderDetails = orderDetailsFromOrder(order);
@@ -200,10 +201,75 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
             <ItemContent>
               <ItemGroup>
                 {products.map((product) => (
-                  <DetailedProductCard key={product.id} product={product} />
+                  <ProductCardRoot key={product.id}>
+                    <ProductCardMedia size="lg">
+                      <ProductCardImage
+                        url={product.images[0]?.url || ""}
+                        alt={product.images[0]?.alt || ""}
+                      />
+                    </ProductCardMedia>
+                    <ProductCardContent>
+                      <ProductCardInfo name={product.name} />
+                      <ProductCardPrice
+                        pricing={priceDataToDisplayData(product)}
+                      />
+                    </ProductCardContent>
+
+                    <ProductCardPieces>
+                      {product.pieces.map((piece) => {
+                        const [primaryImage] = piece.images;
+
+                        return (
+                          <ProductCardRoot key={piece.id} size="sm">
+                            <ProductCardMedia size="sm">
+                              <ProductCardImage
+                                url={primaryImage?.url || ""}
+                                alt={primaryImage?.alt || ""}
+                              />
+                            </ProductCardMedia>
+                            <ProductCardContent orientation="vertical">
+                              <ProductCardInfo
+                                name={piece.name}
+                                brand={piece.brand.name}
+                                size={piece.size.name}
+                                orientation="horizontal"
+                                textSize="sm"
+                              />
+                              <ProductCardMeasurements
+                                measurements={piece.measurements}
+                              />
+                            </ProductCardContent>
+                          </ProductCardRoot>
+                        );
+                      })}
+                    </ProductCardPieces>
+                  </ProductCardRoot>
                 ))}
                 {pieces.map((piece) => (
-                  <DetailedPieceCard key={piece.id} piece={piece} />
+                  <ProductCardRoot key={piece.id} size="sm">
+                    <ProductCardMedia size="md">
+                      <ProductCardImage
+                        url={piece.images[0]?.url || ""}
+                        alt={piece.images[0]?.alt || ""}
+                      />
+                    </ProductCardMedia>
+                    <ProductCardContent orientation="vertical">
+                      <ProductCardContent>
+                        <ProductCardInfo
+                          name={piece.name}
+                          brand={piece.brand.name}
+                          size={piece.size.name}
+                          orientation="vertical"
+                        />
+                        <ProductCardPrice
+                          pricing={priceDataToDisplayData(piece)}
+                        />
+                      </ProductCardContent>
+                      <ProductCardMeasurements
+                        measurements={piece.measurements}
+                      />
+                    </ProductCardContent>
+                  </ProductCardRoot>
                 ))}
               </ItemGroup>
             </ItemContent>

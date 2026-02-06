@@ -13,8 +13,10 @@ export const orderProductSelect = {
     description: false,
   },
   with: {
+    discount: true,
     pieces: {
       with: {
+        discount: true,
         brand: true,
         category: true,
         size: true,
@@ -36,6 +38,7 @@ export type OrderProduct = DBQueryResult<"products", typeof orderProductSelect>;
 
 export const orderPieceSelect = {
   with: {
+    discount: true,
     images: {
       limit: 1,
       orderBy: asc(schema.images.displayOrder),

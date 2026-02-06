@@ -1,5 +1,5 @@
 import type { DBQueryResult } from "~/lib/types";
-import { priceFromGrosz } from "~/lib/utils";
+import { calculatePiecePriceDisplayData } from "~/lib/utils";
 
 import {
   ProductCardContent,
@@ -18,6 +18,7 @@ const PieceInfoCard = ({
     {
       with: {
         images: true;
+        discount: true;
       };
     }
   >;
@@ -33,7 +34,7 @@ const PieceInfoCard = ({
       </ProductCardMedia>
       <ProductCardContent>
         <ProductCardInfo name={piece.name} />
-        <ProductCardPrice price={priceFromGrosz(piece.priceInGrosz)} />
+        <ProductCardPrice pricing={calculatePiecePriceDisplayData(piece)} />
       </ProductCardContent>
     </ProductCardRoot>
   );

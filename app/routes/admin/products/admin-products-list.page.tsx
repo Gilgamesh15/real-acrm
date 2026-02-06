@@ -47,9 +47,11 @@ export async function loader({ context }: Route.LoaderArgs) {
       images: {
         orderBy: asc(schema.images.displayOrder),
       },
+      discount: true,
       pieces: {
         orderBy: asc(schema.pieces.productDisplayOrder),
         with: {
+          discount: true,
           images: {
             orderBy: asc(schema.images.displayOrder),
           },

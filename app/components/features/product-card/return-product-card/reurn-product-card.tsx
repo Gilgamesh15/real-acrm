@@ -1,3 +1,6 @@
+import type { DBQueryResult } from "~/lib/types";
+import { calculateProductPriceDisplayData } from "~/lib/utils";
+
 import {
   ProductCardContent,
   ProductCardImage,
@@ -17,31 +20,25 @@ const ReturnProductCard = ({
   name,
   id,
 }: {
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    primaryImage: {
-      url: string;
-      alt: string;
-    };
-    pieces: Array<{
-      id: string;
-      name: string;
-      brand: { name: string };
-      size: { name: string };
-      primaryImage: {
-        url: string;
-        alt: string;
+  product: DBQueryResult<
+    "products",
+    {
+      with: {
+        discount: true;
+        images: true;
+        pieces: {
+          with: { discount: true; images: true; brand: true; size: true };
+        };
       };
-    }>;
-  };
+    }
+  >;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   ariaInvalid?: boolean;
   name?: string;
   id?: string;
 }) => {
+  const [primaryImage] = product.images;
   return (
     <ProductCardRoot>
       <ProductCardMedia>
@@ -53,34 +50,37 @@ const ReturnProductCard = ({
           name={name}
         />
         <ProductCardImage
-          url={product.primaryImage.url}
-          alt={product.primaryImage.alt}
+          url={primaryImage?.url || ""}
+          alt={primaryImage?.alt || ""}
         />
       </ProductCardMedia>
       <ProductCardContent>
         <ProductCardInfo name={product.name} />
-        <ProductCardPrice price={product.price} />
+        <ProductCardPrice pricing={calculateProductPriceDisplayData(product)} />
       </ProductCardContent>
 
       <ProductCardPieces>
-        {product.pieces.map((piece) => (
-          <ProductCardRoot key={piece.id} size="sm">
-            <ProductCardMedia size="sm">
-              <ProductCardImage
-                url={piece.primaryImage.url}
-                alt={piece.primaryImage.alt}
-              />
-            </ProductCardMedia>
-            <ProductCardContent>
-              <ProductCardInfo
-                name={piece.name}
-                textSize="sm"
-                brand={piece.brand.name}
-                size={piece.size.name}
-              />
-            </ProductCardContent>
-          </ProductCardRoot>
-        ))}
+        {product.pieces.map((piece) => {
+          const [primaryImage] = piece.images;
+          return (
+            <ProductCardRoot key={piece.id} size="sm">
+              <ProductCardMedia size="sm">
+                <ProductCardImage
+                  url={primaryImage?.url || ""}
+                  alt={primaryImage?.alt || ""}
+                />
+              </ProductCardMedia>
+              <ProductCardContent>
+                <ProductCardInfo
+                  name={piece.name}
+                  textSize="sm"
+                  brand={piece.brand.name}
+                  size={piece.size.name}
+                />
+              </ProductCardContent>
+            </ProductCardRoot>
+          );
+        })}
       </ProductCardPieces>
     </ProductCardRoot>
   );

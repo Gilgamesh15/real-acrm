@@ -22,9 +22,17 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 
-import { calculateProductPrice, priceFromGrosz } from "~/lib/utils";
+import {
+  calculatePiecePriceDisplayData,
+  calculateProductPriceDisplayData,
+  pieceToGoogleAnalyticsItem,
+  productToGoogleAnalyticsItem,
+} from "~/lib/utils";
 
-import { PriceSummary } from "../price-summary/price-summary";
+import {
+  PriceSummary,
+  type PriceSummaryProps,
+} from "../price-summary/price-summary";
 import {
   ProductCardContent,
   ProductCardImage,
@@ -48,26 +56,50 @@ export const NavCartButton = () => {
     removePiece,
   } = useCart();
 
-  const priceSummaryItems = [
-    ...products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      price: priceFromGrosz(calculateProductPrice(product).lineTotalInGrosz),
-    })),
-    ...pieces.map((piece) => ({
-      id: piece.id,
-      name: piece.name,
-      price: priceFromGrosz(piece.priceInGrosz),
-    })),
-  ];
-
-  const priceSummarySubtotal = priceSummaryItems.reduce(
-    (acc, item) => acc + item.price,
-    0
-  );
-  const priceSummaryTotal = priceSummarySubtotal;
+  const priceSummary: PriceSummaryProps = React.useMemo(() => {
+    const priceSummaryItems: PriceSummaryProps["items"] = [
+      ...products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        ...calculateProductPriceDisplayData(product),
+      })),
+      ...pieces.map((piece) => ({
+        id: piece.id,
+        name: piece.name,
+        ...calculatePiecePriceDisplayData(piece),
+      })),
+    ];
+    return {
+      items: priceSummaryItems,
+      subtotal: priceSummaryItems.reduce(
+        (acc, item) => acc + item.finalPrice,
+        0
+      ),
+      total: priceSummaryItems.reduce((acc, item) => acc + item.finalPrice, 0),
+      totalSavings: priceSummaryItems.reduce(
+        (acc, item) => acc + item.savings,
+        0
+      ),
+    };
+  }, [products, pieces]);
 
   const { goToCheckout } = useCheckoutDialog();
+
+  // Fire view_cart event when drawer opens with items (only once per cart state)
+  React.useEffect(() => {
+    if (isOpen && cartCount > 0) {
+      window.gtag?.("event", "view_cart", {
+        currency: "PLN",
+        value: priceSummary.total,
+        items: [
+          ...products.flatMap((product) =>
+            productToGoogleAnalyticsItem(product)
+          ),
+          ...pieces.map((piece) => pieceToGoogleAnalyticsItem(piece)),
+        ],
+      });
+    }
+  }, [isOpen, cartCount, priceSummary.total, products, pieces]);
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right">
@@ -110,7 +142,7 @@ export const NavCartButton = () => {
         ) : (
           <div className="h-full overflow-auto p-3">
             <ul className="space-y-4">
-              {products.map((product) => {
+              {products.map((product, index) => {
                 const [primaryImage] = product.images;
 
                 return (
@@ -135,14 +167,18 @@ export const NavCartButton = () => {
                           name={product.name}
                         />
                         <ProductCardPrice
-                          price={priceFromGrosz(
-                            calculateProductPrice(product).lineTotalInGrosz
-                          )}
+                          pricing={calculateProductPriceDisplayData(product)}
                         />
                       </ProductCardContent>
 
                       <ProductCardRemoveButton
-                        onClick={() => removeProduct(product.id)}
+                        onClick={() =>
+                          removeProduct(product.id, true, {
+                            item_list_id: `cart`,
+                            item_list_name: "Koszyk",
+                            index: index,
+                          })
+                        }
                       />
                       <ProductCardPieces>
                         {product.pieces.map((piece) => {
@@ -181,7 +217,7 @@ export const NavCartButton = () => {
               })}
             </ul>
             <ul className="space-y-4">
-              {pieces.map((piece) => {
+              {pieces.map((piece, index) => {
                 const [primaryImage] = piece.images;
 
                 return (
@@ -209,12 +245,18 @@ export const NavCartButton = () => {
                           size={piece.size.name}
                         />
                         <ProductCardPrice
-                          price={priceFromGrosz(piece.priceInGrosz)}
+                          pricing={calculatePiecePriceDisplayData(piece)}
                         />
                       </ProductCardContent>
 
                       <ProductCardRemoveButton
-                        onClick={() => removePiece(piece.id)}
+                        onClick={() =>
+                          removePiece(piece.id, true, {
+                            item_list_id: `cart`,
+                            item_list_name: "Koszyk",
+                            index: index + products.length,
+                          })
+                        }
                       />
                     </ProductCardRoot>
                   </li>
@@ -225,11 +267,7 @@ export const NavCartButton = () => {
         )}
 
         <DrawerFooter>
-          <PriceSummary
-            items={priceSummaryItems}
-            subtotal={priceSummarySubtotal}
-            total={priceSummaryTotal}
-          />
+          <PriceSummary {...priceSummary} />
 
           <Button
             className="w-full"

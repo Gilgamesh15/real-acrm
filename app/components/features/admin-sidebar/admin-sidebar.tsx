@@ -11,6 +11,7 @@ import {
   MenuIcon,
   PackageIcon,
   PaletteIcon,
+  PercentIcon,
   ServerOffIcon,
   SparkleIcon,
   UserCogIcon,
@@ -191,6 +192,26 @@ const sidebarData: TNavGroup[] = [
         title: "Zwroty",
         url: "/admin/zwroty",
         icon: ServerOffIcon,
+      },
+    ],
+  },
+  {
+    title: "Zarządzanie zniżkami",
+    items: [
+      {
+        title: "Zniżki",
+        url: "/admin/rabaty",
+        icon: PercentIcon,
+      },
+      {
+        title: "Kupony",
+        url: "/admin/kupony",
+        icon: PercentIcon,
+      },
+      {
+        title: "Kody rabatowe",
+        url: "/admin/kody-rabatowe",
+        icon: PercentIcon,
       },
     ],
   },
@@ -433,7 +454,7 @@ function NavBadge({ children }: { children: React.ReactNode }) {
 
 function checkIsActive(href: string, item: NavItem, mainNav = false) {
   return (
-    href === item.url || // /endpint?search=param
+    href === item.url || // /endpoint?search=param
     href.split("?")[0] === item.url || // endpoint
     !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
     (mainNav &&

@@ -67,11 +67,8 @@ function ImagesDrawerCarousel({
               640: {
                 slidesPerView: 2,
               },
-              1024: {
-                slidesPerView: 3,
-              },
               1280: {
-                slidesPerView: 4,
+                slidesPerView: 3,
               },
             }}
             className="w-full h-full"
@@ -100,16 +97,17 @@ function ImagesDrawerCarousel({
                 data-index={index % images.length}
                 key={`${image}-${index}`}
                 zoom
-                className="overflow-hidden cursor-zoom-in"
+                className="cursor-zoom-in z-98"
               >
-                <div className="border border-primary/50  size-full">
+                <div className="overflow-hidden border border-primary/50 bg-background flex items-center justify-center size-full max-h-full relative z-100">
                   <Image
                     src={image}
                     alt={`Image ${(index % images.length) + 1}`}
                     priority
                     mode="contain"
                     quality="auto:good"
-                    className="size-full"
+                    responsive
+                    className="object-contain relative z-99"
                   />
                 </div>
               </SwiperSlide>
