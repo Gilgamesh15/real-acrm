@@ -127,9 +127,9 @@ export async function loader() {
     .all({
       query: {
         limit: 16,
-        scope: "featured",
-        orderBy: "featuredOrder",
-        sortOrder: "asc",
+        scope: "all",
+        orderBy: "homeFeaturedOrder",
+        sortOrder: "desc",
         // 5 minutes
         cache: 60 * 5,
         description: false,

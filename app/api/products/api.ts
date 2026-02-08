@@ -43,7 +43,7 @@ export const productsContract = {
       query: z.object({
         limit: z.coerce.number().optional(),
         offset: z.coerce.number().optional(),
-        scope: z.enum(["featured"]).optional(),
+        scope: z.enum(["featured", "all"]).optional().default("all"),
         orderBy: z
           .enum(productColumnsKeys as [ProductColumns, ...[ProductColumns]])
           .optional()
