@@ -8,6 +8,12 @@ import {
 
 export default [
   // API
+  ...prefix("/api", [
+    route("/products", "./api/products/api.ts"),
+    route("/pieces", "./api/pieces/api.ts"),
+    route("/categories", "./api/categories/api.ts"),
+  ]),
+  // API
   route("/api/auth/*", "./api/auth.ts"),
   route("/api/cart", "./api/cart.ts"),
   route("/api/filter-items", "./api/filter-items.ts"),

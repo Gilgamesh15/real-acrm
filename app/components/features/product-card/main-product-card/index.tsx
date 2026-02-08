@@ -33,8 +33,6 @@ export interface MainProductCardProps {
           with: {
             images: true;
             discount: true;
-            brand: true;
-            size: true;
           };
         };
       };

@@ -109,11 +109,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   const { piece } = loaderData;
+  const pricingData = calculatePiecePriceDisplayData(piece);
   const pageTitle = `${piece.name} | ACRM`;
-  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(piece.priceInGrosz)}. Darmowa dostawa InPost.`;
+  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost.`;
   const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
-  const pricingData = calculatePiecePriceDisplayData(piece);
 
   return [
     { title: pageTitle },
@@ -422,13 +422,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                             ],
                           });
                         }}
-                        onBuyNow={() =>
-                          onPieceBuyNow(similarPiece, {
-                            item_list_id: `similar_${piece.id}`,
-                            item_list_name: `Podobne do ${piece.name}`,
-                            index: index,
-                          })
-                        }
                         onToggleCart={() => {
                           if (isInCart(similarPiece.id)) {
                             removePiece(similarPiece.id, true, {

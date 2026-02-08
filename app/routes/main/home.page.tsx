@@ -1,5 +1,5 @@
 import * as schema from "db/schema";
-import { and, asc, desc, eq, exists, gte, isNull, lte, or } from "drizzle-orm";
+import { asc, desc } from "drizzle-orm";
 import {
   AlertCircleIcon,
   ChevronLeft,
@@ -24,6 +24,7 @@ import { Image } from "~/components/ui/image";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 
+import { api } from "~/api/api.server";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { MainProductCard } from "~/components/features/product-card/main-product-card";
 import { useCart } from "~/components/features/providers/cart-provider";
@@ -51,15 +52,17 @@ const MEN_HERO_URL =
   "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975339/men-hero_d1pnxe_pe5eso.jpg";
 
 export async function loader() {
-  const categoriesPromise = db.query.categories
-    .findMany({
-      where: gte(schema.categories.featuredOrder, 0),
-      with: {
-        image: true,
+  const categoriesPromise = api.categories.get
+    .all({
+      query: {
+        scope: "featured",
+        orderBy: "featuredOrder",
+        sortOrder: "asc",
+        // 1 hour
+        cache: 60 * 60,
       },
-      orderBy: asc(schema.categories.featuredOrder),
     })
-    .then((res) => res);
+    .then((res) => res.body.categories);
 
   const tagsPromise = db.query.tags
     .findMany({
@@ -104,102 +107,38 @@ export async function loader() {
     })
     .then((res) => res);
 
-  const featuredProductsPromise = db.query.products
-    .findMany({
-      where: and(
-        exists(
-          db
-            .select()
-            .from(schema.pieces)
-            .where(
-              and(
-                eq(schema.pieces.productId, schema.products.id),
-                eq(schema.pieces.status, "published"),
-                or(
-                  isNull(schema.pieces.reservedUntil),
-                  lte(schema.pieces.reservedUntil, new Date())
-                )
-              )
-            )
-        ),
-        eq(schema.products.status, "published")
-      ),
-      columns: {
+  const featuredProductsPromise = api.products.get
+    .all({
+      query: {
+        limit: 30,
+        scope: "featured",
+        orderBy: "featuredOrder",
+        sortOrder: "desc",
+        // 5 minutes
+        cache: 60 * 5,
         description: false,
+        images: "primary",
+        piecesImages: "primary",
       },
-      with: {
-        discount: true,
-        images: {
-          limit: 1,
-          orderBy: asc(schema.images.displayOrder),
-        },
-        pieces: {
-          orderBy: asc(schema.pieces.productDisplayOrder),
-          with: {
-            discount: true,
-            images: {
-              limit: 1,
-              orderBy: asc(schema.images.displayOrder),
-            },
-            brand: true,
-            category: true,
-            size: true,
-          },
-        },
-      },
-
-      orderBy: desc(schema.products.featuredOrder),
     })
-    .then((res) => res);
+    .then((res) => res.body.products);
 
-  const topProductsPromise = db.query.products
-    .findMany({
-      limit: 16,
-      where: and(
-        exists(
-          db
-            .select()
-            .from(schema.pieces)
-            .where(
-              and(
-                eq(schema.pieces.productId, schema.products.id),
-                eq(schema.pieces.status, "published"),
-                or(
-                  isNull(schema.pieces.reservedUntil),
-                  lte(schema.pieces.reservedUntil, new Date())
-                )
-              )
-            )
-        ),
-        eq(schema.products.status, "published")
-      ),
-      columns: {
+  const topProductsPromise = api.products.get
+    .all({
+      query: {
+        limit: 16,
+        scope: "featured",
+        orderBy: "featuredOrder",
+        sortOrder: "asc",
+        // 5 minutes
+        cache: 60 * 5,
         description: false,
+        images: "primary",
+        piecesImages: "primary",
       },
-      with: {
-        discount: true,
-        images: {
-          limit: 1,
-          orderBy: asc(schema.images.displayOrder),
-        },
-        pieces: {
-          orderBy: asc(schema.pieces.productDisplayOrder),
-          with: {
-            discount: true,
-            images: {
-              limit: 1,
-              orderBy: asc(schema.images.displayOrder),
-            },
-            brand: true,
-            category: true,
-            size: true,
-          },
-        },
-      },
-      orderBy: desc(schema.products.homeFeaturedOrder),
     })
     .then((res) =>
-      res.map((item) => ({
+      res.body.products.map((item) => ({
         id: item.id,
         images: item.images,
         name: item.name,
@@ -208,44 +147,20 @@ export async function loader() {
       }))
     );
 
-  const topPiecesPromise = db.query.pieces
-    .findMany({
-      limit: 16,
-      where: and(
-        eq(schema.pieces.status, "published"),
-        or(
-          isNull(schema.pieces.reservedUntil),
-          lte(schema.pieces.reservedUntil, new Date())
-        ),
-        or(
-          isNull(schema.pieces.productId),
-          exists(
-            db
-              .select({ id: schema.products.id })
-              .from(schema.products)
-              .where(
-                and(
-                  eq(schema.products.id, schema.pieces.productId),
-                  eq(schema.products.status, "published")
-                )
-              )
-          )
-        )
-      ),
-      orderBy: desc(schema.pieces.homeFeaturedOrder),
-      with: {
-        discount: true,
-        images: {
-          limit: 1,
-          orderBy: asc(schema.images.displayOrder),
-        },
-        brand: true,
-        category: true,
-        size: true,
+  const topPiecesPromise = api.pieces.get
+    .all({
+      query: {
+        limit: 16,
+        scope: "featured",
+        orderBy: "homeFeaturedOrder",
+        sortOrder: "desc",
+        images: "primary",
+        // 5 minutes
+        cache: 60 * 5,
       },
     })
     .then((res) =>
-      res.map((item) => ({
+      res.body.pieces.map((item) => ({
         id: item.id,
         images: item.images,
         name: item.name,
@@ -752,7 +667,6 @@ function TagsSection({
   >;
 }) {
   const { isInCart, addPiece, removePiece } = useCart();
-  const { onPieceBuyNow } = useCheckoutDialog();
   return (
     <React.Suspense
       fallback={Array.from({ length: 4 }).map((_, index) => (
@@ -895,13 +809,6 @@ function TagsSection({
                               ],
                             });
                           }}
-                          onBuyNow={() =>
-                            onPieceBuyNow(piece, {
-                              item_list_id: `tag_${tag.id}`,
-                              item_list_name: tag.name,
-                              index: pieceIndex,
-                            })
-                          }
                           onToggleCart={() => {
                             if (isInCart(piece.id)) {
                               removePiece(piece.id, true, {

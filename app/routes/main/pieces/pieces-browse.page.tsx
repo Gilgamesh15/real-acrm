@@ -38,7 +38,6 @@ import {
 } from "~/components/features/param-filters/filter-values";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
-import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { useStructuredData } from "~/hooks/use-structured-data";
 import { generateBreadcrumbListStructuredData } from "~/lib/seo";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
@@ -391,7 +390,6 @@ function PiecesList({
   categorySlug: string;
 } & Awaited<Route.ComponentProps["loaderData"]["piecesPromise"]>) {
   const { isInCart, addPiece, removePiece } = useCart();
-  const { onPieceBuyNow } = useCheckoutDialog();
 
   React.useEffect(() => {
     window.gtag?.("event", "view_item_list", {
@@ -431,13 +429,6 @@ function PiecesList({
                 ],
               });
             }}
-            onBuyNow={() =>
-              onPieceBuyNow(piece, {
-                item_list_id: `category_${categorySlug}`,
-                item_list_name: categoryName,
-                index: index,
-              })
-            }
             onToggleCart={() => {
               if (isInCart(piece.id)) {
                 removePiece(piece.id, true, {
