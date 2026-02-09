@@ -1,4 +1,3 @@
-import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import { EyeClosedIcon, EyeIcon } from "lucide-react";
 import React from "react";
 
@@ -15,27 +14,18 @@ import { StatusBar, StatusSegment } from "../../../ui/status-bar";
 
 export const PasswordInput = ({
   className,
-  value: controlledValue,
-  onValueChange,
-  defaultValue = "",
+  value,
+  onValueChange: setValue,
   variant = "new-password",
   ...inputProps
 }: Omit<
   React.ComponentProps<"input">,
   "value" | "defaultValue" | "onChange"
 > & {
-  value?: string;
-  onValueChange?: (value: string) => void;
-  defaultValue?: string;
+  value: string;
+  onValueChange: (value: string) => void;
   variant?: "new-password" | "current-password";
 }) => {
-  const [value, setValue] = useControllableState({
-    prop: controlledValue,
-    defaultProp: defaultValue,
-    onChange: onValueChange,
-    caller: "PasswordInput",
-  });
-
   const [showPassword, setShowPassword] = React.useState(false);
 
   const strength = getPasswordStrength(value);

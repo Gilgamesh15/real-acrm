@@ -1,4 +1,5 @@
 import React from "react";
+import "swiper/css/effect-coverflow";
 import { A11y, EffectCoverflow, Keyboard, Mousewheel } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 import type { Swiper } from "swiper/types";

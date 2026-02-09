@@ -1,3 +1,4 @@
+import { isbot } from "isbot";
 import type { MiddlewareFunction } from "react-router";
 
 import { loggerContext } from "~/context/logger-context.server";
@@ -9,6 +10,9 @@ export const sessionMiddleware: MiddlewareFunction = async (
   { request, context },
   next
 ) => {
+  if (isbot(request.headers.get("user-agent"))) {
+    return next();
+  }
   const logger = context.get(loggerContext);
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/webhooks")) {

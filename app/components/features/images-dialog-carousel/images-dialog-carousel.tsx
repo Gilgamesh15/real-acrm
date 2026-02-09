@@ -1,4 +1,5 @@
 import React from "react";
+import "swiper/css/zoom";
 import { A11y, Keyboard, Mousewheel, Zoom } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 

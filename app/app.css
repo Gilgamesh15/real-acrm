@@ -3,12 +3,11 @@
 
 @import "swiper/css";
 @import "swiper/css/a11y";
-@import "swiper/css/effect-coverflow";
 @import "swiper/css/free-mode";
 @import "swiper/css/keyboard";
 @import "swiper/css/mousewheel";
 @import "swiper/css/thumbs";
-@import "swiper/css/zoom";
+
 
 /* Inter Variable */
 @font-face {
