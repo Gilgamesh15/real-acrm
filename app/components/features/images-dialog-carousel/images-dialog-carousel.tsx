@@ -1,10 +1,9 @@
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { XIcon } from "lucide-react";
 import React from "react";
 import { A11y, Keyboard, Mousewheel, Zoom } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 
-import { Image } from "~/components/ui/image";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
+import Image from "~/components/ui/image";
 
 function ImagesDrawerCarousel({
   images: rawImages,
@@ -22,100 +21,93 @@ function ImagesDrawerCarousel({
 
     // Repeat images until we have at least 8
     const repeated: string[] = [];
-    while (repeated.length < 8) {
+    while (repeated.length < 5) {
       repeated.push(...rawImages);
     }
     return repeated;
   }, [rawImages]);
 
   return (
-    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Close
-          data-slot="dialog-close"
-          className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-        >
-          <XIcon className="size-8" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-        <DialogPrimitive.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50" />
-        <DialogPrimitive.Content className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] h-[80vh] z-50 w-full translate-x-[-50%] translate-y-[-50%] shadow-lg duration-200 outline-none">
-          <SwiperComp
-            freeMode={{
-              enabled: true,
-              sticky: false,
-            }}
-            loop
-            centeredSlides
-            initialSlide={defaultActiveIndex}
-            zoom={{
-              maxRatio: 3,
-              minRatio: 1,
-              toggle: true,
-              panOnMouseMove: false,
-            }}
-            modules={[A11y, Keyboard, Mousewheel, Zoom]}
-            keyboard
-            mousewheel={{
-              forceToAxis: true,
-            }}
-            spaceBetween={10}
-            breakpoints={{
-              0: {
-                slidesPerView: 1,
-              },
-              640: {
-                slidesPerView: 2,
-              },
-              1280: {
-                slidesPerView: 3,
-              },
-            }}
-            className="w-full h-full"
-            onClick={(swiper, event) => {
-              const clickedSlide = (event.target as HTMLElement).closest(
-                ".swiper-slide"
-              );
-              const slideIndex = parseInt(
-                clickedSlide?.getAttribute("data-index") || "0"
-              );
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent
+        showCloseButton={false}
+        className="bg-transparent grid h-[80vh] max-w-screen gap-4 border-0 p-2 shadow-none sm:max-w-screen"
+      >
+        <SwiperComp
+          freeMode={{
+            enabled: true,
+            sticky: false,
+          }}
+          loop
+          centeredSlides
+          initialSlide={defaultActiveIndex}
+          zoom={{
+            maxRatio: 3,
+            minRatio: 1,
+            toggle: true,
+            panOnMouseMove: false,
+          }}
+          modules={[A11y, Keyboard, Mousewheel, Zoom]}
+          keyboard
+          mousewheel={{
+            forceToAxis: true,
+          }}
+          spaceBetween={10}
+          breakpoints={{
+            0: {
+              slidesPerView: 1,
+            },
+            640: {
+              slidesPerView: 2,
+            },
+            1280: {
+              slidesPerView: 3,
+            },
+          }}
+          className="w-full h-full"
+          onClick={(swiper, event) => {
+            const clickedSlide = (event.target as HTMLElement).closest(
+              ".swiper-slide"
+            );
+            const slideIndex = parseInt(
+              clickedSlide?.getAttribute("data-index") || "0"
+            );
 
-              if (swiper.realIndex % images.length === slideIndex) {
+            if (swiper.realIndex % images.length === slideIndex) {
+              swiper.zoom.toggle();
+              return;
+            } else {
+              swiper.zoom.out();
+              swiper.slideToLoop(slideIndex);
+              setTimeout(() => {
                 swiper.zoom.toggle();
-                return;
-              } else {
-                swiper.zoom.out();
-                swiper.slideToLoop(slideIndex);
-                setTimeout(() => {
-                  swiper.zoom.toggle();
-                }, 200);
-              }
-            }}
-          >
-            {images.map((image, index) => (
-              <SwiperSlide
-                data-index={index % images.length}
-                key={`${image}-${index}`}
-                zoom
-                className="cursor-zoom-in z-98"
-              >
-                <div className="overflow-hidden border border-primary/50 bg-background flex items-center justify-center size-full max-h-full relative z-100">
-                  <Image
-                    src={image}
-                    alt={`Image ${(index % images.length) + 1}`}
-                    priority
-                    mode="contain"
-                    quality="auto:good"
-                    responsive
-                    className="object-contain relative z-99"
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </SwiperComp>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+              }, 200);
+            }
+          }}
+        >
+          {images.map((image, index) => (
+            <SwiperSlide
+              data-index={index % images.length}
+              key={`${image}-${index}`}
+              zoom
+              className="cursor-zoom-in z-98"
+            >
+              <div className="overflow-hidden border border-primary/50 bg-background flex items-center justify-center size-full max-h-full relative z-100">
+                <Image
+                  src={image}
+                  alt={`Image ${(index % images.length) + 1}`}
+                  quality="auto:good"
+                  responsive
+                  resize="autoPad"
+                  gravity
+                  className="object-contain relative z-99"
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </SwiperComp>
+      </DialogContent>
+    </Dialog>
   );
 }
 

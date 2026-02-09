@@ -41,6 +41,7 @@ const ReturnPieceCard = ({
           name={name}
         />
         <ProductCardImage
+          size="sm"
           url={primaryImage?.url || ""}
           alt={primaryImage?.alt || ""}
         />

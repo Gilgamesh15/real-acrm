@@ -10,7 +10,7 @@ import {
   FieldError,
   FieldLabel,
 } from "~/components/ui/field";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 
 import clodinaryLocalisation from "~/lib/claudinary-localisation.json";
 import type { ImagesFormSchema } from "~/lib/schemas";

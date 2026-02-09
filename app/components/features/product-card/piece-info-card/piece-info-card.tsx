@@ -28,6 +28,7 @@ const PieceInfoCard = ({
     <ProductCardRoot size="sm">
       <ProductCardMedia size="md">
         <ProductCardImage
+          size="md"
           url={primaryImage?.url || ""}
           alt={primaryImage?.alt || ""}
         />

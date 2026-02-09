@@ -220,6 +220,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
                     <ProductCardRoot size="sm" key={product.id}>
                       <ProductCardMedia size="md">
                         <ProductCardImage
+                          size="md"
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                         />
@@ -238,6 +239,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
                     <ProductCardRoot size="sm" key={piece.id}>
                       <ProductCardMedia size="md">
                         <ProductCardImage
+                          size="md"
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                         />

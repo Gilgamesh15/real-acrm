@@ -180,6 +180,7 @@ function NavSearch({ className }: { className?: string }) {
                       <ProductCardRoot size="sm" key={item.id}>
                         <ProductCardMedia size="md">
                           <ProductCardImage
+                            size="md"
                             url={primaryImage?.url || ""}
                             alt={primaryImage?.alt || ""}
                             onClick={handlePieceClick}
@@ -214,6 +215,7 @@ function NavSearch({ className }: { className?: string }) {
                     <ProductCardRoot size="sm" key={item.id}>
                       <ProductCardMedia size="md">
                         <ProductCardImage
+                          size="md"
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                           onClick={handleProductClick}

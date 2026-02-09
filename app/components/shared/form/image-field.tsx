@@ -10,7 +10,7 @@ import {
   FieldError,
   FieldLabel,
 } from "~/components/ui/field";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 
 import { CloudinaryWidget } from "~/components/shared/claudinary-widget/claudinary-widget";
 import clodinaryLocalisation from "~/lib/claudinary-localisation.json";

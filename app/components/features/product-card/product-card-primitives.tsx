@@ -11,7 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
   Tooltip,
@@ -50,10 +50,12 @@ const ProductCardImage = ({
   alt,
   to,
   onClick,
+  size = "md",
 }: {
   url: string;
   alt: string;
   to?: string;
+  size?: "sm" | "md" | "lg";
   onClick?: () => void;
 }) => {
   const navigate = useNavigate();
@@ -77,6 +79,9 @@ const ProductCardImage = ({
         src={url}
         alt={alt}
         aspectRatio={1}
+        width={size === "sm" ? 40 : size === "md" ? 80 : 96}
+        height={size === "sm" ? 40 : size === "md" ? 80 : 96}
+        resize="fill"
         className="size-full h-full w-full"
       />
     </div>

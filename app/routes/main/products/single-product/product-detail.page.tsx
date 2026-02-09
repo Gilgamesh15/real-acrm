@@ -6,7 +6,7 @@ import React from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 import { Separator } from "~/components/ui/separator";
 
@@ -237,6 +237,8 @@ export default function ProductDetailPage({
                       alt={primaryImage?.alt || ""}
                       width={80}
                       height={80}
+                      resize="fill"
+                      lazyload
                       className="absolute h-full w-full"
                     />
 

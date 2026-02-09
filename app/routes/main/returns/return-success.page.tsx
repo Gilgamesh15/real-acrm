@@ -206,6 +206,7 @@ export default function ReturnSuccessPage({
                   <ProductCardRoot size="sm" key={product.id}>
                     <ProductCardMedia size="md">
                       <ProductCardImage
+                        size="md"
                         url={product.images[0]?.url || ""}
                         alt={product.images[0]?.alt || ""}
                       />
@@ -222,6 +223,7 @@ export default function ReturnSuccessPage({
                   <ProductCardRoot size="sm" key={piece.id}>
                     <ProductCardMedia size="md">
                       <ProductCardImage
+                        size="md"
                         url={piece.images[0]?.url || ""}
                         alt={piece.images[0]?.alt || ""}
                       />

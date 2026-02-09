@@ -39,6 +39,7 @@ const DetailedProductCard = ({
     <ProductCardRoot>
       <ProductCardMedia size="lg">
         <ProductCardImage
+          size="lg"
           url={primaryImage?.url || ""}
           alt={primaryImage?.alt || ""}
         />
@@ -56,6 +57,7 @@ const DetailedProductCard = ({
             <ProductCardRoot key={piece.id} size="sm">
               <ProductCardMedia size="sm">
                 <ProductCardImage
+                  size="sm"
                   url={primaryImage?.url || ""}
                   alt={primaryImage?.alt || ""}
                 />

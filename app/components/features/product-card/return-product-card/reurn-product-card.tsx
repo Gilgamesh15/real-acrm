@@ -66,6 +66,7 @@ const ReturnProductCard = ({
             <ProductCardRoot key={piece.id} size="sm">
               <ProductCardMedia size="sm">
                 <ProductCardImage
+                  size="sm"
                   url={primaryImage?.url || ""}
                   alt={primaryImage?.alt || ""}
                 />

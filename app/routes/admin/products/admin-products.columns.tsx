@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 
 import {
   ActionDialog,

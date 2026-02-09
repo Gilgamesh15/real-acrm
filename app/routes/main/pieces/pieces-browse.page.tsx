@@ -17,7 +17,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -144,7 +144,7 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
   ];
 };
 
-export default function ProductsBrowsePage({
+export default function PiecesBrowsePage({
   loaderData,
   params,
 }: Route.ComponentProps) {
@@ -338,7 +338,9 @@ export default function ProductsBrowsePage({
                 <Image
                   src={category.image || ""}
                   alt={category.name}
-                  mode="cover"
+                  height={56}
+                  width={408}
+                  resize="fill"
                   className="absolute inset-0 size-full -z-10 object-cover"
                 />
                 <h2 className="text-lg text-shadow-2xs font-secondary tracking-wide">

@@ -12,7 +12,7 @@ import type { Swiper } from "swiper/types";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
@@ -208,9 +208,8 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                       src={image.url}
                       alt={image.alt}
                       aspectRatio={6 / 5}
-                      priority={index === 0}
-                      mode="contain"
-                      className="aspect-6/5 size-full object-contain"
+                      resize="autoPad"
+                      className="size-full object-contain"
                       quality="auto:good"
                       responsive
                     />
@@ -254,9 +253,8 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                         src={image.url}
                         alt={image.alt}
                         aspectRatio={1}
-                        mode="cover"
-                        className="size-full object-cover"
-                        quality="auto"
+                        resize="fill"
+                        className="size-full"
                         responsive
                       />
                     </div>

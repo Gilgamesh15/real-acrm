@@ -9,7 +9,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -109,9 +109,11 @@ const MainMenu = ({
                           <Image
                             src={cat.image?.url || ""}
                             alt={cat.name}
+                            width={154}
+                            height={154}
                             aspectRatio={1}
-                            mode="cover"
-                            className="absolute inset-0 size-full z-10 object-cover"
+                            resize="fill"
+                            className="absolute inset-0 size-full z-10"
                           />
                           <span className="absolute inset-0 flex items-center justify-center pt-[50%] z-20 px-2">
                             <span className="text-lg text-shadow-2xs font-secondary tracking-wide text-center wrap-break-word">

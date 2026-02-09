@@ -3,7 +3,7 @@ import { A11y, EffectCoverflow, Keyboard, Mousewheel } from "swiper/modules";
 import { Swiper as SwiperComp, SwiperSlide } from "swiper/react";
 import type { Swiper } from "swiper/types";
 
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Section } from "~/components/ui/layout";
 import {
   SlideIndicator,
@@ -143,7 +143,8 @@ export default function ProductImagesCarouselSection({
                       <Image
                         src={image}
                         alt="Stylizacja"
-                        mode="cover"
+                        resize="fill"
+                        lazyload={!isVisible}
                         className="size-full object-cover"
                         quality="auto:best"
                         responsive

@@ -153,6 +153,7 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                               )}
                               <ProductCardMedia size="sm">
                                 <ProductCardImage
+                                  size="sm"
                                   url={primaryImage?.url || ""}
                                   alt={primaryImage?.alt || ""}
                                 />
@@ -186,6 +187,7 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                       )}
                       <ProductCardMedia size="sm">
                         <ProductCardImage
+                          size="sm"
                           url={primaryImage?.url || ""}
                           alt={primaryImage?.alt || ""}
                         />

@@ -204,6 +204,7 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
                   <ProductCardRoot key={product.id}>
                     <ProductCardMedia size="lg">
                       <ProductCardImage
+                        size="lg"
                         url={product.images[0]?.url || ""}
                         alt={product.images[0]?.alt || ""}
                       />
@@ -223,6 +224,7 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
                           <ProductCardRoot key={piece.id} size="sm">
                             <ProductCardMedia size="sm">
                               <ProductCardImage
+                                size="sm"
                                 url={primaryImage?.url || ""}
                                 alt={primaryImage?.alt || ""}
                               />
@@ -249,6 +251,7 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
                   <ProductCardRoot key={piece.id} size="sm">
                     <ProductCardMedia size="md">
                       <ProductCardImage
+                        size="md"
                         url={piece.images[0]?.url || ""}
                         alt={piece.images[0]?.alt || ""}
                       />

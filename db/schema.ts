@@ -728,6 +728,7 @@ export const pieces = pgTable(
       onDelete: "set null",
     }),
     productDisplayOrder: integer("product_display_order").default(-1).notNull(),
+    description: jsonb("description").$type<RichText>(),
 
     brandId: uuid("brand_id")
       .references(() => brands.id, {

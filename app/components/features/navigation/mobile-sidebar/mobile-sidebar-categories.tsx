@@ -8,7 +8,7 @@ import {
 import React from "react";
 
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 
 import type { DBQueryResult } from "~/lib/types";
 import { getChildren, getIsLeaf, getSlugPath } from "~/lib/utils";
@@ -89,6 +89,9 @@ function MobileSidebarCategories({
               <Image
                 src={current.image?.url ?? ""}
                 alt={current.name}
+                width={319}
+                height={54}
+                resize="fill"
                 className="absolute inset-0 size-full z-0"
               />
               <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/40 to-background/90 z-10" />
@@ -113,8 +116,10 @@ function MobileSidebarCategories({
                 <Image
                   src={category.image?.url ?? ""}
                   alt={category.name}
-                  mode="cover"
-                  className="absolute inset-0 size-full z-0 object-cover "
+                  width={319}
+                  height={54}
+                  resize="fill"
+                  className="absolute inset-0 size-full z-0"
                 />
                 <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/40 to-background/90 z-10" />
                 <span className="relative z-20">

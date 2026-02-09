@@ -12,7 +12,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import {
   Sheet,
   SheetContent,
@@ -167,7 +167,10 @@ const MobileSidebar = ({
                           <Image
                             src={tag.image?.url || ""}
                             alt={tag.name}
+                            width={140}
+                            height={140}
                             aspectRatio={1}
+                            resize="fill"
                             className="absolute inset-0 size-full -z-10"
                           />
                           <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-lg text-shadow-2xs font-secondary tracking-wide">

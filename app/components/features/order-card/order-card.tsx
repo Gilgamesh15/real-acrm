@@ -103,6 +103,7 @@ export function OrderCard({ order }: OrderCardProps) {
                 <ProductCardRoot size="sm" key={product.id}>
                   <ProductCardMedia size="md">
                     <ProductCardImage
+                      size="md"
                       url={primaryImage?.url || ""}
                       alt={primaryImage?.alt || ""}
                     />
@@ -123,6 +124,7 @@ export function OrderCard({ order }: OrderCardProps) {
                 <ProductCardRoot size="sm" key={piece.id}>
                   <ProductCardMedia size="md">
                     <ProductCardImage
+                      size="md"
                       url={primaryImage?.url || ""}
                       alt={primaryImage?.alt || ""}
                     />

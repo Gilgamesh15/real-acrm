@@ -4,7 +4,7 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import {
   Tooltip,
   TooltipContent,
@@ -70,9 +70,9 @@ const MainProductCard = ({
           src={primaryImage?.url || "/placeholder.png"}
           alt={primaryImage?.alt || `${product.name} - projekt`}
           aspectRatio={6 / 8}
-          mode="cover"
+          resize="fill"
           width={280}
-          quality="auto:best"
+          quality="auto:good"
           className="-z-2 absolute h-full w-full"
         />
 
@@ -96,9 +96,10 @@ const MainProductCard = ({
                       aspectRatio={1}
                       width={80}
                       height={80}
-                      mode="contain"
+                      resize="autoPad"
                       quality="auto:best"
-                      className="min-w-full min-h-full absolute"
+                      lazyload
+                      className="size-20 absolute object-cover"
                     />
                   </li>
                   {index !== product.pieces.length - 1 && (

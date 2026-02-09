@@ -19,7 +19,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "~/components/ui/field";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Input } from "~/components/ui/input";
 import { StepIndicator } from "~/components/ui/step-indicator";
 

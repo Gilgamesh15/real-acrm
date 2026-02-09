@@ -187,6 +187,7 @@ export const NavCartButton = () => {
                             <ProductCardRoot key={piece.id} size="sm">
                               <ProductCardMedia size="sm">
                                 <ProductCardImage
+                                  size="sm"
                                   onClick={() => {
                                     setIsOpen(false);
                                     navigate(`/ubrania/${piece.slug}`);
@@ -225,6 +226,7 @@ export const NavCartButton = () => {
                     <ProductCardRoot size="sm">
                       <ProductCardMedia size="sm">
                         <ProductCardImage
+                          size="sm"
                           onClick={() => {
                             setIsOpen(false);
                             navigate(`/ubrania/${piece.slug}`);

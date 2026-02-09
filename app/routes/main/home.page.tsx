@@ -20,7 +20,7 @@ import {
   ErrorMedia,
   ErrorTitle,
 } from "~/components/ui/error";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -259,11 +259,9 @@ function HeroSection() {
             <Image
               src={MEN_HERO_URL}
               alt="Men's Collection"
-              priority
-              width={1200}
+              responsive
               quality="auto:best"
-              fetchPriority="high"
-              mode="cover"
+              resize="fill"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -291,11 +289,9 @@ function HeroSection() {
             <Image
               src={WOMEN_HERO_URL}
               alt="Women's Collection"
-              priority
-              width={1200}
+              responsive
               quality="auto:best"
-              fetchPriority="high"
-              mode="cover"
+              resize="fill"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
             />
 
@@ -508,7 +504,7 @@ function TopFeaturedSection({
                                   aspectRatio={3 / 4}
                                   src={primaryImage?.url || ""}
                                   alt={primaryImage?.alt || ""}
-                                  mode="cover"
+                                  resize="autoPad"
                                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
@@ -614,10 +610,9 @@ function CategoriesSection({
                         src={category.image?.url || ""}
                         alt={`Kategoria ${category.name}`}
                         aspectRatio={1}
-                        mode="cover"
+                        resize="fill"
                         className="size-full absolute object-cover"
-                        width={200}
-                        height={200}
+                        responsive
                       />
 
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
@@ -749,7 +744,8 @@ function TagsSection({
                 <Image
                   src={tag.image?.url || ""}
                   alt={tag.name}
-                  mode="cover"
+                  lazyload
+                  resize="fill"
                   responsive
                   className="size-full absolute -z-10 object-cover"
                 />

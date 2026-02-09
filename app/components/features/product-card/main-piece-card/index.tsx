@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Image } from "~/components/ui/image";
+import Image from "~/components/ui/image";
 
 import type { DBQueryResult } from "~/lib/types";
 import {
@@ -48,19 +48,18 @@ const MainPieceCard = ({
       to={href}
       onClick={onClick}
       className={cn(
-        "block max-w-xl bg-background pb-2 relative backdrop-blur-md",
+        "block max-w-[280px] bg-background pb-2 relative backdrop-blur-md",
         className
       )}
     >
       <Image
         src={primaryImage?.url || "/placeholder.png"}
         alt={primaryImage?.alt || "Piece image"}
-        className="object-contain aspect-7/8 mx-auto"
         aspectRatio={7 / 8}
         quality="auto:good"
         responsive
-        mode="contain"
-        width={576}
+        resize="limitPad"
+        width={280}
       />
       <div className="w-full h-px bg-linear-to-r from-transparent via-foreground/50 to-transparent rounded-full my-6 relative">
         <Button
