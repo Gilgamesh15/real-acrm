@@ -46,10 +46,29 @@ import type { Route } from "./+types/home.page";
 
 const PAGE_TITLE = "ACRM | Fashion Projects";
 
-const WOMEN_HERO_URL =
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975338/women-hero_mykywe_icxbew.jpg";
-const MEN_HERO_URL =
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975339/men-hero_d1pnxe_pe5eso.jpg";
+const WOMEN_HERO_SRC_SET = [
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_384/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_512/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_640/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_768/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
+];
+const MEN_HERO_SRC_SET = [
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_384/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_512/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_640/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
+  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_768/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
+];
+
+// sizes html property in tailwind breakpoints
+const SIZES = `
+  (min-width: 1536px) 50vw,
+  (min-width: 1280px) 50vw,
+  (min-width: 1024px) 50vw,
+  (min-width: 768px) 50vw,
+  100vw
+`;
 
 export async function loader() {
   const categoriesPromise = api.categories.get
@@ -257,9 +276,17 @@ function HeroSection() {
           <Link to="/kategorie?gender=male" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję męską</span>
             <Image
-              src={MEN_HERO_URL}
+              src={MEN_HERO_SRC_SET[0]}
+              srcSet={`
+                ${MEN_HERO_SRC_SET[0]} 320w,
+                ${MEN_HERO_SRC_SET[1]} 384w,
+                ${MEN_HERO_SRC_SET[2]} 512w,
+                ${MEN_HERO_SRC_SET[3]} 640w,
+                ${MEN_HERO_SRC_SET[4]} 768w
+              `}
+              sizes={SIZES}
               alt="Men's Collection"
-              responsive
+              fetchPriority="high"
               quality="auto:best"
               resize="fill"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
@@ -287,9 +314,17 @@ function HeroSection() {
           <Link to="/kategorie?gender=female" className="absolute inset-0">
             <span className="sr-only">Zobacz kolekcję damską</span>
             <Image
-              src={WOMEN_HERO_URL}
+              src={WOMEN_HERO_SRC_SET[0]}
+              srcSet={`
+                ${WOMEN_HERO_SRC_SET[0]} 320w,
+                ${WOMEN_HERO_SRC_SET[1]} 384w,
+                ${WOMEN_HERO_SRC_SET[2]} 512w,
+                ${WOMEN_HERO_SRC_SET[3]} 640w,
+                ${WOMEN_HERO_SRC_SET[4]} 768w
+              `}
+              sizes={SIZES}
+              fetchPriority="high"
               alt="Women's Collection"
-              responsive
               quality="auto:best"
               resize="fill"
               className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
@@ -609,7 +644,10 @@ function CategoriesSection({
                       <Image
                         src={category.image?.url || ""}
                         alt={`Kategoria ${category.name}`}
+                        srcSet=""
                         aspectRatio={1}
+                        width={240}
+                        height={240}
                         resize="fill"
                         className="size-full absolute object-cover"
                         responsive
