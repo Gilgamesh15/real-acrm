@@ -11,6 +11,7 @@ export const sessionMiddleware: MiddlewareFunction = async (
   next
 ) => {
   if (isbot(request.headers.get("user-agent"))) {
+    context.set(sessionContext, null);
     return next();
   }
   const logger = context.get(loggerContext);

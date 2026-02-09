@@ -54,7 +54,19 @@ export type OrderPiece = DBQueryResult<"pieces", typeof orderPieceSelect>;
 export async function loader({ context }: LoaderFunctionArgs) {
   const logger = context.get(loggerContext);
   const session = context.get(sessionContext);
-  const userId = session.user.id;
+  const userId = session?.user.id;
+
+  if (!userId) {
+    return data(
+      {
+        order: null,
+        stripeCheckoutUrl: null,
+        success: true,
+        error: "User not authenticated",
+      },
+      { status: 401 }
+    );
+  }
 
   try {
     // Find the user's most recent order

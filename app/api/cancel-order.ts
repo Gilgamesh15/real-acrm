@@ -7,7 +7,14 @@ import { sessionContext } from "~/context/session-context.server";
 export async function action({ request, context }: ActionFunctionArgs) {
   const logger = context.get(loggerContext);
   const session = context.get(sessionContext);
-  const userId = session.user.id;
+  const userId = session?.user.id;
+
+  if (!userId) {
+    return data(
+      { success: false, error: "User not authenticated" },
+      { status: 401 }
+    );
+  }
 
   try {
     const { orderId } = (await request.json()) as {

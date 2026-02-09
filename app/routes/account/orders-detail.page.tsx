@@ -49,7 +49,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
   const session = context.get(sessionContext);
 
-  if (session.user.isAnonymous) {
+  if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", {
       status: 302,
     });
