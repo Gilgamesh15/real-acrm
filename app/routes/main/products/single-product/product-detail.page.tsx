@@ -13,7 +13,6 @@ import { Separator } from "~/components/ui/separator";
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { RichText } from "~/components/shared/rich-text/rich-text";
 import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generateProductStructuredData } from "~/lib/seo";
@@ -53,6 +52,12 @@ export type SingleProductPageProduct = DBQueryResult<
   "products",
   typeof productSelect
 >;
+
+const RichText = React.lazy(() =>
+  import("~/components/shared/rich-text/rich-text").then((mod) => ({
+    default: mod.RichText,
+  }))
+);
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { productSlug } = params;

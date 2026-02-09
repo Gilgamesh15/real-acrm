@@ -21,7 +21,7 @@ import {
   DataTableProvider,
   DataTableRoot,
 } from "~/components/shared/data-table";
-import { auth } from "~/lib/auth";
+import { auth } from "~/lib/auth.server";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-returns-list.page";

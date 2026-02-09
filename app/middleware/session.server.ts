@@ -3,7 +3,7 @@ import type { MiddlewareFunction } from "react-router";
 
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
-import { auth } from "~/lib/auth";
+import { auth } from "~/lib/auth.server";
 import type { ServerSession } from "~/lib/types";
 
 export const sessionMiddleware: MiddlewareFunction = async (

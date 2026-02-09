@@ -7,8 +7,8 @@ import type {
 } from "drizzle-orm";
 import { data } from "react-router";
 
-import type { Auth } from "./auth";
 import type { AuthClient } from "./auth-client";
+import type { Auth } from "./auth.server";
 
 export type RichText = Node | JSONContent;
 

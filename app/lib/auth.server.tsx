@@ -1,13 +1,14 @@
 import { stripe as stripePlugin } from "@better-auth/stripe";
-import { type BetterAuthPlugin, betterAuth } from "better-auth";
-import { localization } from "better-auth-localization";
+import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
 import { admin, anonymous, customSession } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 import * as schema from "~/../db/schema";
 import ResetPasswordEmail from "~/components/emails/reset-password-email";
 import VerifyEmailEmail from "~/components/emails/verify-email-email";
+import { localization } from "~/lib/better-auth-localization/src/index.server";
 import { db } from "~/lib/db";
 
 import { resend } from "./resend";
@@ -17,6 +18,7 @@ import { stripe as stripeClient } from "./stripe";
 export const auth = betterAuth({
   secret: process.env["BETTER_AUTH_SECRET"]!,
   baseURL: process.env["VITE_APP_URL"]!,
+  onAPIError: { throw: false },
   user: {
     deleteUser: {
       enabled: true,

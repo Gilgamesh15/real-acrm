@@ -1,5 +1,4 @@
 import { useForm } from "@tanstack/react-form";
-import { APIError } from "better-auth";
 import { Send } from "lucide-react";
 import { ArrowRightIcon } from "lucide-react";
 import { Link } from "react-router";
@@ -67,7 +66,7 @@ export default function ZapomnialesHasla() {
         {
           loading: "Trwa wysyłanie linku resetowania hasła...",
           error: (err) => {
-            return err instanceof APIError
+            return err instanceof Error
               ? {
                   message:
                     "Wystąpił błąd podczas wysyłania linku resetowania hasła.",
@@ -114,7 +113,7 @@ export default function ZapomnialesHasla() {
           return res;
         },
         error: (err) => {
-          return err instanceof APIError
+          return err instanceof Error
             ? {
                 message:
                   "Wystąpił błąd podczas wysyłania linku resetowania hasła.",

@@ -1,5 +1,4 @@
 import { useForm } from "@tanstack/react-form";
-import { APIError } from "better-auth";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -100,32 +99,46 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "google",
       });
+      if (error) {
+        throw new Error(error.message);
+      }
       // Track login event for Google
       window.gtag?.("event", "login", {
         method: "google",
       });
     } catch (error) {
-      if (error instanceof APIError) {
+      if (error instanceof Error) {
         toast.error(error.message);
+      } else {
+        toast.error(
+          "Wystąpił nieoczekiwany błąd podczas logowania przez Google."
+        );
       }
     }
   };
 
   const handleFacebookSignIn = async () => {
     try {
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "facebook",
       });
+      if (error) {
+        throw new Error(error.message);
+      }
       // Track login event for Facebook
       window.gtag?.("event", "login", {
         method: "facebook",
       });
     } catch (error) {
-      if (error instanceof APIError) {
+      if (error instanceof Error) {
         toast.error(error.message);
+      } else {
+        toast.error(
+          "Wystąpił nieoczekiwany błąd podczas logowania przez Facebook."
+        );
       }
     }
   };

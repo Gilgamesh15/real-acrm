@@ -19,7 +19,7 @@ import {
 import { useAppForm } from "~/components/shared/form";
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
-import { auth } from "~/lib/auth";
+import { auth } from "~/lib/auth.server";
 import { db } from "~/lib/db";
 import { BrandFormSchema, type BrandFormSchemaType } from "~/lib/schemas";
 import { cn, convertFormDataToObjectUnsafe } from "~/lib/utils";

@@ -23,7 +23,7 @@ import {
 } from "~/components/shared/data-table";
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
-import { auth } from "~/lib/auth";
+import { auth } from "~/lib/auth.server";
 import { db } from "~/lib/db";
 import { cn, orderStatusFromOrder } from "~/lib/utils";
 

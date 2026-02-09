@@ -43,7 +43,7 @@ import {
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
 import { useDialogState } from "~/hooks/use-dialog-state";
-import { auth } from "~/lib/auth";
+import { auth } from "~/lib/auth.server";
 import { db } from "~/lib/db";
 import {
   formatDate,

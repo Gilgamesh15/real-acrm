@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -19,10 +20,23 @@ export default defineConfig(({ isSsrBuild }) => ({
   build: {
     rollupOptions: isSsrBuild ? { input: "./server/app.ts" } : undefined,
   },
+  optimizeDeps: {
+    exclude: ["better-auth", "better-auth/api"],
+  },
   plugins: [
     tailwindcss(),
     !isStorybook && reactRouter(),
     tsconfigPaths(),
+    // Add the visualizer plugin
+    // This only runs during production builds, not during development
+    !isStorybook &&
+      !isSsrBuild &&
+      visualizer({
+        open: true, // Automatically opens the report in your browser
+        filename: "bundle-analysis.html", // Where to save the report
+        gzipSize: true, // Shows gzipped sizes, which is what users actually download
+        brotliSize: true, // Shows brotli sizes too, for even better compression
+      }),
   ].filter(Boolean),
   server: {
     hmr: {

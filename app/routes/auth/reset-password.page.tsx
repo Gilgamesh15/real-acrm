@@ -1,5 +1,4 @@
 import { useForm } from "@tanstack/react-form";
-import { APIError } from "better-auth";
 import { XOctagon } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -7,7 +6,7 @@ import z from "zod";
 
 import { Button } from "~/components/ui/button";
 import {
-  Error,
+  Error as ErrorComponent,
   ErrorContent,
   ErrorDescription,
   ErrorMedia,
@@ -71,13 +70,13 @@ export default function ResetujHaslo({ params }: Route.ComponentProps) {
           });
 
           if (error) {
-            throw error;
+            throw new Error(error.message);
           }
         },
         {
           loading: "Trwa resetowanie hasła...",
           error: (err) => {
-            return err instanceof APIError
+            return err instanceof Error
               ? {
                   message: "Wystąpił błąd podczas resetowania hasła.",
                   description: err.message,
@@ -101,7 +100,7 @@ export default function ResetujHaslo({ params }: Route.ComponentProps) {
 
   if (!token) {
     return (
-      <Error>
+      <ErrorComponent>
         <ErrorMedia className="mb-4">
           <XOctagon className={cn("size-10 text-destructive")} />
         </ErrorMedia>
@@ -118,7 +117,7 @@ export default function ResetujHaslo({ params }: Route.ComponentProps) {
         <Button variant="default" size="default" className="w-full">
           Powrót do strony logowania
         </Button>
-      </Error>
+      </ErrorComponent>
     );
   }
 

@@ -1,4 +1,3 @@
-import { APIError } from "better-auth";
 import { CheckCircle, Send, XOctagon } from "lucide-react";
 import React from "react";
 import {
@@ -31,8 +30,8 @@ import {
 } from "~/components/ui/error";
 
 import { useCountdown } from "~/hooks/use-countdown";
-import { auth } from "~/lib/auth";
 import { authClient } from "~/lib/auth-client";
+import { auth } from "~/lib/auth.server";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/verify-email.page";
@@ -45,26 +44,52 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    await auth.api.verifyEmail({
+    const result = await auth.api.verifyEmail({
       query: {
         token,
       },
     });
-  } catch (error) {
-    if (error instanceof APIError) {
+    if (typeof result === "object" && "status" in result) {
+      if (result.status) {
+        return data(
+          {
+            message: "Email został zweryfikowany.",
+          },
+          { status: 200 }
+        );
+      }
       throw data(
         {
-          message: error.body?.message || error.message,
-          code: error.status,
+          message: "Email nie został zweryfikowany.",
         },
-        { status: error.statusCode }
+        { status: 400 }
       );
     }
-    return data(
+    // Result doesn't have expected shape - treat as verification failure
+    throw data(
+      {
+        message: "Email nie został zweryfikowany.",
+      },
+      { status: 400 }
+    );
+  } catch (error) {
+    // Re-throw Response objects (from data())
+    if (error instanceof Response) {
+      throw error;
+    }
+    if (error instanceof Error) {
+      throw data(
+        {
+          message:
+            "Wystąpił nieoczekiwany błąd podczas weryfikacji adresu email.",
+        },
+        { status: 500 }
+      );
+    }
+    throw data(
       {
         message:
           "Wystąpił nieoczekiwany błąd podczas weryfikacji adresu email.",
-        code: 500,
       },
       { status: 500 }
     );
