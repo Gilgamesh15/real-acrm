@@ -57,7 +57,6 @@ const MainPieceCard = ({
         alt={primaryImage?.alt || "Piece image"}
         aspectRatio={7 / 8}
         quality="auto:good"
-        responsive
         resize="limitPad"
         width={280}
       />
