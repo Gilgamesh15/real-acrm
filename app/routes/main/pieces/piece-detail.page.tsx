@@ -5,15 +5,18 @@ import { exists } from "drizzle-orm";
 import { ChevronsRightIcon, ShoppingCartIcon, ZapIcon } from "lucide-react";
 import React from "react";
 import { Await, Link } from "react-router";
-import { A11y, FreeMode, Keyboard, Mousewheel, Thumbs } from "swiper/modules";
-import { SwiperSlide } from "swiper/react";
-import { Swiper as SwiperComponent } from "swiper/react";
-import type { Swiper } from "swiper/types";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
+import {
+  Carousel,
+  type CarouselApi,
+  CarouselContent,
+  CarouselItem,
+} from "~/components/ui/carousel";
 import Image from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
+import { Skeleton } from "~/components/ui/skeleton";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
@@ -150,6 +153,21 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
     "piece-structured-data"
   );
 
+  const loopedImages = React.useMemo(() => {
+    if (piece.images.length <= 1) return piece.images;
+    const images: typeof piece.images = [];
+    let counter = 0;
+    while (images.length < 12) {
+      images.push(
+        ...piece.images.map((image) => ({
+          ...image,
+          id: `${image.id}-${counter++}`,
+        }))
+      );
+    }
+    return images;
+  }, [piece]);
+
   const pricingData = React.useMemo(() => {
     return calculatePiecePriceDisplayData(piece);
   }, [piece]);
@@ -164,18 +182,36 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
 
   const { isInCart, addPiece, removePiece } = useCart();
   const { onPieceBuyNow } = useCheckoutDialog();
-  const [thumbsSwiper, setThumbsSwiper] = React.useState<Swiper | null>(null);
 
-  const [activeIndex, setActiveIndex] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-  const images = React.useMemo(() => {
-    const images: typeof piece.images = [];
-    while (images.length < 14) {
-      images.push(...piece.images);
-    }
-    return images;
-  }, [piece.images]);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  // Main carousel
+  const [mainApi, setMainApi] = React.useState<CarouselApi>();
+
+  // Thumbs carousel
+  const [thumbsApi, setThumbsApi] = React.useState<CarouselApi>();
+
+  const onThumbClick = React.useCallback(
+    (index: number) => {
+      if (!mainApi || !thumbsApi) return;
+      mainApi.scrollTo(index); // v8
+    },
+    [mainApi, thumbsApi]
+  );
+
+  const onSelect = React.useCallback(() => {
+    if (!mainApi || !thumbsApi) return;
+    setSelectedIndex(mainApi.selectedScrollSnap()); // v8
+    thumbsApi.scrollTo(mainApi.selectedScrollSnap()); // v8
+  }, [mainApi, thumbsApi]);
+
+  React.useEffect(() => {
+    if (!mainApi) return;
+    onSelect();
+    mainApi.on("select", onSelect).on("reInit", onSelect); // v8
+  }, [mainApi, onSelect]);
 
   return (
     <>
@@ -183,84 +219,72 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
         <Section>
           <div className="relative grid w-full grid-cols-1 md:grid-cols-2 gap-4.5 md:gap-8">
             <div className="max-w-full h-full space-y-2">
-              <SwiperComponent
-                onSlideChangeTransitionStart={(swiper) => {
-                  setActiveIndex(swiper.realIndex % piece.images.length);
-                }}
-                loop={true}
-                spaceBetween={10}
-                thumbs={{ swiper: thumbsSwiper }}
-                modules={[FreeMode, Thumbs, A11y, Keyboard, Mousewheel]}
-                keyboard
-                mousewheel={{
-                  forceToAxis: true,
+              <Carousel
+                setApi={setMainApi}
+                opts={{
+                  loop: true,
                 }}
               >
-                {images.map((image, index) => (
-                  <SwiperSlide
-                    key={`${image.id}-${index}`}
-                    className="cursor-zoom-in"
-                    onClick={() => {
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.alt}
-                      aspectRatio={6 / 5}
-                      resize="autoPad"
-                      className="size-full object-contain"
-                      quality="auto:good"
-                      responsive
-                    />
-                  </SwiperSlide>
-                ))}
-              </SwiperComponent>
-              <SwiperComponent
-                onSwiper={setThumbsSwiper}
-                breakpoints={{
-                  0: {
-                    slidesPerView: 5,
-                    loop: piece.images.length > 10,
-                  },
-                  1024: {
-                    slidesPerView: 6,
-                    loop: piece.images.length > 10,
-                  },
-                  1536: {
-                    slidesPerView: 7,
-                    loop: piece.images.length > 10,
-                  },
-                }}
-                freeMode
-                modules={[A11y, FreeMode, Thumbs, Mousewheel]}
-                mousewheel={{
-                  forceToAxis: true,
-                }}
-                keyboard
-              >
-                {images.map((image, index) => (
-                  <SwiperSlide key={`${image.id}-${index}`} className="p-1">
-                    <div
-                      className={cn(
-                        "aspect-square border transition-all duration-300",
-                        index % piece.images.length === activeIndex
-                          ? "border-primary scale-105"
-                          : " border-primary/50 scale-100"
-                      )}
+                <CarouselContent>
+                  {loopedImages.map((image) => (
+                    <CarouselItem
+                      key={image.id}
+                      className="cursor-zoom-in"
+                      onClick={() => {
+                        setIsDialogOpen(true);
+                      }}
                     >
                       <Image
                         src={image.url}
                         alt={image.alt}
-                        aspectRatio={1}
-                        resize="fill"
-                        className="size-full"
+                        aspectRatio={6 / 5}
+                        resize="autoPad"
+                        className="size-full object-contain"
+                        quality="auto:good"
                         responsive
                       />
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </SwiperComponent>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+              <Carousel
+                setApi={setThumbsApi}
+                opts={{
+                  loop: true,
+                  dragFree: true,
+                }}
+                className="h-16"
+              >
+                <CarouselContent>
+                  {loopedImages.map((image, index) => (
+                    <CarouselItem
+                      key={image.id}
+                      className={cn("basis-24 p-1")}
+                      onClick={() => onThumbClick(index)}
+                    >
+                      <div
+                        className={cn(
+                          "basis-24 aspect-square border transition-all duration-300",
+                          index === selectedIndex
+                            ? "border-primary scale-105"
+                            : "border-primary/50 scale-100"
+                        )}
+                      >
+                        <Image
+                          src={image.url}
+                          alt={image.alt}
+                          aspectRatio={1}
+                          resize="autoPad"
+                          className="size-full object-cover bg-background"
+                          width={96}
+                          height={96}
+                          lazyload
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
             </div>
 
             <div className="pt-4.5 flex flex-col h-full justify-between">
@@ -365,44 +389,38 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
 
         <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
 
-        <React.Suspense fallback={<div>Loading...</div>}>
+        <React.Suspense
+          fallback={
+            <Carousel
+              opts={{
+                dragFree: true,
+                align: "start",
+              }}
+            >
+              <CarouselContent>
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <CarouselItem key={index} className="basis-[248px]">
+                    <Skeleton className="w-[248px] h-[373.3px]" />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          }
+        >
           <Await resolve={similarPiecesPromise}>
             {(similarPieces) => (
-              <nav
-                className="mx-4 sm:mx-6 lg:mx-8"
-                aria-label={`Polecane produkty`}
+              <Carousel
+                opts={{
+                  dragFree: true,
+                  align: "start",
+                }}
               >
-                <SwiperComponent
-                  style={
-                    {
-                      "--swiper-horizontal-padding": "8",
-                    } as React.CSSProperties
-                  }
-                  className="w-full h-fit mx-auto"
-                  modules={[A11y, Keyboard, FreeMode, Mousewheel]}
-                  mousewheel={{
-                    forceToAxis: true,
-                  }}
-                  breakpoints={{
-                    0: {
-                      slidesPerView: 2,
-                    },
-                    768: {
-                      slidesPerView: 3,
-                    },
-                    1024: {
-                      slidesPerView: 4,
-                    },
-                    1280: {
-                      slidesPerView: 5,
-                    },
-                  }}
-                  keyboard
-                  spaceBetween={10}
-                  freeMode
-                >
+                <CarouselContent>
                   {similarPieces.map((similarPiece, index) => (
-                    <SwiperSlide key={similarPiece.id}>
+                    <CarouselItem
+                      key={similarPiece.id}
+                      className="basis-[248px]"
+                    >
                       <MainPieceCard
                         piece={similarPiece}
                         href={`/ubrania/${similarPiece.slug}`}
@@ -436,10 +454,10 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                           }
                         }}
                       />
-                    </SwiperSlide>
+                    </CarouselItem>
                   ))}
-                </SwiperComponent>
-              </nav>
+                </CarouselContent>
+              </Carousel>
             )}
           </Await>
         </React.Suspense>
@@ -449,7 +467,7 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
         images={piece.images.map((image) => image.url)}
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
-        defaultActiveIndex={activeIndex}
+        defaultActiveIndex={selectedIndex}
       />
     </>
   );

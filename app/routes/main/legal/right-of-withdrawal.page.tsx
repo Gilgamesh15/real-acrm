@@ -1,6 +1,6 @@
-import { Container, Section } from "~/components/ui/layout";
+import React from "react";
 
-import { RichText } from "~/components/shared/rich-text/rich-text";
+import { Container, Section } from "~/components/ui/layout";
 
 import type { Route } from "./+types/right-of-withdrawal.page";
 
@@ -8,11 +8,18 @@ const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 const PAGE_TITLE = "Prawo odstąpienia od umowy | ACRM";
 export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
+const RichText = React.lazy(() =>
+  import("~/components/shared/rich-text/rich-text").then((mod) => ({
+    default: mod.RichText,
+  }))
+);
+
 export default function RightOfWithdrawalPage() {
   return (
     <main>
       <Container>
         <Section>
+          <React.Suspense fallback={null}>
           <RichText
             className="font-tertiary legal-text"
             content={{
@@ -131,6 +138,7 @@ export default function RightOfWithdrawalPage() {
               ],
             }}
           />
+          </React.Suspense>
         </Section>
       </Container>
     </main>

@@ -8,11 +8,14 @@ import {
 } from "lucide-react";
 import React from "react";
 import { Await, Link } from "react-router";
-import { A11y, FreeMode, Keyboard, Mousewheel } from "swiper/modules";
-import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "~/components/ui/carousel";
 import {
   Error,
   ErrorContent,
@@ -431,47 +434,23 @@ function TopFeaturedSection({
 
         <React.Suspense
           fallback={
-            <SwiperComponent
-              style={
-                {
-                  "--swiper-horizontal-padding": "8",
-                } as React.CSSProperties
-              }
-              slidesPerView="auto"
-              spaceBetween={32}
-              modules={[FreeMode, Keyboard, Mousewheel]}
-              mousewheel={{
-                forceToAxis: true,
+            <Carousel
+              opts={{
+                dragFree: true,
               }}
-              keyboard
-              className="size-full"
             >
-              {Array.from({ length: 8 }).map((_, index) => (
-                <SwiperSlide
-                  key={`skeleton-${index}`}
-                  className="max-w-40 min-w-[160px] h-[584px]"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <Skeleton className="mb-3 aspect-3/4" />
-
-                      <div className={cn("flex flex-col gap-1 items-start")}>
-                        <Skeleton className="h-[20px] w-1/2" />
-                        <Skeleton className="h-[16px] w-1/3" />
-                      </div>
-                    </div>{" "}
-                    <div>
-                      <Skeleton className="mb-3 aspect-3/4" />
-
-                      <div className={cn("flex flex-col gap-1 items-start")}>
-                        <Skeleton className="h-[20px] w-1/2" />
-                        <Skeleton className="h-[16px] w-1/3" />
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </SwiperComponent>
+              <CarouselContent className="-ml-0">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <CarouselItem
+                    key={`chunk-${index}`}
+                    className="basis-48 pl-8 grid grid-rows-2 grid-cols-1 gap-8"
+                  >
+                    <Skeleton className="h-[303.83px] w-[160px]" />
+                    <Skeleton className="h-[303.83px] w-[160px]" />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           }
         >
           <Await
@@ -498,81 +477,72 @@ function TopFeaturedSection({
               }
 
               return (
-                <SwiperComponent
-                  style={
-                    {
-                      "--swiper-horizontal-padding": "8",
-                    } as React.CSSProperties
-                  }
-                  slidesPerView="auto"
-                  spaceBetween={32}
-                  modules={[FreeMode, Keyboard, Mousewheel]}
-                  mousewheel={{
-                    forceToAxis: true,
+                <Carousel
+                  opts={{
+                    dragFree: true,
                   }}
-                  keyboard
-                  className="size-full"
                 >
-                  {chunkedItems.map((chunk, chunkIndex) => (
-                    <SwiperSlide
-                      key={`chunk-${chunkIndex}`}
-                      className="max-w-40 min-w-[160px] h-fit space-y-8"
-                    >
-                      {chunk.map((item) => {
-                        const [primaryImage] = item.images;
+                  <CarouselContent className="-ml-0">
+                    {chunkedItems.map((chunk, chunkIndex) => (
+                      <CarouselItem
+                        key={`chunk-${chunkIndex}`}
+                        className="basis-48 pl-8 grid grid-rows-2 grid-cols-1 gap-8"
+                      >
+                        {chunk.map((item) => {
+                          const [primaryImage] = item.images;
 
-                        return (
-                          <article
-                            key={item.id}
-                            className={cn(
-                              "group cursor-pointer w-[160px] h-fit !p-0",
-                              className
-                            )}
-                          >
-                            <Link
-                              to={item.href || "#"}
-                              className="block h-[308px]"
+                          return (
+                            <article
+                              key={item.id}
+                              className={cn(
+                                "group cursor-pointer w-full h-full !p-0",
+                                className
+                              )}
                             >
-                              <div className="mb-3 overflow-hidden relative aspect-3/4">
-                                <Image
-                                  width={160}
-                                  aspectRatio={3 / 4}
-                                  src={primaryImage?.url || ""}
-                                  alt={primaryImage?.alt || ""}
-                                  resize="autoPad"
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
-                              </div>
+                              <Link to={item.href || "#"} className="block">
+                                <div className="mb-3 overflow-hidden relative aspect-3/4">
+                                  <Image
+                                    width={160}
+                                    aspectRatio={3 / 4}
+                                    src={primaryImage?.url || ""}
+                                    alt={primaryImage?.alt || ""}
+                                    resize="autoPad"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                </div>
 
-                              <div className="flex flex-col">
-                                <h3 className="text-sm text-foreground leading-snug line-clamp-2 mb-0.5">
-                                  {item.name}
-                                </h3>
-                                <div className="flex items-center gap-3">
-                                  <span className="text-sm font-bold text-foreground">
-                                    {formatCurrency(item.pricing.finalPrice)}
-                                  </span>
+                                <div className="flex flex-col">
+                                  <h3 className="text-sm text-foreground leading-snug line-clamp-2 mb-0.5">
+                                    {item.name}
+                                  </h3>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm font-bold text-foreground">
+                                      {formatCurrency(item.pricing.finalPrice)}
+                                    </span>
+                                    {item.pricing.hasDiscount && (
+                                      <Badge variant="success">
+                                        {formatDiscountLabel(
+                                          item.pricing.discount
+                                        )}
+                                      </Badge>
+                                    )}
+                                  </div>
                                   {item.pricing.hasDiscount && (
-                                    <Badge variant="success">
-                                      {formatDiscountLabel(
-                                        item.pricing.discount
+                                    <span className="text-xs text-muted-foreground line-through">
+                                      {formatCurrency(
+                                        item.pricing.originalPrice
                                       )}
-                                    </Badge>
+                                    </span>
                                   )}
                                 </div>
-                                {item.pricing.hasDiscount && (
-                                  <span className="text-xs text-muted-foreground line-through">
-                                    {formatCurrency(item.pricing.originalPrice)}
-                                  </span>
-                                )}
-                              </div>
-                            </Link>
-                          </article>
-                        );
-                      })}
-                    </SwiperSlide>
-                  ))}
-                </SwiperComponent>
+                              </Link>
+                            </article>
+                          );
+                        })}
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
               );
             }}
           </Await>
@@ -644,13 +614,11 @@ function CategoriesSection({
                       <Image
                         src={category.image?.url || ""}
                         alt={`Kategoria ${category.name}`}
-                        srcSet=""
                         aspectRatio={1}
                         width={240}
                         height={240}
                         resize="fill"
                         className="size-full absolute object-cover"
-                        responsive
                       />
 
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
@@ -703,56 +671,35 @@ function TagsSection({
   return (
     <React.Suspense
       fallback={Array.from({ length: 4 }).map((_, index) => (
-        <section key={index} className="flex flex-col gap-6 py-12">
-          <Skeleton className="h-28 md:h-32 lg:h-48" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SwiperComponent
-              modules={[A11y, Keyboard, Mousewheel, FreeMode]}
-              mousewheel={{
-                forceToAxis: true,
-              }}
-              keyboard
-              spaceBetween={10}
-              freeMode
-              slidesPerView={2}
-              breakpoints={{
-                0: {
-                  slidesPerView: 2,
-                },
-                640: {
-                  slidesPerView: 3,
-                },
-                1024: {
-                  slidesPerView: 4,
-                },
-                1280: {
-                  slidesPerView: 5,
-                },
-              }}
-            >
-              {Array.from({ length: 4 }).map((_, index) => (
-                <SwiperSlide key={index}>
-                  <Skeleton className="aspect-5/8" />
-                </SwiperSlide>
-              ))}
+        <React.Fragment key={index}>
+          <section className="flex flex-col relative">
+            <Skeleton className="absolute inset-0 size-full" />
 
-              <SwiperSlide className="aspect-5/8">
-                <Link
-                  to="/kategorie"
-                  className={cn(
-                    buttonVariants({
-                      variant: "ghost",
-                    }),
-                    "min-w-full min-h-full"
-                  )}
-                >
-                  Zobacz więcej
-                  <ChevronRight />
-                </Link>
-              </SwiperSlide>
-            </SwiperComponent>
-          </div>
-        </section>
+            <nav className="pb-18">
+              <Carousel
+                opts={{
+                  dragFree: true,
+                  align: "start",
+                }}
+                className="w-full h-fit"
+              >
+                <CarouselContent className="max-w-7xl mx-auto">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <CarouselItem key={index} className="basis-[248px]">
+                      <Skeleton className="w-[248px] h-[417.98px]" />
+                      <Skeleton className="w-[248px] h-[417.98px]" />
+                      <Skeleton className="w-[248px] h-[417.98px]" />
+                      <Skeleton className="w-[248px] h-[417.98px]" />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </nav>
+          </section>
+          {index < 4 - 1 && (
+            <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
+          )}
+        </React.Fragment>
       ))}
     >
       <Await
@@ -799,84 +746,70 @@ function TagsSection({
                   </div>
                 </Link>
                 <nav
-                  className="mx-4 sm:mx-6 lg:mx-8 pb-18"
+                  className="pb-18"
                   aria-label={`Produkty z kategorii ${tag.name}`}
                 >
-                  <SwiperComponent
-                    className="w-full h-fit max-w-7xl "
-                    modules={[A11y, Keyboard, FreeMode]}
-                    keyboard
-                    slidesPerView="auto"
-                    spaceBetween={10}
-                    breakpoints={{
-                      0: {
-                        slidesPerView: 2,
-                      },
-                      768: {
-                        slidesPerView: 3,
-                      },
-                      1024: {
-                        slidesPerView: 4,
-                      },
-                      1280: {
-                        slidesPerView: 5,
-                      },
+                  <Carousel
+                    opts={{
+                      dragFree: true,
+                      align: "start",
                     }}
-                    freeMode
+                    className="w-full h-fit"
                   >
-                    {tag.piecesToTags.map(({ piece }, pieceIndex) => (
-                      <SwiperSlide key={piece.id}>
-                        <MainPieceCard
-                          piece={piece}
-                          href={`/ubrania/${piece.slug}`}
-                          isInCart={isInCart(piece.id)}
-                          onClick={() => {
-                            window.gtag?.("event", "select_item", {
-                              item_list_id: `tag_${tag.id}`,
-                              item_list_name: tag.name,
-                              items: [
-                                pieceToGoogleAnalyticsItem(piece, {
+                    <CarouselContent className="max-w-7xl mx-auto">
+                      {tag.piecesToTags.map(({ piece }, pieceIndex) => (
+                        <CarouselItem key={piece.id} className="basis-[248px]">
+                          <MainPieceCard
+                            piece={piece}
+                            href={`/ubrania/${piece.slug}`}
+                            isInCart={isInCart(piece.id)}
+                            onClick={() => {
+                              window.gtag?.("event", "select_item", {
+                                item_list_id: `tag_${tag.id}`,
+                                item_list_name: tag.name,
+                                items: [
+                                  pieceToGoogleAnalyticsItem(piece, {
+                                    item_list_id: `tag_${tag.id}`,
+                                    item_list_name: tag.name,
+                                    index: pieceIndex,
+                                  }),
+                                ],
+                              });
+                            }}
+                            onToggleCart={() => {
+                              if (isInCart(piece.id)) {
+                                removePiece(piece.id, true, {
                                   item_list_id: `tag_${tag.id}`,
                                   item_list_name: tag.name,
                                   index: pieceIndex,
-                                }),
-                              ],
-                            });
-                          }}
-                          onToggleCart={() => {
-                            if (isInCart(piece.id)) {
-                              removePiece(piece.id, true, {
-                                item_list_id: `tag_${tag.id}`,
-                                item_list_name: tag.name,
-                                index: pieceIndex,
-                              });
-                            } else {
-                              addPiece(piece, true, {
-                                item_list_id: `tag_${tag.id}`,
-                                item_list_name: tag.name,
-                                index: pieceIndex,
-                              });
-                            }
-                          }}
-                        />
-                      </SwiperSlide>
-                    ))}
-
-                    <SwiperSlide className="aspect-5/8">
-                      <Link
-                        to={`/kategorie?tags=${tag.slug}`}
-                        className={cn(
-                          buttonVariants({
-                            variant: "ghost",
-                          }),
-                          "min-w-full min-h-full"
-                        )}
-                      >
-                        Zobacz więcej
-                        <ChevronRight />
-                      </Link>
-                    </SwiperSlide>
-                  </SwiperComponent>
+                                });
+                              } else {
+                                addPiece(piece, true, {
+                                  item_list_id: `tag_${tag.id}`,
+                                  item_list_name: tag.name,
+                                  index: pieceIndex,
+                                });
+                              }
+                            }}
+                          />
+                        </CarouselItem>
+                      ))}
+                      <CarouselItem className="basis-[248px]">
+                        <Link
+                          to={`/kategorie?tags=${tag.slug}`}
+                          className={cn(
+                            buttonVariants({
+                              variant: "ghost",
+                            }),
+                            "min-w-full min-h-full"
+                          )}
+                        >
+                          Zobacz więcej
+                          <ChevronRight />
+                        </Link>
+                      </CarouselItem>
+                    </CarouselContent>
+                  </Carousel>
                 </nav>
               </section>
               {index < tags.length - 1 && (
@@ -936,38 +869,35 @@ function FeaturedProductsSection({
 
       <React.Suspense
         fallback={
-          <SwiperComponent
-            className="w-full"
-            modules={[A11y, Keyboard, Mousewheel]}
-            keyboard
-            mousewheel={{
-              forceToAxis: true,
+          <Carousel
+            opts={{
+              dragFree: true,
+              align: "start",
             }}
-            slidesPerView="auto"
-            spaceBetween={10}
-            freeMode
-            initialSlide={1}
+            className="w-full"
           >
-            {Array.from({ length: 8 }).map((_, index) => (
-              <SwiperSlide key={index} className="basis-[280px]">
-                <Skeleton className="w-[280px] aspect-6/8  cursor-pointer" />
-              </SwiperSlide>
-            ))}
-            <SwiperSlide className="basis-[280px] aspect-6/8">
-              <Link
-                to="/projekty"
-                className={cn(
-                  buttonVariants({
-                    variant: "ghost",
-                  }),
-                  "min-w-full min-h-full"
-                )}
-              >
-                Zobacz więcej
-                <ChevronRight />
-              </Link>
-            </SwiperSlide>
-          </SwiperComponent>
+            <CarouselContent>
+              {Array.from({ length: 8 }).map((_, index) => (
+                <CarouselItem key={index} className="basis-[312px] pl-8">
+                  <Skeleton className="w-[280px] h-[373.3px]" />
+                </CarouselItem>
+              ))}
+              <CarouselItem className="basis-[280px]">
+                <Link
+                  to="/projekty"
+                  className={cn(
+                    buttonVariants({
+                      variant: "ghost",
+                    }),
+                    "min-w-full min-h-full"
+                  )}
+                >
+                  Zobacz więcej
+                  <ChevronRight />
+                </Link>
+              </CarouselItem>
+            </CarouselContent>
+          </Carousel>
         }
       >
         <Await
@@ -989,75 +919,72 @@ function FeaturedProductsSection({
           }
         >
           {(products) => (
-            <SwiperComponent
-              className="w-full"
-              modules={[A11y, Keyboard, Mousewheel]}
-              keyboard
-              mousewheel={{
-                forceToAxis: true,
+            <Carousel
+              opts={{
+                dragFree: true,
+                align: "start",
               }}
-              slidesPerView="auto"
-              spaceBetween={10}
-              freeMode
-              initialSlide={1}
+              className="w-full"
             >
-              {products.map((product, index) => (
-                <SwiperSlide key={product.id} className="basis-[280px]">
-                  <MainProductCard
-                    product={product}
-                    href={`/projekty/${product.slug}`}
-                    onClick={() => {
-                      window.gtag?.("event", "select_item", {
-                        item_list_id: "featured_products",
-                        item_list_name: "Polecane projekty",
-                        items: productToGoogleAnalyticsItem(product, {
+              <CarouselContent>
+                {products.map((product, index) => (
+                  <CarouselItem key={product.id} className="basis-[312px] pl-8">
+                    <MainProductCard
+                      product={product}
+                      href={`/projekty/${product.slug}`}
+                      onClick={() => {
+                        window.gtag?.("event", "select_item", {
                           item_list_id: "featured_products",
                           item_list_name: "Polecane projekty",
-                          index,
-                        }),
-                      });
-                    }}
-                    onToggleCart={() => {
-                      if (isInCart(product.id)) {
-                        removeProduct(product.id, true, {
+                          items: productToGoogleAnalyticsItem(product, {
+                            item_list_id: "featured_products",
+                            item_list_name: "Polecane projekty",
+                            index,
+                          }),
+                        });
+                      }}
+                      onToggleCart={() => {
+                        if (isInCart(product.id)) {
+                          removeProduct(product.id, true, {
+                            item_list_id: `featured_products`,
+                            item_list_name: "Polecane projekty",
+                            index: index,
+                          });
+                        } else {
+                          addProduct(product, true, {
+                            item_list_id: `featured_products`,
+                            item_list_name: "Polecane projekty",
+                            index: index,
+                          });
+                        }
+                      }}
+                      isInCart={isInCart(product.id)}
+                      onBuyNow={() =>
+                        onProductBuyNow(product, {
                           item_list_id: `featured_products`,
                           item_list_name: "Polecane projekty",
                           index: index,
-                        });
-                      } else {
-                        addProduct(product, true, {
-                          item_list_id: `featured_products`,
-                          item_list_name: "Polecane projekty",
-                          index: index,
-                        });
+                        })
                       }
-                    }}
-                    isInCart={isInCart(product.id)}
-                    onBuyNow={() =>
-                      onProductBuyNow(product, {
-                        item_list_id: `featured_products`,
-                        item_list_name: "Polecane projekty",
-                        index: index,
-                      })
-                    }
-                  />
-                </SwiperSlide>
-              ))}
-              <SwiperSlide className="basis-[280px] aspect-6/8">
-                <Link
-                  to="/projekty"
-                  className={cn(
-                    buttonVariants({
-                      variant: "ghost",
-                    }),
-                    "min-w-full min-h-full"
-                  )}
-                >
-                  Zobacz więcej
-                  <ChevronRight />
-                </Link>
-              </SwiperSlide>
-            </SwiperComponent>
+                    />
+                  </CarouselItem>
+                ))}
+                <CarouselItem className="basis-[280px]">
+                  <Link
+                    to="/projekty"
+                    className={cn(
+                      buttonVariants({
+                        variant: "ghost",
+                      }),
+                      "min-w-full min-h-full"
+                    )}
+                  >
+                    Zobacz więcej
+                    <ChevronRight />
+                  </Link>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
           )}
         </Await>
       </React.Suspense>

@@ -1,3 +1,4 @@
+import { useIsomorphicLayoutEffect } from "motion/react";
 import React from "react";
 
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
@@ -50,7 +51,7 @@ function useResponsiveState<T>(values: Partial<Record<Breakpoint, T>>): T {
     return getValue(bp);
   });
 
-  React.useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const handleResize = () => {
       const bp = getBreakpoint(
         typeof window !== "undefined" ? window.innerWidth : 0

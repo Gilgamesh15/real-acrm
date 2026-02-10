@@ -1,6 +1,6 @@
-import { Container, Section } from "~/components/ui/layout";
+import React from "react";
 
-import { RichText } from "~/components/shared/rich-text/rich-text";
+import { Container, Section } from "~/components/ui/layout";
 
 import type { Route } from "./+types/claims.page";
 
@@ -9,11 +9,18 @@ const PAGE_TITLE = "Reklamacje | ACRM";
 
 export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
+const RichText = React.lazy(() =>
+  import("~/components/shared/rich-text/rich-text").then((mod) => ({
+    default: mod.RichText,
+  }))
+);
+
 export default function ClaimsPage() {
   return (
     <main>
       <Container>
         <Section>
+          <React.Suspense fallback={null}>
           <RichText
             className="font-tertiary legal-text"
             content={{
@@ -321,6 +328,7 @@ export default function ClaimsPage() {
               ],
             }}
           />
+          </React.Suspense>
         </Section>
       </Container>
     </main>

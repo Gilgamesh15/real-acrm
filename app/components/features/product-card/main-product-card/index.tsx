@@ -76,8 +76,8 @@ const MainProductCard = ({
           className="-z-2 absolute h-full w-full"
         />
 
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground -z-1" />
-        <div className="absolute inset-0 bg-linear-to-tr from-transparent via-primary-foreground/20 via-65% to-primary-foreground/40 -z-1" />
+        <div className="absolute inset-0 size-full bg-linear-to-b from-transparent via-primary-foreground/10 via-55% to-primary-foreground -z-1" />
+        <div className="absolute inset-0 size-full bg-linear-to-tr from-transparent via-primary-foreground/20 via-65% to-primary-foreground/40 -z-1" />
 
         <aside
           aria-label="Elementy projektu"

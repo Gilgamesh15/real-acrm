@@ -20,9 +20,6 @@ export default defineConfig(({ isSsrBuild }) => ({
   build: {
     rollupOptions: isSsrBuild ? { input: "./server/app.ts" } : undefined,
   },
-  optimizeDeps: {
-    exclude: ["better-auth", "better-auth/api"],
-  },
   plugins: [
     tailwindcss(),
     !isStorybook && reactRouter(),

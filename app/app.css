@@ -1,13 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@import "swiper/css";
-@import "swiper/css/a11y";
-@import "swiper/css/free-mode";
-@import "swiper/css/keyboard";
-@import "swiper/css/mousewheel";
-@import "swiper/css/thumbs";
-
 /* Inter Variable */
 @font-face {
   font-family: "Inter Variable'";
@@ -174,12 +167,4 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-}
-
-.swiper-wrapper .swiper-slide:first-child {
-  margin-left: calc(var(--spacing) * var(--swiper-horizontal-padding));
-}
-
-.swiper-wrapper .swiper-slide:last-child {
-  margin-right: calc(var(--spacing) * var(--swiper-horizontal-padding));
 }
