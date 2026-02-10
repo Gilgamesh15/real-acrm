@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import Image from "~/components/ui/image";
 import { Container, Section } from "~/components/ui/layout";
 import { Separator } from "~/components/ui/separator";
+import { Spinner } from "~/components/ui/spinner";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
 import { useCart } from "~/components/features/providers/cart-provider";
@@ -269,7 +270,9 @@ export default function ProductDetailPage({
 
         <Container max="sm">
           <Section>
-            <RichText content={product.description} />
+            <React.Suspense fallback={<Spinner />}>
+              <RichText content={product.description} />
+            </React.Suspense>
           </Section>
         </Container>
       </main>

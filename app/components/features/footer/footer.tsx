@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { buttonVariants } from "~/components/ui/button";
+import Image from "~/components/ui/image";
 
 import type { DBQueryResult } from "~/lib/types";
 import { getSlugPath } from "~/lib/utils";
@@ -22,17 +23,17 @@ const SOCIAL_MEDIA_LINKS = [
   {
     label: "Instagram",
     href: INSTAGRAM_URL,
-    icon: "https://fzfbhbf.stripocdn.email/content/assets/img/social-icons/logo-white/instagram-logo-white.png",
+    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745834/Instagram_Glyph_Gradient_jis95v.png",
   },
   {
     label: "TikTok",
     href: TIKTOK_URL,
-    icon: "https://fzfbhbf.stripocdn.email/content/assets/img/social-icons/logo-white/tiktok-logo-white.png",
+    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745820/TikTok_Icon_Black_Circle_zs74uw.png",
   },
   {
     label: "Youtube",
     href: YOUTUBE_URL,
-    icon: "https://fzfbhbf.stripocdn.email/content/assets/img/social-icons/logo-white/youtube-logo-white.png",
+    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745820/TikTok_Icon_Black_Circle_zs74uw.png",
   },
 ];
 
@@ -112,12 +113,15 @@ function Footer({
                   })}
                   target="_blank"
                 >
-                  <img
-                    src={link.icon || "/placeholder.svg"}
+                  <Image
+                    src={link.icon}
                     alt={link.label}
                     width={32}
                     title={link.label}
                     height={32}
+                    aspectRatio={1}
+                    lazyload
+                    resize="fill"
                     className="invert dark:invert-0"
                   />
                 </Link>
