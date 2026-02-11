@@ -51,8 +51,6 @@ import { filterSearchParamsCache } from "~/lib/utils.server";
 
 import type { Route } from "./+types/pieces-browse.page";
 
-const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
-
 const PRODUCTS_PER_PAGE = 10;
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -118,12 +116,12 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
     ? categories.find((category) => category.slug === categorySlug)
     : undefined;
 
-  const categoryName = category?.name ?? "Przeglądaj ubrania | ACRM";
+  const categoryName = category?.name ?? "Ubrania";
   const pageTitle = isRoot
-    ? "Przeglądaj ubrania | ACRM"
-    : `${categoryName} | ACRM`;
-  const pageDescription = `Przeglądaj ${categoryName.toLowerCase()}. Marki premium w przystępnych cenach. Darmowa dostawa. Zwroty do 14 dni.`;
-  const pageUrl = `${BASE_URL}/kategorie${category ? `/${getSlugPath(category)}` : ""}`;
+    ? "Ubrania second-hand – przeglądaj po kategorii | ACRM"
+    : `${categoryName} z second-handu | ACRM`;
+  const pageDescription = `Przeglądaj ${categoryName.toLowerCase()} z second-handu. Marki premium w przystępnych cenach. Darmowa dostawa, zwroty do 14 dni.`;
+  const pageUrl = `https://www.acrm.pl/kategorie${category ? `/${getSlugPath(category)}` : ""}`;
 
   return [
     { title: pageTitle },
@@ -135,12 +133,15 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
     { property: "og:url", content: pageUrl },
     { property: "og:site_name", content: "ACRM | Fashion Projects" },
     { property: "og:locale", content: "pl_PL" },
-    { property: "og:image", content: "https://acrm.pl/logo-light.png" },
+    { property: "og:image", content: "https://www.acrm.pl/logo-light.png" },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:image:alt", content: "ACRM | Fashion Projects" },
     { property: "og:image:type", content: "image/png" },
-    { property: "og:image:url", content: "https://acrm.pl/logo-light.png" },
+    {
+      property: "og:image:url",
+      content: "https://www.acrm.pl/logo-light.png",
+    },
   ];
 };
 

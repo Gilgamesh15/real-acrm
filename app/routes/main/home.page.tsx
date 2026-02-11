@@ -47,7 +47,8 @@ import {
 
 import type { Route } from "./+types/home.page";
 
-const PAGE_TITLE = "ACRM | Fashion Projects";
+const PAGE_TITLE =
+  "ACRM | Markowe ubrania z second-handu w dobrych cenach";
 
 const WOMEN_HERO_SRC_SET = [
   "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
@@ -205,20 +206,19 @@ export const meta: Route.MetaFunction = () => [
   {
     name: "description",
     content:
-      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, wysyłka 24h, zwroty 14 dni.",
   },
   { name: "robots", content: "index, follow" },
   { property: "og:title", content: PAGE_TITLE },
   { property: "og:type", content: "website" },
-  { property: "og:image", content: "https://acrm.pl/logo-light.png" },
-  { property: "og:url", content: "https://acrm.pl/" },
+  { property: "og:image", content: "https://www.acrm.pl/logo-light.png" },
+  { property: "og:url", content: "https://www.acrm.pl/" },
   {
     property: "og:description",
     content:
-      "Sklep z projektami mody z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, wysyłka 24h, zwroty 14 dni.",
   },
-  { property: "og:url", content: "https://acrm.pl" },
-  { property: "og:image:url", content: "https://acrm.pl/logo-light.png" },
+  { property: "og:image:url", content: "https://www.acrm.pl/logo-light.png" },
   { property: "og:image:type", content: "image/png" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
@@ -227,6 +227,7 @@ export const meta: Route.MetaFunction = () => [
     content: "ACRM Fashion Projects - Sklep z odzieżą używaną",
   },
   { name: "twitter:card", content: "summary_large_image" },
+  { tagName: "link", rel: "canonical", href: "https://www.acrm.pl" },
 ];
 
 export default function Home({ loaderData }: Route.ComponentProps) {

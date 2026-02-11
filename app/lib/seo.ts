@@ -39,7 +39,7 @@ function toTitleCase(str: string): string {
     .join(" ");
 }
 
-function extractTextFromRichText(richText: RichText): string {
+export function extractTextFromRichText(richText: RichText): string {
   if (!richText) return "";
 
   try {
@@ -88,7 +88,7 @@ function generateOrganizationStructuredData() {
       telephone: "+48-453-450-597",
     },
     description:
-      "ACRM oferuje unikalne zestawy odzieży z second-handu. Unikalne zestawy w topowych stylach. Marki premium jak Dickies, Nike, Carhartt w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+      "ACRM oferuje markową odzież z second-handu w przystępnych cenach. Dickies, Nike, Carhartt i więcej. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
     email: "kontakt@acrm.pl",
     foundingDate: "2025-09-09",
     hasMerchantReturnPolicy: {

@@ -46,25 +46,24 @@ import type { Route } from "./+types/products-browse.page";
 
 const PRODUCTS_PER_PAGE = 10;
 
+const PAGE_TITLE =
+  "Komplety ubrań z second-handu – gotowe stylizacje | ACRM";
+const PAGE_DESCRIPTION =
+  "Gotowe zestawy odzieży używanej w topowych stylach. Marki premium w przystępnych cenach. Darmowa dostawa InPost, wysyłka w 24h.";
+
 export const meta: Route.MetaFunction = () => [
-  { title: "Projekty | ACRM" },
-  {
-    name: "description",
-    content:
-      "Przeglądaj unikalne projekty na topie. Kompletne zestawy ubrań używanych w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
-  },
+  { title: PAGE_TITLE },
+  { name: "description", content: PAGE_DESCRIPTION },
   { name: "robots", content: "index, follow" },
-  { property: "og:title", content: "Projekty | ACRM" },
+  { property: "og:title", content: PAGE_TITLE },
   { property: "og:type", content: "website" },
-  { property: "og:image", content: "https://acrm.pl/logo-light.png" },
-  { property: "og:url", content: "https://acrm.pl/projekty" },
+  { property: "og:image", content: "https://www.acrm.pl/logo-light.png" },
+  { property: "og:url", content: "https://www.acrm.pl/projekty" },
+  { property: "og:description", content: PAGE_DESCRIPTION },
   {
-    property: "og:description",
-    content:
-      "Przeglądaj unikalne projekty na topie. Kompletne zestawy ubrań używanych w przystępnych cenach. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+    property: "og:image:url",
+    content: "https://www.acrm.pl/logo-light.png",
   },
-  { property: "og:url", content: "https://acrm.pl/projekty" },
-  { property: "og:image:url", content: "https://acrm.pl/logo-light.png" },
   { property: "og:image:type", content: "image/png" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
@@ -73,6 +72,7 @@ export const meta: Route.MetaFunction = () => [
     content: "ACRM Fashion Projects - Sklep z odzieżą używaną",
   },
   { name: "twitter:card", content: "summary_large_image" },
+  { tagName: "link", rel: "canonical", href: "https://www.acrm.pl/projekty" },
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {

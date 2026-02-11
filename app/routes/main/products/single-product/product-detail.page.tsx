@@ -16,7 +16,10 @@ import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
-import { generateProductStructuredData } from "~/lib/seo";
+import {
+  extractTextFromRichText,
+  generateProductStructuredData,
+} from "~/lib/seo";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
 import {
   calculateProductPriceDisplayData,
@@ -27,8 +30,6 @@ import {
 
 import type { Route } from "./+types/product-detail.page";
 import ProductImagesCarouselSection from "./product-images-carousel";
-
-const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
 
 const productSelect = {
   with: {
@@ -89,15 +90,18 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { product };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => {
-  if (!data) return [];
-
-  const { product } = data;
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  const { product } = loaderData;
   const productPrice = calculateProductPriceDisplayData(product).finalPrice;
-  const pageTitle = `${product.name} | ACRM`;
-  const pageDescription = `${product.name} - kompletny zestaw. Zawiera ${product.pieces.map((p) => p.name).join(", ")}. Wysyłka w 24h.`;
-  const pageUrl = `${BASE_URL}/projekty/${product.slug}`;
-  const pageImage = product.images[0]?.url || `${BASE_URL}/logo-dark.png`;
+  const pageTitle = `${product.name} – zestaw ubrań second-hand | ACRM`;
+  const richTextDescription = extractTextFromRichText(product.description);
+  const fallbackDescription = `Kompletny zestaw: ${product.pieces.map((p) => p.name).join(", ")}. Cena: ${formatCurrency(productPrice)}. Darmowa dostawa InPost.`;
+  const pageDescription = richTextDescription
+    ? richTextDescription.slice(0, 155)
+    : fallbackDescription;
+  const pageUrl = `https://www.acrm.pl/projekty/${product.slug}`;
+  const pageImage =
+    product.images[0]?.url || "https://www.acrm.pl/logo-dark.png";
   const availability = product.pieces.some((p) => p.status === "published")
     ? "in stock"
     : "out of stock";

@@ -38,8 +38,12 @@ import { loggingMiddleware } from "./middleware/logging.server";
 import { sessionMiddleware } from "./middleware/session.server";
 
 export const meta: Route.MetaFunction = () => [
-  { title: "ACRM | Fashion Projects" },
-  { name: "description", content: "Sklep z projektami mody z second-handu." },
+  { title: "ACRM | Markowe ubrania z second-handu" },
+  {
+    name: "description",
+    content:
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Darmowa dostawa, wysyłka 24h, zwroty do 14 dni.",
+  },
   { property: "og:site_name", content: "ACRM | Fashion Projects" },
   { property: "og:locale", content: "pl_PL" },
   { name: "twitter:card", content: "summary_large_image" },

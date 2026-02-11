@@ -35,8 +35,6 @@ import {
 
 import type { Route } from "./+types/piece-detail.page";
 
-const BASE_URL = import.meta.env.VITE_APP_URL || "https://acrm.pl";
-
 export async function loader({ params }: Route.LoaderArgs) {
   const { pieceSlug } = params;
   const piece = await db.query.pieces.findFirst({
@@ -113,10 +111,10 @@ export async function loader({ params }: Route.LoaderArgs) {
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   const { piece } = loaderData;
   const pricingData = calculatePiecePriceDisplayData(piece);
-  const pageTitle = `${piece.name} | ACRM`;
-  const pageDescription = `${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost.`;
-  const pageUrl = `${BASE_URL}/ubrania/${piece.slug}`;
-  const pageImage = piece.images[0]?.url || `${BASE_URL}/logo-dark.png`;
+  const pageTitle = `${piece.name} – ${piece.brand.name}, rozm. ${piece.size.name} | ACRM`;
+  const pageDescription = `Kup ${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost, zwroty do 14 dni.`;
+  const pageUrl = `https://www.acrm.pl/ubrania/${piece.slug}`;
+  const pageImage = piece.images[0]?.url || "https://www.acrm.pl/logo-dark.png";
 
   return [
     { title: pageTitle },
