@@ -132,7 +132,7 @@ const Image = ({
   gravity,
   responsive: isResponsive,
   fetchPriority,
-  placeholder: placeholderMode = "blur",
+  placeholder: placeholderMode,
   lazyload: isLazyload,
   trim: isTrim,
   quality = "auto",

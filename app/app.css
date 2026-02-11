@@ -1,15 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Inter Variable */
-@font-face {
-  font-family: "Inter Variable'";
-  src: url("/fonts/inter.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap; /* This is the magic! */
-}
-
 /* Tektur Variable */
 @font-face {
   font-family: "Tektur Variable";
@@ -114,7 +105,6 @@ body {
 @theme inline {
   --font-primary: "Poiret One", system-ui;
   --font-secondary: "Tektur Variable", system-ui;
-  --font-tertiary: "Inter Variable", system-ui;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

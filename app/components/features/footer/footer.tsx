@@ -33,7 +33,7 @@ const SOCIAL_MEDIA_LINKS = [
   {
     label: "Youtube",
     href: YOUTUBE_URL,
-    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745820/TikTok_Icon_Black_Circle_zs74uw.png",
+    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745828/yt_icon_red_digital_jnen7h.png",
   },
 ];
 
@@ -122,7 +122,7 @@ function Footer({
                     aspectRatio={1}
                     lazyload
                     resize="fill"
-                    className="invert dark:invert-0"
+                    className="invert dark:invert-0 size-8"
                   />
                 </Link>
               ))}

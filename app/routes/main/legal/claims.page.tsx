@@ -22,7 +22,7 @@ export default function ClaimsPage() {
         <Section>
           <React.Suspense fallback={null}>
             <RichText
-              className="font-tertiary legal-text"
+              className=" legal-text"
               content={{
                 type: "doc",
                 content: [
