@@ -520,11 +520,9 @@ export const orders = pgTable(
     shippingAddressLine2: text("shipping_address_line2"),
     shippingAddressPostalCode: text("shipping_address_postal_code"),
 
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "restrict",
-      }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

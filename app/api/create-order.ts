@@ -1,34 +1,47 @@
 import { orderService } from "db/services/order.service";
-import { data } from "react-router";
-import { type ActionFunctionArgs } from "react-router";
+import { type ActionFunctionArgs, data } from "react-router";
 import type z from "zod";
 
 import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
+import { auth } from "~/lib/auth.server";
 import { CreateOrderSchema } from "~/lib/schemas";
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const logger = context.get(loggerContext);
   const session = context.get(sessionContext);
 
-  const userId = session?.user.id;
+  let userId = session?.user.id;
+
+  let anonomousHeaders: Headers | null = null;
 
   if (!userId) {
-    throw data(
-      {
-        success: false,
-        message: "User not authenticated",
-        issues: null,
-        order: null,
-        stripeSession: null,
-      },
-      { status: 401 }
-    );
+    logger.info("No session, creating anonymous session for order");
+    const { response, headers } = await auth.api.signInAnonymous({
+      headers: request.headers,
+      returnHeaders: true,
+    });
+
+    anonomousHeaders = headers;
+
+    userId = response?.user?.id;
   }
 
   const args = (await request.json()) as z.infer<typeof CreateOrderSchema>;
 
   logger.debug("Creating order with the following args:", { args });
   logger.info("Creating order IDENTIFICATION", { args });
-  return await orderService.createOrder(args, userId);
+
+  const result = await orderService.createOrder(args, userId);
+
+  if ("issues" in result) {
+    throw data(result, {
+      status: 400,
+      headers: anonomousHeaders ?? undefined,
+    });
+  }
+
+  return data(result, {
+    headers: anonomousHeaders ?? undefined,
+  });
 }

@@ -10,6 +10,7 @@ import { logger } from "~/lib/logger.server";
 import { resend } from "~/lib/resend";
 import type { CreateOrderSchemaType } from "~/lib/schemas";
 import { stripe } from "~/lib/stripe";
+import type { DBQueryResult } from "~/lib/types";
 import {
   calculatePiecePrice,
   createIdentificationNumber,
@@ -751,11 +752,40 @@ class OrderService {
   }
   // ========================== CREATE ORDER ==========================
 
-  async createOrder(args: CreateOrderSchemaType, userId: string) {
+  async createOrder(
+    args: CreateOrderSchemaType,
+    userId: string | undefined
+  ): Promise<
+    | {
+        order: DBQueryResult<
+          "orders",
+          {
+            with: {
+              items: {
+                with: {
+                  piece: {
+                    with: {
+                      brand: true;
+                      category: true;
+                    };
+                  };
+                  product: true;
+                };
+              };
+            };
+          }
+        >;
+        stripeSession: Stripe.Checkout.Session;
+      }
+    | {
+        issues: CheckoutIssues["issues"];
+      }
+  > {
     const { pieces: pieceArgs = [], ...opts } = args;
 
     // Non-blocking: attempt to save default locker if requested
     if (
+      userId &&
       opts.deliveryMethod === "locker" &&
       opts.saveLocker &&
       opts.lockerCode
@@ -781,372 +811,380 @@ class OrderService {
     try {
       this.logger.info("Starting order creation", { pieceArgs, userId });
 
-      const { orderId, stripeSession } = await db.transaction(async (tx) => {
-        this.logger.debug("Starting order creation transaction", { pieceArgs });
+      const { orderId, stripeSession, issues } = await db.transaction(
+        async (tx) => {
+          this.logger.debug("Starting order creation transaction", {
+            pieceArgs,
+          });
 
-        const issuesBuilder = new CheckoutIssues();
+          const issuesBuilder = new CheckoutIssues();
 
-        // Sanitization
-        const pieces = await tx.query.pieces.findMany({
-          where: inArray(
-            schema.pieces.id,
-            pieceArgs.map((piece) => piece.id)
-          ),
-          with: {
-            discount: {
-              columns: { amountOffInGrosz: true, percentOff: true },
-            },
-            product: {
-              with: {
-                discount: {
-                  columns: { amountOffInGrosz: true, percentOff: true },
+          // Sanitization
+          const pieces = await tx.query.pieces.findMany({
+            where: inArray(
+              schema.pieces.id,
+              pieceArgs.map((piece) => piece.id)
+            ),
+            with: {
+              discount: {
+                columns: { amountOffInGrosz: true, percentOff: true },
+              },
+              product: {
+                with: {
+                  discount: {
+                    columns: { amountOffInGrosz: true, percentOff: true },
+                  },
                 },
               },
+              brand: true,
+              size: true,
+              images: true,
             },
-            brand: true,
-            size: true,
-            images: true,
-          },
-        });
-
-        this.logger.debug("Fetched pieces", {
-          pieceCount: pieces.length,
-        });
-
-        // 1. Check products status - if not published or in_checkout, it's a data integrity issue
-        for (const pieceArg of pieceArgs) {
-          const productIdArg = pieceArg.productId;
-          if (!productIdArg) {
-            continue;
-          }
-          const pieceWithProduct = pieces.find(
-            (piece) => piece.product?.id === productIdArg
-          );
-          if (!pieceWithProduct || !pieceWithProduct.product) {
-            issuesBuilder.addIssueProductNotFound(productIdArg);
-            continue;
-          }
-
-          if (
-            pieceWithProduct.product.status !== "published" &&
-            pieceWithProduct.product.status !== "in_checkout"
-          ) {
-            issuesBuilder.addIssueProductStatusInvalid(
-              {
-                productId: pieceWithProduct.product.id,
-                productName: pieceWithProduct.product.name,
-              },
-              pieceWithProduct.product.status
-            );
-          }
-        }
-
-        // 2. Check pieces status - if not published or in_checkout, it's a data integrity issue
-        for (const piece of pieces) {
-          if (piece.status !== "published" && piece.status !== "in_checkout") {
-            issuesBuilder.addIssuePieceStatusInvalid(
-              { pieceId: piece.id, pieceName: piece.name },
-              piece.status
-            );
-          }
-        }
-
-        // 3. Check pieces are not reserved by another user
-        for (const piece of pieces) {
-          if (
-            piece.reservedUntil &&
-            piece.reservedUntil > new Date() &&
-            piece.reservedByUserId !== userId
-          ) {
-            issuesBuilder.addIssuePieceReserved(
-              { pieceId: piece.id, pieceName: piece.name },
-              piece.reservedUntil
-            );
-          }
-        }
-
-        // Check for any validation issues
-        if (issuesBuilder.hasIssues()) {
-          const issues = issuesBuilder.getIssues();
-          this.logger.error("Order creation validation failed", {
-            issueCount: issues.length,
-            issues,
           });
 
-          throw data(
-            {
-              success: false,
-              message: "Order validation failed",
+          this.logger.debug("Fetched pieces", {
+            pieceCount: pieces.length,
+          });
+
+          // 1. Check products status - if not published or in_checkout, it's a data integrity issue
+          for (const pieceArg of pieceArgs) {
+            const productIdArg = pieceArg.productId;
+            if (!productIdArg) {
+              continue;
+            }
+            const pieceWithProduct = pieces.find(
+              (piece) => piece.product?.id === productIdArg
+            );
+            if (!pieceWithProduct || !pieceWithProduct.product) {
+              issuesBuilder.addIssueProductNotFound(productIdArg);
+              continue;
+            }
+
+            if (
+              pieceWithProduct.product.status !== "published" &&
+              pieceWithProduct.product.status !== "in_checkout"
+            ) {
+              issuesBuilder.addIssueProductStatusInvalid(
+                {
+                  productId: pieceWithProduct.product.id,
+                  productName: pieceWithProduct.product.name,
+                },
+                pieceWithProduct.product.status
+              );
+            }
+          }
+
+          // 2. Check pieces status - if not published or in_checkout, it's a data integrity issue
+          for (const piece of pieces) {
+            if (
+              piece.status !== "published" &&
+              piece.status !== "in_checkout"
+            ) {
+              issuesBuilder.addIssuePieceStatusInvalid(
+                { pieceId: piece.id, pieceName: piece.name },
+                piece.status
+              );
+            }
+          }
+
+          // 3. Check pieces are not reserved by another user
+          for (const piece of pieces) {
+            if (piece.reservedUntil && piece.reservedUntil > new Date()) {
+              if (!userId || piece.reservedByUserId !== userId) {
+                issuesBuilder.addIssuePieceReserved(
+                  { pieceId: piece.id, pieceName: piece.name },
+                  piece.reservedUntil
+                );
+              }
+            }
+          }
+
+          // Check for any validation issues
+          if (issuesBuilder.hasIssues()) {
+            const issues = issuesBuilder.getIssues();
+            this.logger.error("Order creation validation failed", {
+              issueCount: issues.length,
               issues,
-              order: null,
-              checkoutSession: null,
-            },
-            { status: 400 }
-          );
-        }
+            });
 
-        // Pre-generate order ID for use in order creation and Stripe metadata
-        const orderId = crypto.randomUUID();
-
-        this.logger.info(
-          "All validations passed, proceeding with order creation",
-          { userId, orderId }
-        );
-
-        const sessionExpiresAt = new Date(Date.now() + 60 * 30 * 1000); // 30 minutes
-
-        // Update reservations
-        await tx
-          .update(schema.pieces)
-          .set({
-            reservedUntil: sessionExpiresAt,
-            reservedByUserId: userId,
-            status: "in_checkout",
-          })
-          .where(
-            inArray(
-              schema.pieces.id,
-              pieces.map((piece) => piece.id)
-            )
-          );
-
-        await tx
-          .update(schema.products)
-          .set({
-            status: "in_checkout",
-          })
-          .where(
-            inArray(
-              schema.products.id,
-              pieceArgs
-                .map((piece) => piece.productId)
-                .filter((id): id is string => id !== null && id !== undefined)
-            )
-          );
-
-        this.logger.info("Pieces reserved for user", {
-          pieceIds: pieces.map((piece) => piece.id),
-          userId,
-          sessionExpiresAt,
-        });
-
-        const orderItems: Omit<
-          typeof schema.orderItems.$inferInsert,
-          "orderId"
-        >[] = [];
-
-        for (const piece of pieces) {
-          const isWithProduct = pieceArgs.some(
-            (pieceArg) => pieceArg.productId === piece.productId
-          );
-
-          // For standalone pieces, null out product so only piece discount applies.
-          // For pieces with product, calculatePiecePrice applies both discounts
-          // (piece discount first, then product discount on the result).
-          const priceData = calculatePiecePrice(
-            isWithProduct ? piece : { ...piece, product: null }
-          );
-
-          orderItems.push({
-            pieceId: piece.id,
-            ...(isWithProduct && piece.product
-              ? { productId: piece.product.id }
-              : {}),
-            discountAmountInGrosz: priceData.discountAmountInGrosz,
-            taxInGrosz: priceData.taxInGrosz,
-            lineTotalInGrosz: priceData.lineTotalInGrosz,
-            unitPriceInGrosz: priceData.unitPriceInGrosz,
-          });
-        }
-
-        const orderNumber = createIdentificationNumber();
-        const subtotalInGrosz = orderItems.reduce(
-          (acc, item) =>
-            acc + item.lineTotalInGrosz + item.discountAmountInGrosz,
-          0
-        );
-        const taxInGrosz = orderItems.reduce(
-          (acc, item) => acc + item.taxInGrosz,
-          0
-        );
-        const totalDiscountInGrosz = orderItems.reduce(
-          (acc, item) => acc + item.discountAmountInGrosz,
-          0
-        );
-        const totalInGrosz = orderItems.reduce(
-          (acc, item) => acc + item.lineTotalInGrosz,
-          0
-        );
-
-        const orderData: typeof schema.orders.$inferInsert = {
-          id: orderId,
-          userId: userId,
-          orderNumber: orderNumber,
-          subtotalInGrosz,
-          taxInGrosz,
-          totalDiscountInGrosz,
-          totalInGrosz,
-          deliveryMethod: opts.deliveryMethod,
-          lockerCode: opts.deliveryMethod === "locker" ? opts.lockerCode : null,
-        };
-
-        const createdOrder = await tx
-          .insert(schema.orders)
-          .values(orderData)
-          .returning()
-          .then((order) => order[0]);
-
-        const createdOrderItems = await tx
-          .insert(schema.orderItems)
-          .values(
-            orderItems.map((item) => ({
-              ...item,
-              orderId: createdOrder.id,
-            }))
-          )
-          .returning();
-
-        // Create order timeline event (pending status)
-        await tx.insert(schema.orderTimelineEvents).values({
-          orderId: createdOrder.id,
-          status: "pending",
-        });
-
-        this.logger.info("Order created successfully", {
-          orderId: createdOrder.id,
-          orderNumber,
-          totalInGrosz,
-          itemCount: orderItems.length,
-          deliveryMethod: opts.deliveryMethod,
-        });
-
-        this.logger.info("Creating Stripe checkout session", {
-          orderId: createdOrder.id,
-          userId,
-        });
-
-        const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-
-        for (const item of createdOrderItems) {
-          const piece = pieces.find((p) => p.id === item.pieceId);
-          if (!piece) {
-            this.logger.warn(
-              "Piece not found for Stripe line item - data inconsistency",
-              { pieceId: item.pieceId, orderId: createdOrder.id }
-            );
-            continue;
+            return {
+              issues,
+              orderId: null,
+              stripeSession: null,
+            };
           }
 
-          const name =
-            item.productId && piece.product
-              ? `${piece.name} (${piece.product.name})`
-              : piece.name;
+          // Pre-generate order ID for use in order creation and Stripe metadata
+          const orderId = crypto.randomUUID();
 
-          lineItems.push({
-            price_data: {
-              currency: "pln",
-              product_data: {
-                name,
-                images: piece.images.map((image) => image.url),
-                description: `${piece.size.name} - ${piece.brand.name}`,
-              },
-              unit_amount: item.lineTotalInGrosz,
-            },
-            quantity: 1,
+          this.logger.info(
+            "All validations passed, proceeding with order creation",
+            { userId, orderId }
+          );
+
+          const sessionExpiresAt = new Date(Date.now() + 60 * 30 * 1000); // 30 minutes
+
+          // Update reservations
+          await tx
+            .update(schema.pieces)
+            .set({
+              reservedUntil: sessionExpiresAt,
+              reservedByUserId: userId ?? null,
+              status: "in_checkout",
+            })
+            .where(
+              inArray(
+                schema.pieces.id,
+                pieces.map((piece) => piece.id)
+              )
+            );
+
+          await tx
+            .update(schema.products)
+            .set({
+              status: "in_checkout",
+            })
+            .where(
+              inArray(
+                schema.products.id,
+                pieceArgs
+                  .map((piece) => piece.productId)
+                  .filter((id): id is string => id !== null && id !== undefined)
+              )
+            );
+
+          this.logger.info("Pieces reserved for user", {
+            pieceIds: pieces.map((piece) => piece.id),
+            userId,
+            sessionExpiresAt,
           });
-        }
 
-        this.logger.info("Created line items", {
-          orderId: createdOrder.id,
-          lineItemCount: lineItems.length,
-        });
+          const orderItems: Omit<
+            typeof schema.orderItems.$inferInsert,
+            "orderId"
+          >[] = [];
 
-        let sessionArgs: Stripe.Checkout.SessionCreateParams = {
-          mode: "payment",
-          currency: "pln",
-          locale: "pl",
-          expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
-          line_items: lineItems,
-          allow_promotion_codes: true,
-          phone_number_collection: {
-            enabled: true,
-          },
-          billing_address_collection: "required",
-          shipping_address_collection:
-            opts.deliveryMethod === "courier"
-              ? {
-                  allowed_countries: ["PL"],
-                }
-              : undefined,
-          metadata: {
+          for (const piece of pieces) {
+            const isWithProduct = pieceArgs.some(
+              (pieceArg) => pieceArg.productId === piece.productId
+            );
+
+            // For standalone pieces, null out product so only piece discount applies.
+            // For pieces with product, calculatePiecePrice applies both discounts
+            // (piece discount first, then product discount on the result).
+            const priceData = calculatePiecePrice(
+              isWithProduct ? piece : { ...piece, product: null }
+            );
+
+            orderItems.push({
+              pieceId: piece.id,
+              ...(isWithProduct && piece.product
+                ? { productId: piece.product.id }
+                : {}),
+              discountAmountInGrosz: priceData.discountAmountInGrosz,
+              taxInGrosz: priceData.taxInGrosz,
+              lineTotalInGrosz: priceData.lineTotalInGrosz,
+              unitPriceInGrosz: priceData.unitPriceInGrosz,
+            });
+          }
+
+          const orderNumber = createIdentificationNumber();
+          const subtotalInGrosz = orderItems.reduce(
+            (acc, item) =>
+              acc + item.lineTotalInGrosz + item.discountAmountInGrosz,
+            0
+          );
+          const taxInGrosz = orderItems.reduce(
+            (acc, item) => acc + item.taxInGrosz,
+            0
+          );
+          const totalDiscountInGrosz = orderItems.reduce(
+            (acc, item) => acc + item.discountAmountInGrosz,
+            0
+          );
+          const totalInGrosz = orderItems.reduce(
+            (acc, item) => acc + item.lineTotalInGrosz,
+            0
+          );
+
+          const orderData: typeof schema.orders.$inferInsert = {
+            id: orderId,
+            userId: userId ?? null,
+            orderNumber: orderNumber,
+            subtotalInGrosz,
+            taxInGrosz,
+            totalDiscountInGrosz,
+            totalInGrosz,
+            deliveryMethod: opts.deliveryMethod,
+            lockerCode:
+              opts.deliveryMethod === "locker" ? opts.lockerCode : null,
+          };
+
+          const createdOrder = await tx
+            .insert(schema.orders)
+            .values(orderData)
+            .returning()
+            .then((order) => order[0]);
+
+          const createdOrderItems = await tx
+            .insert(schema.orderItems)
+            .values(
+              orderItems.map((item) => ({
+                ...item,
+                orderId: createdOrder.id,
+              }))
+            )
+            .returning();
+
+          // Create order timeline event (pending status)
+          await tx.insert(schema.orderTimelineEvents).values({
             orderId: createdOrder.id,
-          },
-          name_collection: {
-            individual: {
+            status: "pending",
+          });
+
+          this.logger.info("Order created successfully", {
+            orderId: createdOrder.id,
+            orderNumber,
+            totalInGrosz,
+            itemCount: orderItems.length,
+            deliveryMethod: opts.deliveryMethod,
+          });
+
+          this.logger.info("Creating Stripe checkout session", {
+            orderId: createdOrder.id,
+            userId,
+          });
+
+          const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+          for (const item of createdOrderItems) {
+            const piece = pieces.find((p) => p.id === item.pieceId);
+            if (!piece) {
+              this.logger.warn(
+                "Piece not found for Stripe line item - data inconsistency",
+                { pieceId: item.pieceId, orderId: createdOrder.id }
+              );
+              continue;
+            }
+
+            const name =
+              item.productId && piece.product
+                ? `${piece.name} (${piece.product.name})`
+                : piece.name;
+
+            lineItems.push({
+              price_data: {
+                currency: "pln",
+                product_data: {
+                  name,
+                  images: piece.images.map((image) => image.url),
+                  description: `${piece.size.name} - ${piece.brand.name}`,
+                },
+                unit_amount: item.lineTotalInGrosz,
+              },
+              quantity: 1,
+            });
+          }
+
+          this.logger.info("Created line items", {
+            orderId: createdOrder.id,
+            lineItemCount: lineItems.length,
+          });
+
+          let sessionArgs: Stripe.Checkout.SessionCreateParams = {
+            mode: "payment",
+            currency: "pln",
+            locale: "pl",
+            expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
+            line_items: lineItems,
+            allow_promotion_codes: true,
+            phone_number_collection: {
               enabled: true,
             },
-          },
-          success_url: `${APP_URL}/zamowienie/${createdOrder.orderNumber}/sukces`,
-          cancel_url: `${APP_URL}/`,
-          //consent_collection: {
-          //  terms_of_service: "required",
-          //},
-        };
-
-        if (userId) {
-          const user = await tx.query.users.findFirst({
-            where: eq(schema.users.id, userId),
-          });
-
-          if (user && !user.isAnonymous) {
-            const stripeCustomerId = await this.confirmStripeCustomerId(
-              userId,
-              tx
-            );
-
-            sessionArgs = {
-              ...sessionArgs,
-              customer: stripeCustomerId,
-              billing_address_collection: "required",
-              customer_update: {
-                address: "auto",
-                name: "auto",
-                shipping: "auto",
+            billing_address_collection: "required",
+            shipping_address_collection:
+              opts.deliveryMethod === "courier"
+                ? {
+                    allowed_countries: ["PL"],
+                  }
+                : undefined,
+            metadata: {
+              orderId: createdOrder.id,
+            },
+            name_collection: {
+              individual: {
+                enabled: true,
               },
-            };
+            },
+            success_url: `${APP_URL}/zamowienie/${createdOrder.orderNumber}/sukces`,
+            cancel_url: `${APP_URL}/`,
+            //consent_collection: {
+            //  terms_of_service: "required",
+            //},
+          };
+
+          if (userId) {
+            const user = await tx.query.users.findFirst({
+              where: eq(schema.users.id, userId),
+            });
+
+            if (user && !user.isAnonymous) {
+              const stripeCustomerId = await this.confirmStripeCustomerId(
+                userId,
+                tx
+              );
+
+              sessionArgs = {
+                ...sessionArgs,
+                customer: stripeCustomerId,
+                billing_address_collection: "required",
+                customer_update: {
+                  address: "auto",
+                  name: "auto",
+                  shipping: "auto",
+                },
+              };
+            } else {
+              sessionArgs = {
+                ...sessionArgs,
+                customer_creation: "always",
+              };
+            }
           } else {
             sessionArgs = {
               ...sessionArgs,
               customer_creation: "always",
             };
           }
-        } else {
-          sessionArgs = {
-            ...sessionArgs,
-            customer_creation: "always",
+
+          const stripeSession =
+            await stripe.checkout.sessions.create(sessionArgs);
+
+          await tx
+            .update(schema.orders)
+            .set({
+              stripeCheckoutSessionId: stripeSession.id,
+            })
+            .where(eq(schema.orders.id, createdOrder.id));
+
+          this.logger.info("Stripe checkout session created", {
+            orderId: createdOrder.id,
+            stripeSessionId: stripeSession.id,
+          });
+
+          return {
+            issues: null,
+            orderId,
+            stripeSession,
           };
         }
+      );
 
-        const stripeSession =
-          await stripe.checkout.sessions.create(sessionArgs);
-
-        await tx
-          .update(schema.orders)
-          .set({
-            stripeCheckoutSessionId: stripeSession.id,
-          })
-          .where(eq(schema.orders.id, createdOrder.id));
-
-        this.logger.info("Stripe checkout session created", {
-          orderId: createdOrder.id,
-          stripeSessionId: stripeSession.id,
-        });
-
+      if (issues || !orderId || !stripeSession) {
         return {
-          orderId,
-          stripeSession,
+          issues,
         };
-      });
+      }
 
       const order = await db.query.orders.findFirst({
         where: eq(schema.orders.id, orderId),
@@ -1166,42 +1204,20 @@ class OrderService {
       });
       if (!order) {
         this.logger.error("Order not found", { orderId });
-        throw data(
-          {
-            success: false,
-            message: "Order not found",
-          },
-          { status: 404 }
-        );
+        const issues = new CheckoutIssues();
+        issues.addIssueOrderNotFound(orderId as string);
+        return {
+          issues: issues.getIssues(),
+        };
       }
 
-      return data(
-        {
-          success: true,
-          message: "Order created successfully",
-          issues: null,
-          order,
-          stripeSession,
-        },
-        { status: 200 }
-      );
+      return {
+        order,
+        stripeSession,
+      };
     } catch (err) {
-      // Re-throw if already a data() response
-      if (err && typeof err === "object" && "status" in err) {
-        throw err;
-      }
-
       this.logger.error("Create checkout session error", { err });
-      throw data(
-        {
-          success: false,
-          message: "Wystąpił błąd podczas tworzenia sesji płatności",
-          issues: null,
-          order: null,
-          checkoutSession: null,
-        },
-        { status: 500 }
-      );
+      throw err;
     }
   }
 
@@ -1349,7 +1365,7 @@ type CompleteOrderPieceNotReservedByUserIssue = {
   code: "complete-piece-not-reserved-by-user";
   message: string;
   pieceId: string;
-  expectedUserId: string;
+  expectedUserId: string | null;
   actualUserId: string | null;
 };
 
@@ -1438,6 +1454,11 @@ type ProductNotFoundIssue = BaseIssue & {
   productId: string;
 };
 
+type OrderNotFoundIssue = BaseIssue & {
+  code: "order-not-found";
+  orderId: string;
+};
+
 type CheckoutIssue =
   | PiecePartOfProductIssue
   | ProductStatusInvalidIssue
@@ -1445,7 +1466,8 @@ type CheckoutIssue =
   | PieceStatusInvalidIssue
   | ProductNoFreePiecesIssue
   | PieceReservedIssue
-  | ProductNotFoundIssue;
+  | ProductNotFoundIssue
+  | OrderNotFoundIssue;
 
 const orderService = new OrderService(
   logger.child({ service: "OrderService" })
@@ -1482,7 +1504,7 @@ class CompleteOrderIssues {
 
   public addCompleteIssuePieceNotReservedByUser(
     { pieceId, pieceName }: { pieceId: string; pieceName: string },
-    expectedUserId: string,
+    expectedUserId: string | null,
     actualUserId: string | null
   ) {
     this.issues.push({
@@ -1564,6 +1586,14 @@ class CheckoutIssues {
       message: `Produkt o ID "${productId}" nie został znaleziony.`,
       productId,
     } satisfies ProductNotFoundIssue);
+  }
+
+  public addIssueOrderNotFound(orderId: string) {
+    this.issues.push({
+      code: "order-not-found",
+      message: `Zamówienie o ID "${orderId}" nie zostało znalezione.`,
+      orderId,
+    } satisfies OrderNotFoundIssue);
   }
 
   public hasIssues(): boolean {

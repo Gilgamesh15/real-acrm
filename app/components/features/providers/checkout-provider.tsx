@@ -98,7 +98,7 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
             ReturnType<typeof createOrderAction>
           >["data"];
 
-          if (!result.stripeSession.url || !result.success) {
+          if (!result.stripeSession.url) {
             throw new Error("Nie udało się utworzyć sesji płatności");
           }
 
