@@ -125,24 +125,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <GoogleConsentMode />
 
         {import.meta.env.VITE_GOOGLE_ANALYTICS_ID && (
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}`}
+          />
+        )}
+        {import.meta.env.VITE_GOOGLE_ADS_ID && (
           <>
             <script
               async
-              src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-
-                  gtag('config', '${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}');
-                `,
-              }}
+              src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ADS_ID}`}
             />
           </>
         )}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+               window.dataLayer = window.dataLayer || [];
+               function gtag(){dataLayer.push(arguments);}
+               gtag('js', new Date());
+
+               gtag('config', '${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}');
+               gtag('config', '${import.meta.env.VITE_GOOGLE_ADS_ID}');
+             `,
+          }}
+        />
       </head>
       <body>
         <NuqsAdapter
