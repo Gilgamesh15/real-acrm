@@ -142,6 +142,11 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
       property: "og:image:url",
       content: "https://www.acrm.pl/logo-light.png",
     },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: `https://www.acrm.pl/kategorie${category ? `/${getSlugPath(category)}` : ""}`,
+    },
   ];
 };
 

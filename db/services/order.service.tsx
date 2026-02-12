@@ -24,6 +24,7 @@ class OrderService {
   constructor(private logger: Logger) {}
 
   // ========================== COMPLETE ORDER ==========================
+  // ========================== COMPLETE ORDER - UPDATED ==========================
   async completeOrder(stripeSessionId: string) {
     try {
       this.logger.info("Starting order completion", { stripeSessionId });
@@ -116,10 +117,16 @@ class OrderService {
           orderId: order.id,
         });
 
+        // Retrieve session with expanded data
         const stripeSession = await stripe.checkout.sessions.retrieve(
           stripeSessionId,
           {
-            expand: ["customer", "customer_details", "collected_information"],
+            expand: [
+              "customer",
+              "customer_details",
+              "collected_information",
+              "total_details",
+            ],
           }
         );
 
@@ -127,6 +134,25 @@ class OrderService {
           stripeSessionId,
           hasCustomerDetails: !!stripeSession.customer_details,
           hasShipping: !!stripeSession.collected_information?.shipping_details,
+          hasTotalDetails: !!stripeSession.total_details,
+        });
+
+        // Retrieve line items to get actual prices/discounts charged
+        this.logger.info("Retrieving Stripe line items", {
+          stripeSessionId,
+          orderId: order.id,
+        });
+
+        const lineItemsResponse = await stripe.checkout.sessions.listLineItems(
+          stripeSessionId,
+          { limit: 100 } // Adjust if you have more than 100 items
+        );
+
+        const stripeLineItems = lineItemsResponse.data;
+
+        this.logger.debug("Stripe line items retrieved", {
+          stripeSessionId,
+          lineItemCount: stripeLineItems.length,
         });
 
         const issuesBuilder = new CompleteOrderIssues();
@@ -327,7 +353,97 @@ class OrderService {
           orderId: order.id,
         });
 
-        // 3. Update order with Stripe data (fields validated above)
+        // ========================== UPDATE PRICING FROM STRIPE ==========================
+        // Extract actual totals from Stripe (these include any promotion codes applied)
+        const stripeTotalDetails = stripeSession.total_details;
+        const actualTotalDiscountInGrosz =
+          stripeTotalDetails?.amount_discount ?? 0;
+        const actualTaxInGrosz = stripeTotalDetails?.amount_tax ?? 0;
+        const actualTotalInGrosz = stripeSession.amount_total ?? 0;
+        const actualSubtotalInGrosz = stripeSession.amount_subtotal ?? 0;
+
+        this.logger.info("Stripe pricing data extracted", {
+          stripeSessionId,
+          orderId: order.id,
+          actualTotalDiscountInGrosz,
+          actualTaxInGrosz,
+          actualTotalInGrosz,
+          actualSubtotalInGrosz,
+          originalTotalDiscountInGrosz: order.totalDiscountInGrosz,
+          originalTotalInGrosz: order.totalInGrosz,
+        });
+
+        // Update individual order items with actual Stripe line item data
+        for (const stripeLineItem of stripeLineItems) {
+          const itemId = stripeLineItem.metadata?.itemId;
+          if (!itemId) {
+            this.logger.warn("No item ID found in Stripe line item metadata", {
+              stripeSessionId,
+              orderId: order.id,
+              stripeLineItemId: stripeLineItem.id,
+            });
+            continue;
+          }
+          const orderItem = order.items.find((item) => item.id === itemId);
+          if (!orderItem) {
+            this.logger.warn("No matching order item found", {
+              stripeSessionId,
+              orderId: order.id,
+              itemId,
+            });
+            continue;
+          }
+
+          if (!stripeLineItem) {
+            this.logger.warn("No matching Stripe line item found", {
+              stripeSessionId,
+              orderId: order.id,
+              orderItemId: orderItem.id,
+              pieceId: orderItem.pieceId,
+            });
+            continue;
+          }
+
+          // Extract actual amounts from Stripe line item
+          const actualLineDiscountInGrosz = stripeLineItem.amount_discount ?? 0;
+          const actualLineTaxInGrosz = stripeLineItem.amount_tax ?? 0;
+          const actualLineTotalInGrosz = stripeLineItem.amount_total ?? 0;
+          const actualLineSubtotalInGrosz = stripeLineItem.amount_subtotal ?? 0;
+
+          // Calculate unit price (should be same as original, but get from Stripe to be safe)
+          const actualUnitPriceInGrosz =
+            actualLineSubtotalInGrosz / (stripeLineItem.quantity ?? 1);
+
+          this.logger.debug("Updating order item with Stripe data", {
+            stripeSessionId,
+            orderId: order.id,
+            orderItemId: orderItem.id,
+            pieceId: orderItem.pieceId,
+            originalDiscount: orderItem.discountAmountInGrosz,
+            actualDiscount: actualLineDiscountInGrosz,
+            originalLineTotal: orderItem.lineTotalInGrosz,
+            actualLineTotal: actualLineTotalInGrosz,
+          });
+
+          // Update the order item with actual Stripe amounts
+          await tx
+            .update(schema.orderItems)
+            .set({
+              discountAmountInGrosz: actualLineDiscountInGrosz,
+              taxInGrosz: actualLineTaxInGrosz,
+              lineTotalInGrosz: actualLineTotalInGrosz,
+              unitPriceInGrosz: Math.round(actualUnitPriceInGrosz),
+            })
+            .where(eq(schema.orderItems.id, orderItem.id));
+        }
+
+        this.logger.info("Order items updated with Stripe pricing", {
+          stripeSessionId,
+          orderId: order.id,
+          itemCount: order.items.length,
+        });
+
+        // 3. Update order with Stripe data (fields validated above + pricing)
         await tx
           .update(schema.orders)
           .set({
@@ -352,12 +468,24 @@ class OrderService {
               shippingAddressLine2: shippingDetails!.address?.line2 ?? null,
               shippingAddressPostalCode: shippingDetails!.address!.postal_code!,
             }),
+
+            // Pricing information from Stripe (updated to reflect actual charges)
+            subtotalInGrosz: actualSubtotalInGrosz,
+            taxInGrosz: actualTaxInGrosz,
+            totalDiscountInGrosz: actualTotalDiscountInGrosz,
+            totalInGrosz: actualTotalInGrosz,
           })
           .where(eq(schema.orders.id, order.id));
 
         this.logger.info(
-          "Order updated with Stripe customer and shipping details",
-          { stripeSessionId, orderId: order.id, deliveryMethod }
+          "Order updated with Stripe customer, shipping, and pricing details",
+          {
+            stripeSessionId,
+            orderId: order.id,
+            deliveryMethod,
+            discountDifference:
+              actualTotalDiscountInGrosz - order.totalDiscountInGrosz,
+          }
         );
 
         // 4. Create processing order event
@@ -483,10 +611,10 @@ class OrderService {
             to: companyEmail,
             subject: `Nowe zamówienie - ${order.orderNumber}`,
             html: `
-  <p><strong>Nowe zamówienie #${order.orderNumber}</strong></p>
-  <p>Email: ${orderDetails.email}</p>
-  <p>Przedmioty: ${order.items.length}</p>
-  <p>Suma: ${(order.totalInGrosz / 100).toFixed(2)} PLN</p>
+<p><strong>Nowe zamówienie #${order.orderNumber}</strong></p>
+<p>Email: ${orderDetails.email}</p>
+<p>Przedmioty: ${order.items.length}</p>
+<p>Suma: ${(order.totalInGrosz / 100).toFixed(2)} PLN</p>
 `,
           })
           .catch((emailError) => {
@@ -977,6 +1105,7 @@ class OrderService {
             );
 
             orderItems.push({
+              id: crypto.randomUUID(),
               pieceId: piece.id,
               ...(isWithProduct && piece.product
                 ? { productId: piece.product.id }
@@ -1083,6 +1212,9 @@ class OrderService {
                 unit_amount: item.lineTotalInGrosz,
               },
               quantity: 1,
+              metadata: {
+                itemId: item.id,
+              },
             });
           }
 

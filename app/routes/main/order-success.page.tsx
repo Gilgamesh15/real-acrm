@@ -1,7 +1,7 @@
 import * as schema from "db/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link, data } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -129,6 +129,14 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
     });
   }, [order]);
 
+  const orderDetails = React.useMemo(() => {
+    try {
+      return orderDetailsFromOrder(order);
+    } catch {
+      return undefined;
+    }
+  }, [order]);
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">
       {/* Success Header */}
@@ -161,7 +169,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Order Details and Actions Section */}
         <div className="lg:col-span-2 space-y-6">
-          <OrderData orderData={orderDetailsFromOrder(order)} />
+          {orderDetails && <OrderData orderData={orderDetails} />}
 
           <PriceSummary {...priceSummary} className="lg:hidden" />
 
