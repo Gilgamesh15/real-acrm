@@ -38,7 +38,6 @@ import {
 } from "~/components/features/param-filters/filter-values";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
-import { useStructuredData } from "~/hooks/use-structured-data";
 import { generateBreadcrumbListStructuredData } from "~/lib/seo";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
 import {
@@ -147,6 +146,9 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
       rel: "canonical",
       href: `https://www.acrm.pl/kategorie${category ? `/${getSlugPath(category)}` : ""}`,
     },
+    ...(category
+      ? [{ "script:ld+json": generateBreadcrumbListStructuredData(category) }]
+      : []),
   ];
 };
 
@@ -164,11 +166,6 @@ export default function PiecesBrowsePage({
 
   const category = categories.find(
     (category) => category.slug === categorySlug
-  );
-
-  useStructuredData(
-    category ? generateBreadcrumbListStructuredData(category) : undefined,
-    "breadcrumb-list-structured-data"
   );
 
   return (

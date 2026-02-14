@@ -79,6 +79,11 @@ export default [
       "./routes/main/legal/privacy-policy.page.tsx"
     ),
     route("o-nas", "./routes/main/legal/about-us/about-us.page.tsx"),
+    ...prefix("/kontakt", [
+      index("./routes/main/contact/contact.page.tsx"),
+      route("/sukces", "./routes/main/contact/contact-success.page.tsx"),
+    ]),
+    route("/faq", "./routes/main/faq.page.tsx"),
 
     // returns
     ...prefix("/zwroty", [

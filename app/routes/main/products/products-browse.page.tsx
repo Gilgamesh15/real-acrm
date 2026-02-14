@@ -49,7 +49,7 @@ const PRODUCTS_PER_PAGE = 10;
 const PAGE_TITLE =
   "Komplety ubrań z second-handu – gotowe stylizacje | ACRM";
 const PAGE_DESCRIPTION =
-  "Gotowe zestawy odzieży używanej w topowych stylach. Marki premium w przystępnych cenach. Darmowa dostawa InPost, wysyłka w 24h.";
+  "Gotowe zestawy odzieży używanej w topowych stylach. Marki premium w przystępnych cenach. Darmowa dostawa InPost, realizacja w 24h.";
 
 export const meta: Route.MetaFunction = () => [
   { title: PAGE_TITLE },

@@ -18,7 +18,7 @@ import { GoogleConsentMode } from "~/components/features/cookie-consent";
 import { CookieBanner } from "~/components/features/cookie-consent/cookie-banner";
 import { CookieConsentProvider } from "~/components/features/cookie-consent/cookie-provider";
 import { CookieSettings } from "~/components/features/cookie-consent/cookie-settings";
-import { CookieTrigger } from "~/components/features/cookie-consent/cookie-trigger";
+
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -42,7 +42,7 @@ export const meta: Route.MetaFunction = () => [
   {
     name: "description",
     content:
-      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Darmowa dostawa, wysyłka 24h, zwroty do 14 dni.",
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Darmowa dostawa, realizacja w 24h, zwroty do 14 dni.",
   },
   { property: "og:site_name", content: "ACRM | Fashion Projects" },
   { property: "og:locale", content: "pl_PL" },
@@ -188,7 +188,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
               <CookieBanner />
               <CookieSettings />
-              <CookieTrigger />
             </CookieConsentProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>

@@ -10,7 +10,7 @@ import {
   calculateProductPriceDisplayData,
 } from "./utils";
 
-const BASE_URL = import.meta.env.VITE_APP_URL;
+const BASE_URL = "https://www.acrm.pl";
 const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL;
 const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL;
 const YOUTUBE_URL = import.meta.env.VITE_YOUTUBE_URL;
@@ -21,7 +21,7 @@ const AVAILABILITY_MAP: Record<ProductStatus, string> = {
   in_checkout: "https://schema.org/OutOfStock", // Reserved during checkout
   sold: "https://schema.org/SoldOut",
   draft: "https://schema.org/OutOfStock", // Not ready for sale
-  return_requested: "https://schema.org/SoldOut", // Pending return
+  return_requested: "https://schema.org/OutOfStock", // Pending return
   returned: "https://schema.org/OutOfStock", // Needs manual review before relisting
 };
 
@@ -88,7 +88,7 @@ function generateOrganizationStructuredData() {
       telephone: "+48-453-450-597",
     },
     description:
-      "ACRM oferuje markową odzież z second-handu w przystępnych cenach. Dickies, Nike, Carhartt i więcej. Darmowa dostawa, wysyłka w 24h, zwroty do 14 dni.",
+      "ACRM oferuje markową odzież z second-handu w przystępnych cenach. Dickies, Nike, Carhartt i więcej. Darmowa dostawa, realizacja w 24h, zwroty do 14 dni.",
     email: "kontakt@acrm.pl",
     foundingDate: "2025-09-09",
     hasMerchantReturnPolicy: {

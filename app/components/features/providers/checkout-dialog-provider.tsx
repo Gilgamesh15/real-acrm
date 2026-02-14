@@ -761,6 +761,9 @@ function MethodSelectionDialogContent({
               <p className="text-sm text-muted-foreground">
                 Odbierz w najbliższych paczkomatach inpost
               </p>
+              <p className="text-sm text-green-500 font-semibold">
+                Darmowa dostawa
+              </p>
             </div>
           </div>
         </Button>
@@ -780,6 +783,9 @@ function MethodSelectionDialogContent({
               <h3 className="text-xl font-semibold mb-2">Dostawa kurierem</h3>
               <p className="text-sm text-muted-foreground">
                 Dostawa bezpośrednio do twojego adresu
+              </p>
+              <p className="text-sm text-green-500 font-semibold">
+                Darmowa dostawa
               </p>
             </div>
           </div>

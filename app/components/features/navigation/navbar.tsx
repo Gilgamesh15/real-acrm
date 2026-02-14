@@ -1,8 +1,10 @@
 import type { SQL } from "drizzle-orm";
 import {
   BuildingIcon,
+  HelpCircleIcon,
   LayoutDashboardIcon,
   ListCheckIcon,
+  MailIcon,
   SettingsIcon,
   SparkleIcon,
   StarIcon,
@@ -48,6 +50,16 @@ export const MAIN_ITEMS: NavItem[] = [
     label: "O nas",
     icon: <BuildingIcon />,
     href: "/o-nas",
+  },
+  {
+    label: "Kontakt",
+    icon: <MailIcon />,
+    href: "/kontakt",
+  },
+  {
+    label: "FAQ",
+    icon: <HelpCircleIcon />,
+    href: "/faq",
   },
 ];
 

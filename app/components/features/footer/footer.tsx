@@ -13,7 +13,15 @@ import Image from "~/components/ui/image";
 import type { DBQueryResult } from "~/lib/types";
 import { getSlugPath } from "~/lib/utils";
 
+import { CookieTrigger } from "../cookie-consent/cookie-trigger";
 import { Logo } from "../logo/logo";
+
+const PaymentMethodApplePay = "/payment-methods/payment_method_apple_pay.svg";
+const PaymentMethodBlikS = "/payment-methods/BLIK_PP_S_W.svg";
+const PaymentMethodMaestroS = "/payment-methods/payment_method_maestro_s.svg";
+const PaymentMethodMastercard =
+  "/payment-methods/payment_method_mastercard.svg";
+const PaymentMethodVisaBlue = "/payment-methods/payment_method_visa_white.svg";
 
 const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL!;
 const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL!;
@@ -45,6 +53,8 @@ const FOOTER_LINKS = [
       { label: "Projekty", href: "/projekty" },
       { label: "Ubrania", href: "/kategorie" },
       { label: "O nas", href: "/o-nas" },
+      { label: "Kontakt", href: "/kontakt" },
+      { label: "FAQ", href: "/faq" },
       { label: "Zwroty", href: "/zwroty" },
     ],
   },
@@ -83,6 +93,29 @@ const COMPANY_INFO = {
   phone: "+48 453-450-597", // np. "+48 123 456 789"
 };
 
+const PAYMENT_METHODS = [
+  {
+    label: "Visa",
+    icon: PaymentMethodVisaBlue,
+  },
+  {
+    label: "Mastercard",
+    icon: PaymentMethodMastercard,
+  },
+  {
+    label: "Maestro",
+    icon: PaymentMethodMaestroS,
+  },
+  {
+    label: "Apple Pay",
+    icon: PaymentMethodApplePay,
+  },
+  {
+    label: "Blik",
+    icon: PaymentMethodBlikS,
+  },
+];
+
 function Footer({
   categoriesPromise,
 }: {
@@ -98,7 +131,7 @@ function Footer({
           {/* Left Column: Logo & Social */}
           <div className="flex flex-col justify-start gap-8">
             {/* Logo */}
-            <Logo className="w-fit" />
+            <Logo className="w-fit" size="lg" withHeadline />
 
             {/* Social Media Links */}
             <div className="flex items-center justify-start gap-4 md:flex-row">
@@ -173,6 +206,9 @@ function Footer({
                             {link.label}
                           </Link>
                         ))}
+                        {column.title === "Regulamin" && (
+                          <CookieTrigger className="text-sm font-medium text-nowrap text-muted-foreground transition-colors duration-200 ease-in-out hover:text-foreground" />
+                        )}
                       </div>
                     ));
                   }}
@@ -180,7 +216,7 @@ function Footer({
               </React.Suspense>
             </div>
             <div className="md:hidden">
-              <Accordion type="single" collapsible>
+              <Accordion type="multiple">
                 {FOOTER_LINKS.map((column) => (
                   <AccordionItem value={column.title} key={column.title}>
                     <AccordionTrigger className="uppercase">
@@ -197,6 +233,9 @@ function Footer({
                           {link.label}
                         </Link>
                       ))}
+                      {column.title === "Regulamin" && (
+                        <CookieTrigger className="text-sm text-left font-medium text-muted-foreground transition-colors duration-200 ease-in-out hover:text-foreground" />
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -205,8 +244,21 @@ function Footer({
           </div>
         </div>
 
+        <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
+          {PAYMENT_METHODS.map((method) => (
+            <img
+              key={method.label}
+              src={method.icon}
+              alt={method.label}
+              className="select-none h-8 w-auto"
+            />
+          ))}
+        </div>
+
+        {/* Payment Methods */}
+
         {/* Decorative Logo Image */}
-        <div className="overflow-hidden h-22 opacity-10">
+        <div className="overflow-hidden h-22 opacity-10 mt-4">
           <span className="text-[120px] font-black tracking-tighter text-foreground leading-none">
             ACRM
           </span>
@@ -230,8 +282,10 @@ function Footer({
               itemType="https://schema.org/PostalAddress"
             >
               <span itemProp="streetAddress">{COMPANY_INFO.address}</span>,{" "}
-              <span itemProp="postalCode">{COMPANY_INFO.postalCode}</span>{" "}
-              <span itemProp="addressLocality">{COMPANY_INFO.city}</span>
+              <span itemProp="addressLocality">{COMPANY_INFO.city}</span>,{" "}
+              <span itemProp="addressRegion">Małopolskie</span>,{" "}
+              <span itemProp="postalCode">{COMPANY_INFO.postalCode}</span>,{" "}
+              <span itemProp="addressCountry">Polska</span>
             </span>
             <span className="mx-2 opacity-40">|</span>
             <span>
@@ -258,6 +312,8 @@ function Footer({
             >
               {COMPANY_INFO.phone}
             </a>
+            <span className="mx-2 opacity-40">|</span>
+            <span>Obsługa klienta: pon.–pt. 9:00–17:00</span>
             <span className="mx-2 opacity-40">|</span>
             <span>
               © {new Date().getFullYear()} {COMPANY_INFO.tradeName}

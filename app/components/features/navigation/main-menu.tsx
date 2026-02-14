@@ -42,7 +42,7 @@ const MainMenu = ({
   return (
     <NavigationMenu className={className}>
       <NavigationMenuList>
-        {mainItems.map((item) => (
+        {mainItems.slice(0, 3).map((item) => (
           <NavigationMenuItem key={item.href}>
             <NavigationMenuLink asChild>
               <Link
@@ -129,6 +129,19 @@ const MainMenu = ({
             </React.Suspense>
           </NavigationMenuContent>
         </NavigationMenuItem>
+        {mainItems.slice(3).map((item) => (
+          <NavigationMenuItem key={item.href}>
+            <NavigationMenuLink asChild>
+              <Link
+                to={item.href}
+                className="flex-row items-center gap-2  text-sm text-nowrap"
+              >
+                {item.icon}
+                <span className="text-xs"> {item.label}</span>
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        ))}
       </NavigationMenuList>
     </NavigationMenu>
   );

@@ -71,6 +71,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
     priority: 0.4,
   });
 
+  entries.push({
+    url: "/kontakt",
+    changefreq: "monthly",
+    priority: 0.4,
+  });
+
+  entries.push({
+    url: "/faq",
+    changefreq: "monthly",
+    priority: 0.4,
+  });
+
   // ==========================================
   // DYNAMIC ROUTES FROM DATABASE
   // ==========================================

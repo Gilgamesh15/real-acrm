@@ -8,9 +8,10 @@ import { CartProvider } from "~/components/features/providers/cart-provider";
 import { CheckoutDialogProvider } from "~/components/features/providers/checkout-dialog-provider";
 import { CheckoutProvider } from "~/components/features/providers/checkout-provider";
 import { CheckoutRecoveryDialogProvider } from "~/components/features/providers/checkout-recovery-dialog-provider";
-import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generateOrganizationStructuredData } from "~/lib/seo";
+
+import type { Route } from "./+types/main.layout";
 
 export async function loader() {
   const categoriesPromise = db.query.categories
@@ -47,13 +48,12 @@ export async function loader() {
   };
 }
 
+export const meta: Route.MetaFunction = () => [
+  { "script:ld+json": generateOrganizationStructuredData() },
+];
+
 export default function MainLayout() {
   const { categoriesPromise, tagsPromise } = useLoaderData<typeof loader>();
-
-  useStructuredData(
-    generateOrganizationStructuredData(),
-    "organization-structured-data"
-  );
 
   return (
     <CartProvider>

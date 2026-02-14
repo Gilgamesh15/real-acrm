@@ -22,7 +22,6 @@ import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carous
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import { generatePieceStructuredData } from "~/lib/seo";
 import {
@@ -140,16 +139,12 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { name: "twitter:description", content: pageDescription },
     { name: "twitter:image", content: pageImage },
     { tagName: "link", rel: "canonical", href: pageUrl },
+    { "script:ld+json": generatePieceStructuredData(piece) },
   ];
 };
 
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const { piece, similarPiecesPromise } = loaderData;
-
-  useStructuredData(
-    generatePieceStructuredData(piece),
-    "piece-structured-data"
-  );
 
   const loopedImages = React.useMemo(() => {
     if (piece.images.length <= 1) return piece.images;
@@ -334,6 +329,12 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                     </div>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Produkt używany (second-hand). Nie jesteśmy oficjalnym
+                  dystrybutorem ani przedstawicielem marki {piece.brand.name}.
+                  Nie rościmy sobie prawa do współpracy z marką ani jej
+                  reprezentowania.
+                </p>
                 <div className="flex gap-2 w-full mt-8 md:mt-16">
                   <Button
                     onClick={() => onPieceBuyNow(piece)}

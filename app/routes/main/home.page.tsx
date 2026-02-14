@@ -206,7 +206,7 @@ export const meta: Route.MetaFunction = () => [
   {
     name: "description",
     content:
-      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, wysyłka 24h, zwroty 14 dni.",
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, realizacja w 24h, zwroty 14 dni.",
   },
   { name: "robots", content: "index, follow" },
   { property: "og:title", content: PAGE_TITLE },
@@ -216,7 +216,7 @@ export const meta: Route.MetaFunction = () => [
   {
     property: "og:description",
     content:
-      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, wysyłka 24h, zwroty 14 dni.",
+      "Sklep z odzieżą second-hand od marek premium: Dickies, Nike, Carhartt. Komplety i pojedyncze sztuki. Darmowa dostawa, realizacja w 24h, zwroty 14 dni.",
   },
   { property: "og:image:url", content: "https://www.acrm.pl/logo-light.png" },
   { property: "og:image:type", content: "image/png" },

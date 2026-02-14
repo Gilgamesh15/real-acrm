@@ -121,26 +121,44 @@ function ContactSection() {
                 </Link>
               </Item>
 
-              <Item asChild size="sm">
-                <Link to="/">
-                  <ItemMedia
-                    variant="icon"
-                    className="size-12 border bg-secondary"
-                  >
-                    <MapPin className="size-5" />
-                  </ItemMedia>
-                  <ItemContent className="gap-0">
-                    <ItemTitle className="text-sm text-muted-foreground">
-                      Adres
-                    </ItemTitle>
-                    <ItemDescription className="font-display text-lg font-medium text-foreground">
-                      ul. Nad Sudołem 24/22
-                    </ItemDescription>
-                    <ItemDescription className="font-display text-lg font-medium text-foreground">
-                      31-228 Kraków, Polska
-                    </ItemDescription>
-                  </ItemContent>
-                </Link>
+              <Item size="sm">
+                <ItemMedia
+                  variant="icon"
+                  className="size-12 border bg-secondary"
+                >
+                  <MapPin className="size-5" />
+                </ItemMedia>
+                <ItemContent className="gap-0">
+                  <ItemTitle className="text-sm text-muted-foreground">
+                    Adres
+                  </ItemTitle>
+                  <ItemDescription className="font-display text-lg font-medium text-foreground">
+                    ul. Nad Sudołem 24/22
+                  </ItemDescription>
+                  <ItemDescription className="font-display text-lg font-medium text-foreground">
+                    31-228 Kraków, Polska
+                  </ItemDescription>
+                </ItemContent>
+              </Item>
+
+              <Item size="sm">
+                <ItemMedia
+                  variant="icon"
+                  className="size-12 border bg-secondary"
+                >
+                  <Clock className="size-5" />
+                </ItemMedia>
+                <ItemContent className="gap-0">
+                  <ItemTitle className="text-sm text-muted-foreground">
+                    Godziny obsługi
+                  </ItemTitle>
+                  <ItemDescription className="font-display text-lg font-medium text-foreground">
+                    Poniedziałek – Piątek
+                  </ItemDescription>
+                  <ItemDescription className="font-display text-lg font-medium text-foreground">
+                    9:00 – 17:00
+                  </ItemDescription>
+                </ItemContent>
               </Item>
             </ItemGroup>
           </div>
@@ -260,7 +278,7 @@ function PromisesSection() {
     },
     {
       icon: Clock,
-      title: "Wysyłka 24h",
+      title: "Realizacja w 24h",
       description: "Zamówienia realizujemy w ciągu jednego dnia roboczego",
     },
     {
@@ -333,7 +351,7 @@ function PromisesSection() {
             Polityka zwrotów
           </Link>
           <Link
-            to="/prywatnosc"
+            to="/polityka-prywatnosci"
             className="text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
           >
             Polityka prywatności

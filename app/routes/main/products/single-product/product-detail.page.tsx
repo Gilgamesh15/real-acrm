@@ -14,7 +14,6 @@ import { Spinner } from "~/components/ui/spinner";
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { useStructuredData } from "~/hooks/use-structured-data";
 import { db } from "~/lib/db";
 import {
   extractTextFromRichText,
@@ -125,6 +124,8 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { name: "twitter:description", content: pageDescription },
     { name: "twitter:image", content: pageImage },
     { tagName: "link", rel: "canonical", href: pageUrl },
+    { property: "product:condition", content: "used" },
+    { "script:ld+json": generateProductStructuredData(product) },
   ];
 };
 
@@ -144,11 +145,6 @@ export default function ProductDetailPage({
   >(null);
 
   const { onProductBuyNow } = useCheckoutDialog();
-
-  useStructuredData(
-    generateProductStructuredData(product),
-    "product-structured-data"
-  );
 
   const pricingData = React.useMemo(() => {
     return calculateProductPriceDisplayData(product);
