@@ -232,7 +232,7 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
                             <ProductCardContent orientation="vertical">
                               <ProductCardInfo
                                 name={piece.name}
-                                brand={piece.brand.name}
+                                brand={piece.brand?.name}
                                 size={piece.size.name}
                                 orientation="horizontal"
                                 textSize="sm"
@@ -260,7 +260,7 @@ export default function OrderDetailsPage({ loaderData }: Route.ComponentProps) {
                       <ProductCardContent>
                         <ProductCardInfo
                           name={piece.name}
-                          brand={piece.brand.name}
+                          brand={piece.brand?.name}
                           size={piece.size.name}
                           orientation="vertical"
                         />

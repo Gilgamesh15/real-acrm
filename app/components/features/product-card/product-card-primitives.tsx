@@ -155,14 +155,16 @@ const ProductCardInfo = ({
       >
         {name}
       </span>
-      {brand && size && (
+      {(brand || size) && (
         <p
           className={cn(
             "text-muted-foreground line-clamp-2 leading-normal font-normal text-balance",
             textSize === "default" ? "text-sm" : "text-xs"
           )}
         >
-          {brand} {" • "} {size}
+          {brand && <span>{brand}</span>}
+          {brand && size && <span>{" • "}</span>}
+          {size && <span>{size}</span>}
         </p>
       )}
     </div>

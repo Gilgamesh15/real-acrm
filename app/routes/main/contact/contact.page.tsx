@@ -19,9 +19,9 @@ import {
   convertObjectToFormDataUnsafe,
 } from "~/lib/utils";
 
-import type { Route } from "../+types/contact.page";
+import type { Route } from "./+types/contact.page";
 
-export const meta = () => [
+export const meta: Route.MetaFunction = () => [
   { title: "Kontakt | ACRM" },
   { name: "description", content: "Skontaktuj się z nami." },
   { tagName: "link", rel: "canonical", href: "https://www.acrm.pl/kontakt" },

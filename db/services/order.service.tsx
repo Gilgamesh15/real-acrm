@@ -1207,7 +1207,9 @@ class OrderService {
                 product_data: {
                   name,
                   images: piece.images.map((image) => image.url),
-                  description: `${piece.size.name} - ${piece.brand.name}`,
+                  description: piece.brand
+                    ? `${piece.name} - ${piece.brand.name} - ${piece.size.name}`
+                    : `${piece.name} - ${piece.size.name}`,
                 },
                 unit_amount: item.lineTotalInGrosz,
               },

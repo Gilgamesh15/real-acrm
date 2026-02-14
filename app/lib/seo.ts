@@ -351,10 +351,14 @@ function generatePieceStructuredData(
       "@type": "PeopleAudience",
       suggestedGender: GENDER_MAP[piece.gender] || "Unisex",
       suggestedMinAge: 5.0,
-      brand: {
-        "@type": "Brand",
-        name: piece.brand.name,
-      },
+      ...(piece.brand
+        ? {
+            brand: {
+              "@type": "Brand",
+              name: piece.brand.name,
+            },
+          }
+        : {}),
     },
     //color:
     //description:

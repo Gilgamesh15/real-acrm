@@ -916,7 +916,7 @@ export function productToGoogleAnalyticsItem(
     return {
       item_id: piece.id,
       item_name: piece.name,
-      item_brand: piece.brand.name,
+      ...(piece.brand ? { item_brand: piece.brand.name } : {}),
       price: pricing.finalPrice,
       ...(pricing.hasDiscount
         ? {
@@ -985,7 +985,7 @@ export function pieceToGoogleAnalyticsItem(
   return {
     item_id: piece.id,
     item_name: piece.name,
-    item_brand: piece.brand.name,
+    ...(piece.brand ? { item_brand: piece.brand.name } : {}),
     price: pricing.finalPrice,
     ...(pricing.hasDiscount
       ? {
@@ -1045,7 +1045,7 @@ export function orderItemsToGoogleAnalyticsItems(
   return {
     item_id: item.piece.id,
     item_name: item.piece.name,
-    item_brand: item.piece.brand.name,
+    ...(item.piece.brand ? { item_brand: item.piece.brand.name } : {}),
     price: pricing.finalPrice,
     ...(pricing.hasDiscount
       ? {

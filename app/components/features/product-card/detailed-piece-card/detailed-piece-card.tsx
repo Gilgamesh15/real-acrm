@@ -41,7 +41,7 @@ const DetailedPieceCard = ({
         <ProductCardContent>
           <ProductCardInfo
             name={piece.name}
-            brand={piece.brand.name}
+            brand={piece.brand?.name}
             size={piece.size.name}
             orientation="vertical"
           />

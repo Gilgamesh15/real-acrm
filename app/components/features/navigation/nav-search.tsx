@@ -191,7 +191,7 @@ function NavSearch({ className }: { className?: string }) {
                             orientation="vertical"
                             name={item.name}
                             onClick={handlePieceClick}
-                            brand={item.brand.name}
+                            brand={item.brand?.name}
                             size={item.size.name}
                           />
                           <ProductCardPrice

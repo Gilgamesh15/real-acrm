@@ -162,7 +162,7 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                                 <ProductCardInfo
                                   name={piece.name}
                                   textSize="sm"
-                                  brand={piece.brand.name}
+                                  brand={piece.brand?.name}
                                   size={piece.size.name}
                                 />
                               </ProductCardContent>
@@ -196,7 +196,7 @@ function CheckoutRecoveryDialogProvider({ children }: React.PropsWithChildren) {
                         <ProductCardInfo
                           orientation="vertical"
                           name={piece.name}
-                          brand={piece.brand.name}
+                          brand={piece.brand?.name}
                           size={piece.size.name}
                         />
                         <ProductCardPrice
