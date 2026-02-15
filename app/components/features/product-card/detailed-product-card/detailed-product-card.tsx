@@ -66,7 +66,7 @@ const DetailedProductCard = ({
                 <ProductCardInfo
                   name={piece.name}
                   brand={piece.brand?.name}
-                  size={piece.size.name}
+                  size={piece.size?.name}
                   orientation="horizontal"
                   textSize="sm"
                 />

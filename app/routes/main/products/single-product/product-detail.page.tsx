@@ -232,8 +232,8 @@ export default function ProductDetailPage({
                 <CardHeader className="px-2 text-sm flex justify-between items-center">
                   <CardTitle>{piece.name}</CardTitle>
                   <div className="flex items-center gap-1">
-                    <Badge>{piece.size.name}</Badge>
-                    <Badge>{piece.brand.name}</Badge>
+                    {piece.size && <Badge>{piece.size.name}</Badge>}
+                    {piece.brand && <Badge>{piece.brand.name}</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="px-2 flex flex-row gap-3">

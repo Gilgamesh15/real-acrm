@@ -192,7 +192,7 @@ function NavSearch({ className }: { className?: string }) {
                             name={item.name}
                             onClick={handlePieceClick}
                             brand={item.brand?.name}
-                            size={item.size.name}
+                            size={item.size?.name}
                           />
                           <ProductCardPrice
                             pricing={calculatePiecePriceDisplayData(item)}

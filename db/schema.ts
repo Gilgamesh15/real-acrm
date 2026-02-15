@@ -731,11 +731,9 @@ export const pieces = pgTable(
     brandId: uuid("brand_id").references(() => brands.id, {
       onDelete: "set null",
     }),
-    sizeId: uuid("size_id")
-      .references(() => sizes.id, {
-        onDelete: "set null",
-      })
-      .notNull(),
+    sizeId: uuid("size_id").references(() => sizes.id, {
+      onDelete: "set null",
+    }),
     categoryId: uuid("category_id").references(() => categories.id, {
       onDelete: "set null",
     }),

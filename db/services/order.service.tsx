@@ -1201,15 +1201,21 @@ class OrderService {
                 ? `${piece.name} (${piece.product.name})`
                 : piece.name;
 
+            let description = piece.name;
+            if (piece.brand) {
+              description += ` - marka: ${piece.brand.name}`;
+            }
+            if (piece.size) {
+              description += ` - rozmiar: ${piece.size.name}`;
+            }
+
             lineItems.push({
               price_data: {
                 currency: "pln",
                 product_data: {
                   name,
                   images: piece.images.map((image) => image.url),
-                  description: piece.brand
-                    ? `${piece.name} - ${piece.brand.name} - ${piece.size.name}`
-                    : `${piece.name} - ${piece.size.name}`,
+                  description: description,
                 },
                 unit_amount: item.lineTotalInGrosz,
               },

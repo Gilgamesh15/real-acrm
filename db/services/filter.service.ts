@@ -1087,7 +1087,7 @@ class FilterService {
         (
           CASE 
             WHEN ${schema.pieces.brandId} = ${sourcePiece.brandId} THEN ${sql.raw(BRAND_EXACT_MATCH_BONUS.toString())}
-            ELSE similarity(unaccent(lower(${schema.brands.name})), unaccent(lower(${sourcePiece.brand.name}))) * 0.5
+            ELSE similarity(unaccent(lower(${schema.brands.name})), unaccent(lower(${sourcePiece.brand?.name || ""}))) * 0.5
           END +
           
           COALESCE(
@@ -1111,7 +1111,7 @@ class FilterService {
           
           similarity(
             unaccent(lower(${schema.sizes.name})), 
-            unaccent(lower(${sourcePiece.size.name}))
+            unaccent(lower(${sourcePiece.size?.name || ""}))
           ) * ${sql.raw(SIZE_SIMILARITY_MULTIPLIER.toString())} +
           
           CASE 
@@ -1158,7 +1158,7 @@ class FilterService {
           sql`(
             CASE 
               WHEN ${schema.pieces.brandId} = ${sourcePiece.brandId} THEN ${sql.raw(BRAND_EXACT_MATCH_BONUS.toString())}
-              ELSE similarity(unaccent(lower(${schema.brands.name})), unaccent(lower(${sourcePiece.brand.name}))) * 0.5
+              ELSE similarity(unaccent(lower(${schema.brands.name})), unaccent(lower(${sourcePiece.brand?.name || ""}))) * 0.5
             END +
             COALESCE(
               similarity(
@@ -1178,7 +1178,7 @@ class FilterService {
             ) * ${sql.raw(NAME_SIMILARITY_MULTIPLIER.toString())} +
             similarity(
               unaccent(lower(${schema.sizes.name})), 
-              unaccent(lower(${sourcePiece.size.name}))
+              unaccent(lower(${sourcePiece.size?.name || ""}))
             ) * ${sql.raw(SIZE_SIMILARITY_MULTIPLIER.toString())} +
             CASE 
               WHEN ${schema.pieces.gender} = ${sourcePiece.gender} THEN ${sql.raw(GENDER_MATCH_BONUS.toString())}

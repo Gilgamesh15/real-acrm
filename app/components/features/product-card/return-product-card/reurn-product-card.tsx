@@ -76,7 +76,7 @@ const ReturnProductCard = ({
                   name={piece.name}
                   textSize="sm"
                   brand={piece.brand?.name}
-                  size={piece.size.name}
+                  size={piece.size?.name}
                 />
               </ProductCardContent>
             </ProductCardRoot>

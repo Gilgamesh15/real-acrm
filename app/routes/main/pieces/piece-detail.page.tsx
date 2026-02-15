@@ -4,7 +4,7 @@ import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { exists } from "drizzle-orm";
 import { ChevronsRightIcon, ShoppingCartIcon, ZapIcon } from "lucide-react";
 import React from "react";
-import { Await, Link } from "react-router";
+import { Await, Link, type MetaDescriptor } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
@@ -110,12 +110,30 @@ export async function loader({ params }: Route.LoaderArgs) {
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   const { piece } = loaderData;
   const pricingData = calculatePiecePriceDisplayData(piece);
-  const pageTitle = `${piece.name} – ${piece.brand.name}, rozm. ${piece.size.name} | ACRM`;
-  const pageDescription = `Kup ${piece.brand.name} ${piece.name}, rozmiar ${piece.size.name}. ${piece.category?.name || ""}. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost, zwroty do 14 dni.`;
+  let pageTitle = piece.name;
+  if (piece.brand) {
+    pageTitle += ` – ${piece.brand.name}`;
+  }
+  if (piece.size) {
+    pageTitle += `, rozm. ${piece.size.name}`;
+  }
+  pageTitle += " | ACRM";
+
+  let pageDescription = `Kup ${piece.name}`;
+  if (piece.brand) {
+    pageDescription += ` ${piece.brand.name}`;
+  }
+  if (piece.size) {
+    pageDescription += `, rozmiar ${piece.size.name}`;
+  }
+  if (piece.category) {
+    pageDescription += ` ${piece.category.name}`;
+  }
+  pageDescription += `. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost, zwroty do 14 dni.`;
   const pageUrl = `https://www.acrm.pl/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || "https://www.acrm.pl/logo-dark.png";
 
-  return [
+  const metaTags: MetaDescriptor[] = [
     { title: pageTitle },
     { name: "description", content: pageDescription },
     { name: "robots", content: "index, follow" },
@@ -132,7 +150,6 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
       property: "product:availability",
       content: piece.status === "published" ? "in stock" : "out of stock",
     },
-    { property: "product:brand", content: piece.brand.name },
     { property: "product:condition", content: "used" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: pageTitle },
@@ -141,6 +158,13 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { tagName: "link", rel: "canonical", href: pageUrl },
     { "script:ld+json": generatePieceStructuredData(piece) },
   ];
+  if (piece.brand) {
+    metaTags.push({ property: "product:brand", content: piece.brand.name });
+  }
+  if (piece.size) {
+    metaTags.push({ property: "product:size", content: piece.size.name });
+  }
+  return metaTags;
 };
 
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
@@ -309,11 +333,15 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                 <div className="flex flex-row gap-4 md:flex-col items-center md:items-start justify-between mt-4">
                   <div className="flex items-center gap-2 text-lg font-secondary">
                     <span className="">Marka:</span>
-                    <span className="font-bold">{piece.brand.name}</span>
+                    <span className="font-bold">
+                      {piece.brand?.name || "NN"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-lg font-secondary">
                     <span className="">Rozmiar:</span>
-                    <span className="font-bold">{piece.size.name}</span>
+                    <span className="font-bold">
+                      {piece.size?.name || "NN"}
+                    </span>
                   </div>
                 </div>
                 <div className="font-secondary grid grid-cols-2 border border-primary border-1.5 divide-x divide-primary divide-1.5 divide-y mt-6 text-sm">
@@ -331,9 +359,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
                   Produkt używany (second-hand). Nie jesteśmy oficjalnym
-                  dystrybutorem ani przedstawicielem marki {piece.brand.name}.
-                  Nie rościmy sobie prawa do współpracy z marką ani jej
-                  reprezentowania.
+                  dystrybutorem ani przedstawicielem marki{" "}
+                  {piece.brand?.name || ""}. Nie rościmy sobie prawa do
+                  współpracy z marką ani jej reprezentowania.
                 </p>
                 <div className="flex gap-2 w-full mt-8 md:mt-16">
                   <Button

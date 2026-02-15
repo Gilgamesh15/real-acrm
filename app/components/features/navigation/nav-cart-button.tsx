@@ -205,7 +205,7 @@ export const NavCartButton = () => {
                                   name={piece.name}
                                   textSize="sm"
                                   brand={piece.brand?.name}
-                                  size={piece.size.name}
+                                  size={piece.size?.name}
                                 />
                               </ProductCardContent>
                             </ProductCardRoot>
@@ -244,7 +244,7 @@ export const NavCartButton = () => {
                           orientation="vertical"
                           name={piece.name}
                           brand={piece.brand?.name}
-                          size={piece.size.name}
+                          size={piece.size?.name}
                         />
                         <ProductCardPrice
                           pricing={calculatePiecePriceDisplayData(piece)}

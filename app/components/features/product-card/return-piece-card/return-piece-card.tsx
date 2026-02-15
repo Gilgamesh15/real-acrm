@@ -51,7 +51,7 @@ const ReturnPieceCard = ({
           orientation="vertical"
           name={piece.name}
           brand={piece.brand?.name}
-          size={piece.size.name}
+          size={piece.size?.name}
         />
         <ProductCardPrice pricing={calculatePiecePriceDisplayData(piece)} />
       </ProductCardContent>

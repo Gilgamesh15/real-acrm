@@ -42,7 +42,7 @@ const DetailedPieceCard = ({
           <ProductCardInfo
             name={piece.name}
             brand={piece.brand?.name}
-            size={piece.size.name}
+            size={piece.size?.name}
             orientation="vertical"
           />
           <ProductCardPrice pricing={calculatePiecePriceDisplayData(piece)} />

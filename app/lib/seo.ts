@@ -364,12 +364,16 @@ function generatePieceStructuredData(
     //description:
     //material
     //pattern
-    size: {
-      type: "SizeSpecification",
-      name: piece.size.name,
-      //sizeGroup:
-      sizeSystem: "https://schema.org/WearableSizeSystemEurope",
-    },
+    ...(piece.size
+      ? {
+          size: {
+            type: "SizeSpecification",
+            name: piece.size.name,
+            //sizeGroup:
+            sizeSystem: "https://schema.org/WearableSizeSystemEurope",
+          },
+        }
+      : {}),
     sku: piece.id,
   };
 }
