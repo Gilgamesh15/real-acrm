@@ -28,14 +28,7 @@ import { formatDate } from "~/lib/utils";
 
 import type { AdminBrandsDataTableMeta } from "./admin-brands-list.page";
 
-type Brand = DBQueryResult<
-  "brands",
-  {
-    with: {
-      group: true;
-    };
-  }
->;
+type Brand = DBQueryResult<"brands", {}>;
 
 const dtf = createColumnConfigHelper<Brand>();
 
@@ -68,14 +61,6 @@ export const columns: ColumnDef<Brand>[] = [
     id: "name",
     accessorKey: "name",
     header: "Nazwa",
-  },
-  {
-    id: "group",
-    accessorKey: "group",
-    header: "Grupa",
-    cell: ({ row }) => {
-      return <span>{row.original.group?.name}</span>;
-    },
   },
   {
     id: "createdAt",

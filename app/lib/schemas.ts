@@ -124,7 +124,6 @@ const BrandFormSchema = z.object({
     .string({ message: "Nazwa marki musi być tekstem" })
     .min(1, "Nazwa marki jest wymagana")
     .max(100, "Nazwa marki nie może przekraczać 100 znaków"),
-  groupId: z.string({ message: "ID grupy marek musi być tekstem" }).optional(),
 });
 
 type BrandFormSchemaType = z.infer<typeof BrandFormSchema>;

@@ -445,42 +445,34 @@ class FilterService {
       )
     );
 
-    // Brand groups filter - find pieces whose brand belongs to one of these brand groups (by slug)
+    // Brand filter - find pieces whose brand slug matches
     if (brandGroups && brandGroups.length > 0) {
       conditions.push(
         exists(
           db
             .select({ id: schema.brands.id })
             .from(schema.brands)
-            .innerJoin(
-              schema.brandGroups,
-              eq(schema.brands.groupId, schema.brandGroups.id)
-            )
             .where(
               and(
                 eq(schema.brands.id, schema.pieces.brandId),
-                inArray(schema.brandGroups.slug, brandGroups)
+                inArray(schema.brands.slug, brandGroups)
               )
             )
         )
       );
     }
 
-    // Size groups filter - find pieces whose size belongs to one of these size groups (by slug)
+    // Size filter - find pieces whose size slug matches
     if (sizeGroups && sizeGroups.length > 0) {
       conditions.push(
         exists(
           db
             .select({ id: schema.sizes.id })
             .from(schema.sizes)
-            .innerJoin(
-              schema.sizeGroups,
-              eq(schema.sizes.groupId, schema.sizeGroups.id)
-            )
             .where(
               and(
                 eq(schema.sizes.id, schema.pieces.sizeId),
-                inArray(schema.sizeGroups.slug, sizeGroups)
+                inArray(schema.sizes.slug, sizeGroups)
               )
             )
         )
@@ -640,7 +632,7 @@ class FilterService {
       )
     );
 
-    // Brand groups filter - product must have at least one piece with a brand in these groups (by slug)
+    // Brand filter - product must have at least one piece with a matching brand slug
     if (brandGroups && brandGroups.length > 0) {
       conditions.push(
         exists(
@@ -651,10 +643,6 @@ class FilterService {
               schema.brands,
               eq(schema.pieces.brandId, schema.brands.id)
             )
-            .innerJoin(
-              schema.brandGroups,
-              eq(schema.brands.groupId, schema.brandGroups.id)
-            )
             .where(
               and(
                 eq(schema.pieces.productId, schema.products.id),
@@ -663,14 +651,14 @@ class FilterService {
                   isNull(schema.pieces.reservedUntil),
                   lte(schema.pieces.reservedUntil, new Date())
                 ),
-                inArray(schema.brandGroups.slug, brandGroups)
+                inArray(schema.brands.slug, brandGroups)
               )
             )
         )
       );
     }
 
-    // Size groups filter - product must have at least one piece with a size in these groups (by slug)
+    // Size filter - product must have at least one piece with a matching size slug
     if (sizeGroups && sizeGroups.length > 0) {
       conditions.push(
         exists(
@@ -678,10 +666,6 @@ class FilterService {
             .select({ id: schema.pieces.id })
             .from(schema.pieces)
             .innerJoin(schema.sizes, eq(schema.pieces.sizeId, schema.sizes.id))
-            .innerJoin(
-              schema.sizeGroups,
-              eq(schema.sizes.groupId, schema.sizeGroups.id)
-            )
             .where(
               and(
                 eq(schema.pieces.productId, schema.products.id),
@@ -690,7 +674,7 @@ class FilterService {
                   isNull(schema.pieces.reservedUntil),
                   lte(schema.pieces.reservedUntil, new Date())
                 ),
-                inArray(schema.sizeGroups.slug, sizeGroups)
+                inArray(schema.sizes.slug, sizeGroups)
               )
             )
         )
@@ -801,39 +785,29 @@ class FilterService {
     const childCategories = alias(schema.categories, "child");
 
     // Get all filter data in parallel
-    const [brandGroups, sizeGroups, categories, tags, priceRange] =
+    const [brands, sizes, categories, tags, priceRange] =
       await Promise.all([
-        // Get brand groups for eligible pieces
+        // Get brands for eligible pieces
         db
           .selectDistinct({
-            id: schema.brandGroups.id,
-            name: schema.brandGroups.name,
-            slug: schema.brandGroups.slug,
-            displayOrder: schema.brandGroups.displayOrder,
+            id: schema.brands.id,
+            name: schema.brands.name,
+            slug: schema.brands.slug,
           })
-          .from(schema.brandGroups)
-          .innerJoin(
-            schema.brands,
-            eq(schema.brands.groupId, schema.brandGroups.id)
-          )
+          .from(schema.brands)
           .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
-          .orderBy(schema.brandGroups.displayOrder, schema.brandGroups.name),
+          .orderBy(schema.brands.order, schema.brands.name),
 
-        // Get size groups for eligible pieces
+        // Get sizes for eligible pieces
         db
           .selectDistinct({
-            id: schema.sizeGroups.id,
-            name: schema.sizeGroups.name,
-            slug: schema.sizeGroups.slug,
-            displayOrder: schema.sizeGroups.displayOrder,
+            id: schema.sizes.id,
+            name: schema.sizes.name,
+            slug: schema.sizes.slug,
           })
-          .from(schema.sizeGroups)
-          .innerJoin(
-            schema.sizes,
-            eq(schema.sizes.groupId, schema.sizeGroups.id)
-          )
+          .from(schema.sizes)
           .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
-          .orderBy(schema.sizeGroups.displayOrder, schema.sizeGroups.name),
+          .orderBy(schema.sizes.order, schema.sizes.name),
         db
           .selectDistinct({
             id: schema.categories.id,
@@ -892,8 +866,8 @@ class FilterService {
       ]);
 
     return {
-      brandGroups,
-      sizeGroups,
+      brands,
+      sizes,
       categories,
       tags,
       priceRange: {
@@ -939,28 +913,23 @@ class FilterService {
 
     if (productIds.length === 0) {
       return {
-        brandGroups: [],
-        sizeGroups: [],
+        brands: [],
+        sizes: [],
         tags: [],
         priceRange: { min: 0, max: 0 },
       };
     }
 
     // Get all filter data in parallel based on the product's pieces
-    const [brandGroups, sizeGroups, tags, priceRange] = await Promise.all([
-      // Get brand groups from pieces of eligible products
+    const [brands, sizes, tags, priceRange] = await Promise.all([
+      // Get brands from pieces of eligible products
       db
         .selectDistinct({
-          id: schema.brandGroups.id,
-          name: schema.brandGroups.name,
-          slug: schema.brandGroups.slug,
-          displayOrder: schema.brandGroups.displayOrder,
+          id: schema.brands.id,
+          name: schema.brands.name,
+          slug: schema.brands.slug,
         })
-        .from(schema.brandGroups)
-        .innerJoin(
-          schema.brands,
-          eq(schema.brands.groupId, schema.brandGroups.id)
-        )
+        .from(schema.brands)
         .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
         .where(
           and(
@@ -972,18 +941,16 @@ class FilterService {
             )
           )
         )
-        .orderBy(schema.brandGroups.displayOrder, schema.brandGroups.name),
+        .orderBy(schema.brands.order, schema.brands.name),
 
-      // Get size groups from pieces of eligible products
+      // Get sizes from pieces of eligible products
       db
         .selectDistinct({
-          id: schema.sizeGroups.id,
-          name: schema.sizeGroups.name,
-          slug: schema.sizeGroups.slug,
-          displayOrder: schema.sizeGroups.displayOrder,
+          id: schema.sizes.id,
+          name: schema.sizes.name,
+          slug: schema.sizes.slug,
         })
-        .from(schema.sizeGroups)
-        .innerJoin(schema.sizes, eq(schema.sizes.groupId, schema.sizeGroups.id))
+        .from(schema.sizes)
         .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
         .where(
           and(
@@ -995,7 +962,7 @@ class FilterService {
             )
           )
         )
-        .orderBy(schema.sizeGroups.displayOrder, schema.sizeGroups.name),
+        .orderBy(schema.sizes.order, schema.sizes.name),
 
       // Get tags from pieces of eligible products
       db
@@ -1040,8 +1007,8 @@ class FilterService {
     ]);
 
     return {
-      brandGroups,
-      sizeGroups,
+      brands,
+      sizes,
       tags,
       priceRange: {
         min: priceFromGrosz(priceRange.min),

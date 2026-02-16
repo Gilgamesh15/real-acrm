@@ -44,9 +44,6 @@ export async function loader({ context }: Route.LoaderArgs) {
 
   const brands = await db.query.brands.findMany({
     orderBy: asc(schema.brands.createdAt),
-    with: {
-      group: true,
-    },
   });
 
   return data({ brands }, { status: 200 });

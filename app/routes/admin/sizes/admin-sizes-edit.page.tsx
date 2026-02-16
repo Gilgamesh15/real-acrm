@@ -49,18 +49,13 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
   const size = await db.query.sizes.findFirst({
     where: eq(schema.sizes.id, sizeId),
-    with: {
-      group: true,
-    },
   });
 
   if (!size) {
     throw data({}, { status: 404 });
   }
 
-  const sizeGroups = await db.query.sizeGroups.findMany({});
-
-  return data({ size, sizeGroups }, { status: 200 });
+  return data({ size }, { status: 200 });
 }
 
 // ========================== ACTIONS ==========================
@@ -96,7 +91,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
     const updatedSize = await db
       .update(schema.sizes)
-      .set({ name: args.name, groupId: args.groupId })
+      .set({ name: args.name })
       .where(eq(schema.sizes.id, sizeId))
       .returning()
       .then((result) => result[0]);
@@ -149,7 +144,7 @@ const SIZE_FORM_ID = "size-form";
 export default function AdminSizesEditPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { sizeGroups, size } = loaderData;
+  const { size } = loaderData;
 
   const fetcher = useFetcher<typeof action>();
 
@@ -160,7 +155,6 @@ export default function AdminSizesEditPage({
   const form = useAppForm({
     defaultValues: {
       name: size.name,
-      groupId: size.groupId,
     } as SizeFormSchemaType,
     validators: {
       onSubmit: SizeFormSchema,
@@ -203,21 +197,6 @@ export default function AdminSizesEditPage({
                   <field.TextField
                     label="Nazwa rozmiaru"
                     description="Unikalwa nazwa rozmiaru, która będzie wyświetlana w sklepie"
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="groupId">
-                {(field) => (
-                  <field.ComboboxField
-                    label="Grupa rozmiarów"
-                    description="Przypisanie rozmiaru do grupy ułatwi organizację i filtrowanie"
-                    placeholder="Wybierz grupę rozmiarów"
-                    searchPlaceholder="Wyszukaj grupę rozmiarów"
-                    emptyStateMessage="Brak grup rozmiarów"
-                    options={sizeGroups.map((sizeGroup) => ({
-                      value: sizeGroup.id,
-                      label: sizeGroup.name,
-                    }))}
                   />
                 )}
               </form.AppField>

@@ -157,18 +157,6 @@ export default [
           "./routes/admin/brands/admin-brands-edit.page.tsx"
         ),
       ]),
-      // Brands Groups
-      ...prefix("/brands-groups", [
-        index("./routes/admin/brands-groups/admin-brands-groups-list.page.tsx"),
-        route(
-          "/create",
-          "./routes/admin/brands-groups/admin-brands-groups-create.page.tsx"
-        ),
-        route(
-          "/:brandGroupId/edit",
-          "./routes/admin/brands-groups/admin-brands-groups-edit.page.tsx"
-        ),
-      ]),
       // Sizes
       ...prefix("/sizes", [
         index("./routes/admin/sizes/admin-sizes-list.page.tsx"),
@@ -176,18 +164,6 @@ export default [
         route(
           "/:sizeId/edit",
           "./routes/admin/sizes/admin-sizes-edit.page.tsx"
-        ),
-      ]),
-      // Sizes Groups
-      ...prefix("/sizes-groups", [
-        index("./routes/admin/sizes-groups/admin-sizes-groups-list.page.tsx"),
-        route(
-          "/create",
-          "./routes/admin/sizes-groups/admin-sizes-groups-create.page.tsx"
-        ),
-        route(
-          "/:sizeGroupId/edit",
-          "./routes/admin/sizes-groups/admin-sizes-groups-edit.page.tsx"
         ),
       ]),
       // Tags

@@ -22,7 +22,7 @@ import { sessionContext } from "~/context/session-context.server";
 import { auth } from "~/lib/auth.server";
 import { db } from "~/lib/db";
 import { BrandFormSchema, type BrandFormSchemaType } from "~/lib/schemas";
-import { cn, convertFormDataToObjectUnsafe } from "~/lib/utils";
+import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-brands-create.page";
@@ -42,9 +42,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect("/");
   }
 
-  const brandGroups = await db.query.brandGroups.findMany({});
-
-  return data({ brandGroups }, { status: 200 });
+  return data({}, { status: 200 });
 }
 
 // ========================== ACTIONS ==========================
@@ -76,9 +74,15 @@ export async function action({ request, context }: Route.ActionArgs) {
       );
     }
 
+    const existingSlugs = await db.query.brands.findMany({
+      columns: { slug: true },
+    });
+    const slugs = existingSlugs.map((brand) => brand.slug);
+    const slug = generateSlug(args.name, slugs);
+
     const createdBrand = await db
       .insert(schema.brands)
-      .values(args)
+      .values({ ...args, slug })
       .returning()
       .then((result) => result[0]);
 
@@ -127,17 +131,13 @@ export async function clientAction({ serverAction }: Route.ClientActionArgs) {
 
 const BRAND_FORM_ID = "brand-form";
 
-export default function AdminBrandsCreatePage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { brandGroups } = loaderData;
+export default function AdminBrandsCreatePage() {
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
 
   const form = useAppForm({
     defaultValues: {
       name: "",
-      groupId: undefined,
     } as BrandFormSchemaType,
     validators: {
       onSubmit: BrandFormSchema,
@@ -182,21 +182,6 @@ export default function AdminBrandsCreatePage({
                   <field.TextField
                     label="Nazwa marki"
                     description="Unikalwa nazwa marki, która będzie wyświetlana w sklepie"
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="groupId">
-                {(field) => (
-                  <field.ComboboxField
-                    label="Grupa marki"
-                    description="Przypisanie marki do grupy ułatwi organizację i filtrowanie"
-                    placeholder="Wybierz grupę marki"
-                    searchPlaceholder="Wyszukaj grupę marki"
-                    emptyStateMessage="Brak grup marki"
-                    options={brandGroups.map((brandGroup) => ({
-                      value: brandGroup.id,
-                      label: brandGroup.name,
-                    }))}
                   />
                 )}
               </form.AppField>

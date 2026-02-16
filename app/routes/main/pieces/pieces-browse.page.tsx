@@ -157,7 +157,7 @@ export default function PiecesBrowsePage({
   params,
 }: Route.ComponentProps) {
   const {
-    filterData: { brandGroups, sizeGroups, categories, tags, priceRange },
+    filterData: { brands, sizes, categories, tags, priceRange },
     piecesPromise,
   } = loaderData;
 
@@ -173,8 +173,8 @@ export default function PiecesBrowsePage({
       priceMin={priceRange.min}
       priceMax={priceRange.max}
       tags={tags}
-      sizes={sizeGroups}
-      brands={brandGroups}
+      sizes={sizes}
+      brands={brands}
     >
       <div className="flex flex-col gap-4">
         <Drawer>
@@ -200,7 +200,7 @@ export default function PiecesBrowsePage({
                 />
                 <MultiSelectFilter
                   label="Rozmiary"
-                  options={sizeGroups.map((size) => ({
+                  options={sizes.map((size) => ({
                     value: size.slug,
                     label: size.name,
                   }))}
@@ -208,7 +208,7 @@ export default function PiecesBrowsePage({
                 />
                 <MultiSelectFilter
                   label="Marki"
-                  options={brandGroups.map((brand) => ({
+                  options={brands.map((brand) => ({
                     value: brand.slug,
                     label: brand.name,
                   }))}
@@ -279,7 +279,7 @@ export default function PiecesBrowsePage({
                   />
                   <DrawerMultiSelectFilter
                     label="Rozmiary"
-                    options={sizeGroups.map((size) => ({
+                    options={sizes.map((size) => ({
                       value: size.slug,
                       label: size.name,
                     }))}
@@ -287,7 +287,7 @@ export default function PiecesBrowsePage({
                   />
                   <DrawerMultiSelectFilter
                     label="Marki"
-                    options={brandGroups.map((brand) => ({
+                    options={brands.map((brand) => ({
                       value: brand.slug,
                       label: brand.name,
                     }))}

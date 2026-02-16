@@ -21,7 +21,7 @@ import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { SizeFormSchema, type SizeFormSchemaType } from "~/lib/schemas";
-import { cn, convertFormDataToObjectUnsafe } from "~/lib/utils";
+import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-sizes-create.page";
@@ -39,9 +39,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     throw redirect("/");
   }
 
-  const sizeGroups = await db.query.sizeGroups.findMany({});
-
-  return data({ sizeGroups }, { status: 200 });
+  return data({}, { status: 200 });
 }
 
 // ========================== ACTIONS ==========================
@@ -74,9 +72,15 @@ export async function action({ request, context }: Route.ActionArgs) {
       );
     }
 
+    const existingSlugs = await db.query.sizes.findMany({
+      columns: { slug: true },
+    });
+    const slugs = existingSlugs.map((size) => size.slug);
+    const slug = generateSlug(args.name, slugs);
+
     const createdSize = await db
       .insert(schema.sizes)
-      .values(args)
+      .values({ name: args.name, slug })
       .returning()
       .then((result) => result[0]);
 
@@ -125,17 +129,13 @@ export async function clientAction({ serverAction }: Route.ClientActionArgs) {
 
 const SIZE_FORM_ID = "size-form";
 
-export default function AdminSizesCreatePage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { sizeGroups } = loaderData;
+export default function AdminSizesCreatePage() {
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
 
   const form = useAppForm({
     defaultValues: {
       name: "",
-      groupId: undefined,
     } as SizeFormSchemaType,
     validators: {
       onSubmit: SizeFormSchema,
@@ -180,21 +180,6 @@ export default function AdminSizesCreatePage({
                   <field.TextField
                     label="Nazwa rozmiaru"
                     description="Unikalwa nazwa rozmiaru, która będzie wyświetlana w sklepie"
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="groupId">
-                {(field) => (
-                  <field.ComboboxField
-                    label="Grupa rozmiarów"
-                    description="Przypisanie rozmiaru do grupy ułatwi organizację i filtrowanie"
-                    placeholder="Wybierz grupę rozmiarów"
-                    searchPlaceholder="Wyszukaj grupę rozmiarów"
-                    emptyStateMessage="Brak grup rozmiarów"
-                    options={sizeGroups.map((sizeGroup) => ({
-                      value: sizeGroup.id,
-                      label: sizeGroup.name,
-                    }))}
                   />
                 )}
               </form.AppField>

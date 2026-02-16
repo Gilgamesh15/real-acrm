@@ -49,18 +49,13 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
   const brand = await db.query.brands.findFirst({
     where: eq(schema.brands.id, brandId),
-    with: {
-      group: true,
-    },
   });
 
   if (!brand) {
     throw data({}, { status: 404 });
   }
 
-  const brandGroups = await db.query.brandGroups.findMany({});
-
-  return data({ brand, brandGroups }, { status: 200 });
+  return data({ brand }, { status: 200 });
 }
 
 // ========================== ACTIONS ==========================
@@ -96,7 +91,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
     const updatedBrand = await db
       .update(schema.brands)
-      .set({ name: args.name, groupId: args.groupId })
+      .set({ name: args.name })
       .where(eq(schema.brands.id, brandId))
       .returning()
       .then((result) => result[0]);
@@ -149,7 +144,7 @@ const BRAND_FORM_ID = "brand-form";
 export default function AdminBrandsEditPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { brandGroups, brand } = loaderData;
+  const { brand } = loaderData;
 
   const fetcher = useFetcher<typeof action>();
 
@@ -160,7 +155,6 @@ export default function AdminBrandsEditPage({
   const form = useAppForm({
     defaultValues: {
       name: brand.name,
-      groupId: brand.groupId,
     } as BrandFormSchemaType,
     validators: {
       onSubmit: BrandFormSchema,
@@ -203,21 +197,6 @@ export default function AdminBrandsEditPage({
                   <field.TextField
                     label="Nazwa marki"
                     description="Unikalwa nazwa marki, która będzie wyświetlana w sklepie"
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="groupId">
-                {(field) => (
-                  <field.ComboboxField
-                    label="Grupa marki"
-                    description="Przypisanie marki do grupy ułatwi organizację i filtrowanie"
-                    placeholder="Wybierz grupę marki"
-                    searchPlaceholder="Wyszukaj grupę marki"
-                    emptyStateMessage="Brak grup marki"
-                    options={brandGroups.map((brandGroup) => ({
-                      value: brandGroup.id,
-                      label: brandGroup.name,
-                    }))}
                   />
                 )}
               </form.AppField>

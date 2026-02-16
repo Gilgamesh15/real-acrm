@@ -128,10 +128,6 @@ const sidebarData: TNavGroup[] = [
             title: "Marki",
             url: "/admin/brands",
           },
-          {
-            title: "Grupy marek",
-            url: "/admin/brands-groups",
-          },
         ],
       },
       {
@@ -141,10 +137,6 @@ const sidebarData: TNavGroup[] = [
           {
             title: "Rozmiary",
             url: "/admin/sizes",
-          },
-          {
-            title: "Grupy rozmiarów",
-            url: "/admin/sizes-groups",
           },
         ],
       },

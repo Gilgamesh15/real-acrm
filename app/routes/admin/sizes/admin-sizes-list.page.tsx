@@ -43,9 +43,6 @@ export async function loader({ context }: Route.LoaderArgs) {
   }
 
   const sizes = await db.query.sizes.findMany({
-    with: {
-      group: true,
-    },
     orderBy: asc(schema.sizes.createdAt),
   });
 

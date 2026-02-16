@@ -16,14 +16,20 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { ConsentCategories } from "~/components/features/cookie-consent";
-import type { RichText, TreeNodePathSegment } from "~/lib/types";
+import type { RichText } from "~/lib/types";
+
+import type { CategoryPathSegment } from "./models/categories.model.ts";
 
 export const genderEnum = pgEnum("gender", ["male", "female", "unisex"]);
+
+export type Gender = (typeof genderEnum.enumValues)[number];
 
 export const deliveryMethodEnum = pgEnum("delivery_method", [
   "locker",
   "courier",
 ]);
+
+export type DeliveryMethod = (typeof deliveryMethodEnum.enumValues)[number];
 
 export const orderStatusEnum = pgEnum("order_status", [
   "pending",
@@ -32,6 +38,8 @@ export const orderStatusEnum = pgEnum("order_status", [
   "in_transit",
   "delivered",
 ]);
+export type OrderStatus = (typeof orderStatusEnum.enumValues)[number];
+
 export const productStatusEnum = pgEnum("product_status", [
   "draft",
   "published",
@@ -40,12 +48,17 @@ export const productStatusEnum = pgEnum("product_status", [
   "return_requested",
   "returned",
 ]);
+export type ProductStatus = (typeof productStatusEnum.enumValues)[number];
+
 export const returnStatusEnum = pgEnum("return_status", [
   "pending",
   "accepted",
   "rejected",
 ]);
+export type ReturnStatus = (typeof returnStatusEnum.enumValues)[number];
+
 export const roleEnum = pgEnum("role", ["user", "admin"]);
+export type Role = (typeof roleEnum.enumValues)[number];
 
 export const categories = pgTable(
   "categories",
@@ -59,7 +72,7 @@ export const categories = pgTable(
     }),
     // order for home page
     featuredOrder: integer("featured_order").notNull().default(-1),
-    path: jsonb("path").notNull().$type<Array<TreeNodePathSegment>>(),
+    path: jsonb("path").notNull().$type<Array<CategoryPathSegment>>(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -78,6 +91,8 @@ export const categories = pgTable(
       .where(sql`${table.featuredOrder} > -1`),
   ]
 );
+
+export type DBCategory = typeof categories.$inferSelect;
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
   parent: one(categories, {
@@ -130,6 +145,8 @@ export const users = pgTable("users", {
     .notNull(),
 });
 
+export type DBUser = typeof users.$inferSelect;
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
@@ -146,10 +163,8 @@ export const sizes = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     name: text("name").notNull(),
-
-    groupId: uuid("group_id").references(() => sizeGroups.id, {
-      onDelete: "set null",
-    }),
+    slug: text("slug").notNull(),
+    order: integer("order").notNull().default(-1),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -162,44 +177,14 @@ export const sizes = pgTable(
       "gin",
       sql`unaccent(lower(${table.name})) gin_trgm_ops`
     ),
-    index().on(table.groupId),
-  ]
-);
-
-export const sizesRelations = relations(sizes, ({ one, many }) => ({
-  group: one(sizeGroups, {
-    fields: [sizes.groupId],
-    references: [sizeGroups.id],
-  }),
-  pieces: many(pieces),
-}));
-
-export const sizeGroups = pgTable(
-  "size_groups",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    // order for filters
-    displayOrder: integer("display_order").notNull().default(-1),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
     uniqueIndex().on(table.slug),
-    uniqueIndex()
-      .on(table.displayOrder)
-      .where(sql`${table.displayOrder} > -1`),
   ]
 );
 
-export const sizeGroupsRelations = relations(sizeGroups, ({ many }) => ({
-  sizes: many(sizes),
+export type DBSize = typeof sizes.$inferSelect;
+
+export const sizesRelations = relations(sizes, ({ many }) => ({
+  pieces: many(pieces),
 }));
 
 export const brands = pgTable(
@@ -208,10 +193,8 @@ export const brands = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     name: text("name").notNull(),
-
-    groupId: uuid("group_id").references(() => brandGroups.id, {
-      onDelete: "set null",
-    }),
+    slug: text("slug").notNull(),
+    order: integer("order").notNull().default(-1),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -224,44 +207,14 @@ export const brands = pgTable(
       "gin",
       sql`unaccent(lower(${table.name})) gin_trgm_ops`
     ),
-    index().on(table.groupId),
-  ]
-);
-
-export const brandsRelations = relations(brands, ({ one, many }) => ({
-  group: one(brandGroups, {
-    fields: [brands.groupId],
-    references: [brandGroups.id],
-  }),
-  pieces: many(pieces),
-}));
-
-export const brandGroups = pgTable(
-  "brand_groups",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-
-    // order for filters
-    displayOrder: integer("display_order").notNull().default(-1),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
     uniqueIndex().on(table.slug),
-    uniqueIndex()
-      .on(table.displayOrder)
-      .where(sql`${table.displayOrder} > -1`),
   ]
 );
 
-export const brandGroupsRelations = relations(brandGroups, ({ many }) => ({
-  brands: many(brands),
+export type DBBrand = typeof brands.$inferSelect;
+
+export const brandsRelations = relations(brands, ({ many }) => ({
+  pieces: many(pieces),
 }));
 
 export const orderTimelineEvents = pgTable(
@@ -281,6 +234,8 @@ export const orderTimelineEvents = pgTable(
   },
   (table) => [index().on(table.orderId)]
 );
+
+export type DBOrderTimelineEvent = typeof orderTimelineEvents.$inferSelect;
 
 export const orderTimelineEventsRelations = relations(
   orderTimelineEvents,
@@ -333,6 +288,8 @@ export const returns = pgTable(
   ]
 );
 
+export type DBReturn = typeof returns.$inferSelect;
+
 export const returnsRelations = relations(returns, ({ one, many }) => ({
   user: one(users, {
     fields: [returns.userId],
@@ -359,6 +316,8 @@ export const returnTimelineEvents = pgTable(
   },
   (table) => [index().on(table.returnItemId)]
 );
+
+export type DBReturnTimelineEvent = typeof returnTimelineEvents.$inferSelect;
 
 export const returnTimelineEventsRelations = relations(
   returnTimelineEvents,
@@ -415,6 +374,8 @@ export const images = pgTable(
     uniqueIndex("images_category_tag_unique").on(table.categoryId, table.tagId),
   ]
 );
+
+export type DBImage = typeof images.$inferSelect;
 
 export const imagesRelations = relations(images, ({ one }) => ({
   category: one(categories, {
@@ -781,6 +742,8 @@ export const pieces = pgTable(
   ]
 );
 
+export type DBPiece = typeof pieces.$inferSelect;
+
 export const piecesRelations = relations(pieces, ({ one, many }) => ({
   brand: one(brands, {
     fields: [pieces.brandId],
@@ -844,6 +807,8 @@ export const measurements = pgTable(
   ]
 );
 
+export type DBMeasurement = typeof measurements.$inferSelect;
+
 export const measurementsRelations = relations(measurements, ({ one }) => ({
   piece: one(pieces, {
     fields: [measurements.pieceId],
@@ -871,6 +836,8 @@ export const sessions = pgTable(
   (table) => [index("sessions_userId_idx").on(table.userId)]
 );
 
+export type DBSession = typeof sessions.$inferSelect;
+
 export const accounts = pgTable(
   "accounts",
   {
@@ -895,6 +862,8 @@ export const accounts = pgTable(
   (table) => [index("accounts_userId_idx").on(table.userId)]
 );
 
+export type DBAccount = typeof accounts.$inferSelect;
+
 export const verifications = pgTable(
   "verifications",
   {
@@ -910,6 +879,8 @@ export const verifications = pgTable(
   },
   (table) => [index("verifications_identifier_idx").on(table.identifier)]
 );
+
+export type DBVerification = typeof verifications.$inferSelect;
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   users: one(users, {
@@ -957,6 +928,8 @@ export const discounts = pgTable(
   ]
 );
 
+export type DBDiscount = typeof discounts.$inferSelect;
+
 export const discountsRelations = relations(discounts, ({ many }) => ({
   products: many(products),
   pieces: many(pieces),
@@ -1000,6 +973,8 @@ export const coupons = pgTable(
   ]
 );
 
+export type DBCoupon = typeof coupons.$inferSelect;
+
 export const couponsRelations = relations(coupons, ({ many }) => ({
   couponsToProducts: many(couponsToProducts),
   couponsToPieces: many(couponsToPieces),
@@ -1027,6 +1002,8 @@ export const couponsToProducts = pgTable(
     index().on(table.productId),
   ]
 );
+
+export type DBCouponToProduct = typeof couponsToProducts.$inferSelect;
 
 export const couponsToProductsRelations = relations(
   couponsToProducts,
@@ -1060,6 +1037,8 @@ export const couponsToPieces = pgTable(
     index().on(table.pieceId),
   ]
 );
+
+export type DBCouponToPiece = typeof couponsToPieces.$inferSelect;
 
 export const couponsToPiecesRelations = relations(
   couponsToPieces,
@@ -1107,6 +1086,8 @@ export const promotionCodes = pgTable(
   (table) => [primaryKey({ columns: [table.code] })]
 );
 
+export type DBPromotionCode = typeof promotionCodes.$inferSelect;
+
 export const promotionCodesRelations = relations(promotionCodes, ({ one }) => ({
   coupon: one(coupons, {
     fields: [promotionCodes.couponId],
@@ -1125,3 +1106,5 @@ export const consentRecords = pgTable(
   },
   (table) => [index().on(table.visitorId), index().on(table.consentId)]
 );
+
+export type DBConsentRecord = typeof consentRecords.$inferSelect;

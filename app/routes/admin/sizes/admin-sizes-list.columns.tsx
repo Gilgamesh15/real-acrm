@@ -28,14 +28,7 @@ import { formatDate } from "~/lib/utils";
 
 import type { AdminSizesDataTableMeta } from "./admin-sizes-list.page";
 
-type Size = DBQueryResult<
-  "sizes",
-  {
-    with: {
-      group: true;
-    };
-  }
->;
+type Size = DBQueryResult<"sizes", {}>;
 
 const dtf = createColumnConfigHelper<Size>();
 
@@ -68,14 +61,6 @@ export const columns: ColumnDef<Size>[] = [
     id: "name",
     accessorKey: "name",
     header: "Nazwa",
-  },
-  {
-    id: "group",
-    accessorKey: "group",
-    header: "Grupa",
-    cell: ({ row }) => {
-      return <span>{row.original.group?.name}</span>;
-    },
   },
   {
     id: "createdAt",
