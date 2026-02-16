@@ -3,9 +3,6 @@ import {
   brands,
   categories,
   consentRecords,
-  coupons,
-  couponsToPieces,
-  couponsToProducts,
   deliveryMethodEnum,
   discounts,
   genderEnum,
@@ -19,7 +16,6 @@ import {
   piecesToTags,
   productStatusEnum,
   products,
-  promotionCodes,
   returnItems,
   returnStatusEnum,
   returnTimelineEvents,
@@ -69,30 +65,6 @@ export const SConsentRecordInsert = createInsertSchema(consentRecords);
 export type ConsentRecordInsert = z.infer<typeof SConsentRecordInsert>;
 export const SConsentRecordUpdate = createUpdateSchema(consentRecords);
 export type ConsentRecordUpdate = z.infer<typeof SConsentRecordUpdate>;
-
-// Coupon
-export const SCoupon = createSelectSchema(coupons);
-export type Coupon = z.infer<typeof SCoupon>;
-export const SCouponInsert = createInsertSchema(coupons);
-export type CouponInsert = z.infer<typeof SCouponInsert>;
-export const SCouponUpdate = createUpdateSchema(coupons);
-export type CouponUpdate = z.infer<typeof SCouponUpdate>;
-
-// Coupon to Piece
-export const SCouponToPiece = createSelectSchema(couponsToPieces);
-export type CouponToPiece = z.infer<typeof SCouponToPiece>;
-export const SCouponToPieceInsert = createInsertSchema(couponsToPieces);
-export type CouponToPieceInsert = z.infer<typeof SCouponToPieceInsert>;
-export const SCouponToPieceUpdate = createUpdateSchema(couponsToPieces);
-export type CouponToPieceUpdate = z.infer<typeof SCouponToPieceUpdate>;
-
-// Coupon to Product
-export const SCouponToProduct = createSelectSchema(couponsToProducts);
-export type CouponToProduct = z.infer<typeof SCouponToProduct>;
-export const SCouponToProductInsert = createInsertSchema(couponsToProducts);
-export type CouponToProductInsert = z.infer<typeof SCouponToProductInsert>;
-export const SCouponToProductUpdate = createUpdateSchema(couponsToProducts);
-export type CouponToProductUpdate = z.infer<typeof SCouponToProductUpdate>;
 
 // Delivery Method
 export const SDeliveryMethod = createSelectSchema(deliveryMethodEnum);
@@ -187,14 +159,6 @@ export const SProductInsert = createInsertSchema(products);
 export type ProductInsert = z.infer<typeof SProductInsert>;
 export const SProductUpdate = createUpdateSchema(products);
 export type ProductUpdate = z.infer<typeof SProductUpdate>;
-
-// Promotion Code
-export const SPromotionCode = createSelectSchema(promotionCodes);
-export type PromotionCode = z.infer<typeof SPromotionCode>;
-export const SPromotionCodeInsert = createInsertSchema(promotionCodes);
-export type PromotionCodeInsert = z.infer<typeof SPromotionCodeInsert>;
-export const SPromotionCodeUpdate = createUpdateSchema(promotionCodes);
-export type PromotionCodeUpdate = z.infer<typeof SPromotionCodeUpdate>;
 
 // Return Item
 export const SReturnItem = createSelectSchema(returnItems);

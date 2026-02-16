@@ -441,7 +441,6 @@ export const productsRelations = relations(products, ({ many, one }) => ({
     fields: [products.discountId],
     references: [discounts.id],
   }),
-  couponsToProducts: many(couponsToProducts),
 }));
 
 export const orders = pgTable(
@@ -775,7 +774,6 @@ export const piecesRelations = relations(pieces, ({ one, many }) => ({
     fields: [pieces.discountId],
     references: [discounts.id],
   }),
-  couponsToPieces: many(couponsToPieces),
 }));
 
 export const measurements = pgTable(
@@ -933,166 +931,6 @@ export type DBDiscount = typeof discounts.$inferSelect;
 export const discountsRelations = relations(discounts, ({ many }) => ({
   products: many(products),
   pieces: many(pieces),
-}));
-
-export const coupons = pgTable(
-  "coupons",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    amountOffInGrosz: integer("amount_off_in_grosz"),
-    maxUsages: integer("max_usages"),
-    name: text("name"),
-    percentOff: integer("percent_off"),
-    expiresAt: timestamp("expires_at"),
-    usages: integer("usages").default(0).notNull(),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    uniqueIndex().on(table.name),
-    check(
-      "either_percent_off_or_amount_off_in_grosz_check",
-      sql`${table.percentOff} IS NOT NULL OR ${table.amountOffInGrosz} IS NOT NULL`
-    ),
-    check(
-      "max_usages_positive_check",
-      sql`${table.maxUsages} IS NULL OR ${table.maxUsages} > 0`
-    ),
-    check(
-      "percent_off_range_check",
-      sql`${table.percentOff} IS NULL OR (${table.percentOff} >= 1 AND ${table.percentOff} <= 100)`
-    ),
-    check(
-      "amount_off_positive_check",
-      sql`${table.amountOffInGrosz} IS NULL OR ${table.amountOffInGrosz} > 0`
-    ),
-  ]
-);
-
-export type DBCoupon = typeof coupons.$inferSelect;
-
-export const couponsRelations = relations(coupons, ({ many }) => ({
-  couponsToProducts: many(couponsToProducts),
-  couponsToPieces: many(couponsToPieces),
-}));
-
-export const couponsToProducts = pgTable(
-  "coupons_to_products",
-  {
-    couponId: uuid("coupon_id")
-      .references(() => coupons.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
-    productId: uuid("product_id")
-      .references(() => products.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.couponId, table.productId] }),
-    index().on(table.couponId),
-    index().on(table.productId),
-  ]
-);
-
-export type DBCouponToProduct = typeof couponsToProducts.$inferSelect;
-
-export const couponsToProductsRelations = relations(
-  couponsToProducts,
-  ({ one }) => ({
-    coupon: one(coupons, {
-      fields: [couponsToProducts.couponId],
-      references: [coupons.id],
-    }),
-    product: one(products, {
-      fields: [couponsToProducts.productId],
-      references: [products.id],
-    }),
-  })
-);
-
-export const couponsToPieces = pgTable(
-  "coupons_to_pieces",
-  {
-    couponId: uuid("coupon_id")
-      .references(() => coupons.id, { onDelete: "cascade" })
-      .notNull(),
-    pieceId: uuid("piece_id")
-      .references(() => pieces.id, { onDelete: "cascade" })
-      .notNull(),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.couponId, table.pieceId] }),
-    index().on(table.couponId),
-    index().on(table.pieceId),
-  ]
-);
-
-export type DBCouponToPiece = typeof couponsToPieces.$inferSelect;
-
-export const couponsToPiecesRelations = relations(
-  couponsToPieces,
-  ({ one }) => ({
-    coupon: one(coupons, {
-      fields: [couponsToPieces.couponId],
-      references: [coupons.id],
-    }),
-    piece: one(pieces, {
-      fields: [couponsToPieces.pieceId],
-      references: [pieces.id],
-    }),
-  })
-);
-
-export const promotionCodes = pgTable(
-  "promotion_codes",
-  {
-    code: text("code").notNull(),
-    redeemableByUserId: text("redeemable_by_user_id").references(
-      () => users.id,
-      {
-        onDelete: "set null",
-      }
-    ),
-    expiresAt: timestamp("expires_at"),
-    maxUsages: integer("max_usages"),
-    couponId: uuid("coupon_id")
-      .references(() => coupons.id, {
-        onDelete: "set null",
-      })
-      .notNull(),
-    firstTimeTransaction: boolean("first_time_transaction")
-      .default(false)
-      .notNull(),
-    minimumAmountInGrosz: integer("minimum_amount_in_grosz"),
-    usages: integer("usages").default(0).notNull(),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.code] })]
-);
-
-export type DBPromotionCode = typeof promotionCodes.$inferSelect;
-
-export const promotionCodesRelations = relations(promotionCodes, ({ one }) => ({
-  coupon: one(coupons, {
-    fields: [promotionCodes.couponId],
-    references: [coupons.id],
-  }),
 }));
 
 export const consentRecords = pgTable(

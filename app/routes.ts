@@ -223,28 +223,6 @@ export default [
           "./routes/admin/discounts/admin-discounts-edit.page.tsx"
         ),
       ]),
-      // Coupons
-      ...prefix("/coupons", [
-        index("./routes/admin/coupons/admin-coupons-list.page.tsx"),
-        route(
-          "/create",
-          "./routes/admin/coupons/admin-coupons-create.page.tsx"
-        ),
-        route(
-          "/:couponId/edit",
-          "./routes/admin/coupons/admin-coupons-edit.page.tsx"
-        ),
-      ]),
-      // Discount codes
-      ...prefix("/discount-codes", [
-        index(
-          "./routes/admin/discount-codes/admin-discount-codes-list.page.tsx"
-        ),
-        route(
-          "/create",
-          "./routes/admin/discount-codes/admin-discount-codes-create.page.tsx"
-        ),
-      ]),
     ]),
   ]),
 

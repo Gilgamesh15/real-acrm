@@ -195,16 +195,6 @@ const sidebarData: TNavGroup[] = [
         url: "/admin/discounts",
         icon: PercentIcon,
       },
-      {
-        title: "Kupony",
-        url: "/admin/coupons",
-        icon: PercentIcon,
-      },
-      {
-        title: "Kody rabatowe",
-        url: "/admin/discount-codes",
-        icon: PercentIcon,
-      },
     ],
   },
 ];
