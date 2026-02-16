@@ -180,7 +180,7 @@ export default function AdminCategoriesListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/kategorie/utworz"
+              to="/admin/categories/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -201,7 +201,7 @@ export default function AdminCategoriesListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/kategorie"
+            to="/admin/categories"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

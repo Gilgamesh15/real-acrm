@@ -193,7 +193,7 @@ export default function AdminBrandGroupsEditPage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/marki-grupy`);
+      navigate(`/admin/brands-groups`);
     }
   }, [fetcher.data, navigate]);
 
@@ -251,7 +251,7 @@ export default function AdminBrandGroupsEditPage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/marki-grupy"
+          to="/admin/brands-groups"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

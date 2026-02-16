@@ -33,7 +33,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    throw redirect("/zaloguj-sie?callbackUrl=/admin/discounts");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin");
   }
 
   if (session.user?.role !== "admin") {
@@ -201,7 +201,7 @@ export default function AdminDiscountsCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/discounts`);
+      navigate(`/admin/discounts/`);
     }
   }, [fetcher.data, navigate]);
 
@@ -320,7 +320,7 @@ export default function AdminDiscountsCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/rabaty"
+          to="/admin/discounts"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

@@ -164,7 +164,7 @@ export default function AdminSizeGroupsCreatePage() {
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/rozmiary-grupy`);
+      navigate(`/admin/sizes-groups`);
     }
   }, [fetcher.data, navigate]);
 
@@ -220,7 +220,7 @@ export default function AdminSizeGroupsCreatePage() {
 
       <AdminPageFooter>
         <Link
-          to="/admin/rozmiary-grupy"
+          to="/admin/sizes-groups"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

@@ -174,7 +174,7 @@ export default function AdminBrandsEditPage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate("/admin/marki");
+      navigate("/admin/brands");
     }
   }, [fetcher.data, navigate]);
 
@@ -228,7 +228,7 @@ export default function AdminBrandsEditPage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/marki"
+          to="/admin/brands"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

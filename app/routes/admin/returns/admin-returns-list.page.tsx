@@ -92,7 +92,7 @@ export default function AdminReturnsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin"
+            to="/admin/returns"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

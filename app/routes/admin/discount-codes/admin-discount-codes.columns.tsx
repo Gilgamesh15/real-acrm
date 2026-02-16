@@ -69,7 +69,7 @@ export const columns: ColumnDef<DiscountCode>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link to={`/admin/kody-rabatowe/${row.original.code}/edytuj`}>
+              <Link to={`/admin/discount-codes/${row.original.code}/edit`}>
                 <Edit />
                 Edytuj
               </Link>

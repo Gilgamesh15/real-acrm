@@ -105,7 +105,7 @@ export const columns: ColumnDef<Order>[] = [
       const order = row.original;
       return (
         <Link
-          to={`/admin/zamowienia/${order.id}`}
+          to={`/admin/orders/${order.id}`}
           className="font-medium text-primary hover:underline"
         >
           #{order?.orderNumber}
@@ -170,7 +170,7 @@ export const columns: ColumnDef<Order>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/zamowienia/${order.id}`}>
+                <Link to={`/admin/orders/${order.id}`}>
                   <Eye />
                   Zobacz szczegóły
                 </Link>

@@ -320,7 +320,7 @@ export default function AdminProductsEditPage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate("/admin/produkty");
+      navigate("/admin/products");
     }
   }, [fetcher.data, navigate]);
 
@@ -430,7 +430,7 @@ export default function AdminProductsEditPage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/produkty"
+          to="/admin/products"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

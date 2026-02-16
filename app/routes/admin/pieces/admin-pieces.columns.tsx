@@ -268,9 +268,7 @@ export const columns: ColumnDef<Piece>[] = [
               <DropdownMenuItem asChild disabled={!canEditPiece(piece)}>
                 <Link
                   to={
-                    canEditPiece(piece)
-                      ? `/admin/ubrania/${piece.id}/edytuj`
-                      : "#"
+                    canEditPiece(piece) ? `/admin/pieces/${piece.id}/edit` : "#"
                   }
                   onClick={(e) => {
                     if (!canEditPiece(piece)) {

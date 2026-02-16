@@ -290,7 +290,7 @@ export default function AdminOrdersListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin"
+            to="/admin/orders"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

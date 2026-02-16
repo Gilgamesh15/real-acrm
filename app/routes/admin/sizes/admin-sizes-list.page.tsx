@@ -195,7 +195,7 @@ export default function AdminSizesListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/rozmiary/utworz"
+              to="/admin/sizes/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -216,7 +216,7 @@ export default function AdminSizesListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/rozmiary"
+            to="/admin/sizes"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

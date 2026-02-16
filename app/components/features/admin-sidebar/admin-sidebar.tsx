@@ -107,17 +107,17 @@ const sidebarData: TNavGroup[] = [
     items: [
       {
         title: "Projekty",
-        url: "/admin/projekty",
+        url: "/admin/products",
         icon: PackageIcon,
       },
       {
         title: "Ubrania",
-        url: "/admin/ubrania",
+        url: "/admin/pieces",
         icon: PackageIcon,
       },
       {
         title: "Kategorie",
-        url: "/admin/kategorie",
+        url: "/admin/categories",
         icon: ListTodoIcon,
       },
       {
@@ -126,11 +126,11 @@ const sidebarData: TNavGroup[] = [
         items: [
           {
             title: "Marki",
-            url: "/admin/marki",
+            url: "/admin/brands",
           },
           {
             title: "Grupy marek",
-            url: "/admin/marki-grupy",
+            url: "/admin/brands-groups",
           },
         ],
       },
@@ -140,17 +140,17 @@ const sidebarData: TNavGroup[] = [
         items: [
           {
             title: "Rozmiary",
-            url: "/admin/rozmiary",
+            url: "/admin/sizes",
           },
           {
             title: "Grupy rozmiarów",
-            url: "/admin/rozmiary-grupy",
+            url: "/admin/sizes-groups",
           },
         ],
       },
       {
         title: "Tagi",
-        url: "/admin/tagi",
+        url: "/admin/tags",
         icon: PaletteIcon,
       },
     ],
@@ -160,17 +160,17 @@ const sidebarData: TNavGroup[] = [
     items: [
       {
         title: "Polecane projekty",
-        url: "/admin/polecane",
+        url: "/admin/featured",
         icon: SparkleIcon,
       },
       {
         title: "Wyróżnione ubrania",
-        url: "/admin/wyr-ubrania",
+        url: "/admin/top-featured-pieces",
         icon: SparkleIcon,
       },
       {
         title: "Wyróżnione projekty",
-        url: "/admin/wyr-projekty",
+        url: "/admin/featured-products",
         icon: SparkleIcon,
       },
     ],
@@ -180,17 +180,17 @@ const sidebarData: TNavGroup[] = [
     items: [
       {
         title: "Użytkownicy",
-        url: "/admin/uzytkownicy",
+        url: "/admin/users",
         icon: UserCogIcon,
       },
       {
         title: "Zamówienia",
-        url: "/admin/zamowienia",
+        url: "/admin/orders",
         icon: CreditCardIcon,
       },
       {
         title: "Zwroty",
-        url: "/admin/zwroty",
+        url: "/admin/returns",
         icon: ServerOffIcon,
       },
     ],
@@ -200,17 +200,17 @@ const sidebarData: TNavGroup[] = [
     items: [
       {
         title: "Zniżki",
-        url: "/admin/rabaty",
+        url: "/admin/discounts",
         icon: PercentIcon,
       },
       {
         title: "Kupony",
-        url: "/admin/kupony",
+        url: "/admin/coupons",
         icon: PercentIcon,
       },
       {
         title: "Kody rabatowe",
-        url: "/admin/kody-rabatowe",
+        url: "/admin/discount-codes",
         icon: PercentIcon,
       },
     ],

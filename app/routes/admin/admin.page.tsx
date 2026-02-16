@@ -11,7 +11,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 
   if (session.user?.role !== "admin") return redirect("/");
 
-  throw redirect("/admin/ubrania");
+  throw redirect("/admin/users");
 }
 
 export default function AdminPage() {

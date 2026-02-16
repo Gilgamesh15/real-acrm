@@ -166,7 +166,7 @@ export default function AdminTagsCreatePage() {
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/tagi`);
+      navigate(`/admin/tags`);
     }
   }, [fetcher.data, navigate]);
 
@@ -232,7 +232,7 @@ export default function AdminTagsCreatePage() {
 
       <AdminPageFooter>
         <Link
-          to="/admin/tagi"
+          to="/admin/tags"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

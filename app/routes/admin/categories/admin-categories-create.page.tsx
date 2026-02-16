@@ -239,7 +239,7 @@ export default function AdminCategoriesCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/kategorie`);
+      navigate(`/admin/categories`);
     }
   }, [fetcher.data, navigate]);
 
@@ -322,7 +322,7 @@ export default function AdminCategoriesCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/kategorie"
+          to="/admin/categories"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

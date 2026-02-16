@@ -83,7 +83,7 @@ export default function AdminUsersListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin"
+            to="/admin/users"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

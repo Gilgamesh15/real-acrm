@@ -186,7 +186,7 @@ export default function AdminTagsListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/tagi/utworz"
+              to="/admin/tags/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -207,7 +207,7 @@ export default function AdminTagsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/tagi"
+            to="/admin/tags"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

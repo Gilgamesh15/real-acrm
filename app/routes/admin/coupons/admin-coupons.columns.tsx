@@ -135,7 +135,7 @@ export const columns: ColumnDef<Coupon>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to={`/admin/rabaty/${row.original.id}/edytuj`}>
+                <Link to={`/admin/coupons/${row.original.id}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>

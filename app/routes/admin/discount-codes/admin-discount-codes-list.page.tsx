@@ -33,7 +33,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    throw redirect("/zaloguj-sie?callbackUrl=/admin/kody-rabatowe");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin");
   }
 
   if (session.user.role !== "admin") {
@@ -66,7 +66,7 @@ export default function AdminDiscountCodesListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/kody-rabatowe/utworz"
+              to="/admin/discount-codes/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -86,7 +86,7 @@ export default function AdminDiscountCodesListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/kody-rabatowe"
+            to="/admin/discount-codes"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

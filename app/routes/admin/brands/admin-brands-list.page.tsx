@@ -181,7 +181,7 @@ export default function AdminBrandsListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/marki/utworz"
+              to="/admin/brands/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -202,7 +202,7 @@ export default function AdminBrandsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/marki"
+            to="/admin/brands"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

@@ -456,7 +456,7 @@ export default function OrderDetailPage({ loaderData }: Route.ComponentProps) {
 
       <AdminPageFooter>
         <Link
-          to="/admin/zamowienia"
+          to="/admin/orders"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeft />

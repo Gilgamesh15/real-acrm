@@ -274,7 +274,7 @@ export default function AdminPiecesCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/ubrania`);
+      navigate(`/admin/pieces`);
     }
   }, [fetcher.data, navigate]);
 
@@ -485,7 +485,7 @@ export default function AdminPiecesCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/ubrania"
+          to="/admin/pieces"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

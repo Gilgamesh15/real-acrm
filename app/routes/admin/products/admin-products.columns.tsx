@@ -267,7 +267,7 @@ export const columns: ColumnDef<Product>[] = [
                 <Link
                   to={
                     canEditProduct(product)
-                      ? `/admin/projekty/${product.id}/edytuj`
+                      ? `/admin/products/${product.id}/edit`
                       : "#"
                   }
                   onClick={(e) => {

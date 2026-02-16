@@ -133,7 +133,7 @@ export const columns: ColumnDef<Category>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/kategorie/${category.id}/edytuj`}>
+                <Link to={`/admin/categories/${category.id}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>

@@ -322,7 +322,7 @@ export default function AdminClothesListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/ubrania/utworz"
+              to="/admin/pieces/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -343,7 +343,7 @@ export default function AdminClothesListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/ubrania"
+            to="/admin/pieces"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

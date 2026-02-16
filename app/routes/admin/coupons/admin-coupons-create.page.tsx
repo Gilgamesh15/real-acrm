@@ -34,7 +34,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    throw redirect("/zaloguj-sie?callbackUrl=/admin/kupony");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin/coupons");
   }
 
   if (session.user?.role !== "admin") {
@@ -222,7 +222,7 @@ export default function AdminCouponsCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/kupony`);
+      navigate(`/admin/coupons`);
     }
   }, [fetcher.data, navigate]);
 
@@ -353,7 +353,7 @@ export default function AdminCouponsCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/kupony"
+          to="/admin/coupons"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

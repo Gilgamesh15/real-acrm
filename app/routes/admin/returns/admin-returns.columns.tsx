@@ -36,7 +36,7 @@ export const columns: ColumnDef<Return>[] = [
       const returnItem = row.original;
       return (
         <Link
-          to={`/admin/zwroty/${returnItem.id}`}
+          to={`/admin/returns/${returnItem.id}`}
           className="font-medium text-primary hover:underline"
         >
           #{returnItem.returnNumber}

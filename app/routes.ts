@@ -116,99 +116,101 @@ export default [
 
     layout("./routes/admin/admin.layout.tsx", [
       // Products
-      ...prefix("/projekty", [
+      ...prefix("/products", [
         index("./routes/admin/products/admin-products-list.page.tsx"),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/products/admin-products-create.page.tsx"
         ),
         route(
-          ":productId/edytuj",
+          "/:productId/edit",
           "./routes/admin/products/admin-products-edit.page.tsx"
         ),
       ]),
       // Clothes
-      ...prefix("/ubrania", [
+      ...prefix("/pieces", [
         index("./routes/admin/pieces/admin-pieces-list.page.tsx"),
-        route("utworz", "./routes/admin/pieces/admin-pieces-create.page.tsx"),
+        route("/create", "./routes/admin/pieces/admin-pieces-create.page.tsx"),
         route(
-          ":pieceId/edytuj",
+          "/:pieceId/edit",
           "./routes/admin/pieces/admin-pieces-edit.page.tsx"
         ),
       ]),
       // Categories
-      ...prefix("/kategorie", [
+      ...prefix("/categories", [
         index("./routes/admin/categories/admin-categories-list.page.tsx"),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/categories/admin-categories-create.page.tsx"
         ),
         route(
-          ":categoryId/edytuj",
+          "/:categoryId/edit",
           "./routes/admin/categories/admin-categories-edit.page.tsx"
         ),
       ]),
       // Brands
-      ...prefix("/marki", [
+      ...prefix("/brands", [
         index("./routes/admin/brands/admin-brands-list.page.tsx"),
-        route("utworz", "./routes/admin/brands/admin-brands-create.page.tsx"),
+        route("/create", "./routes/admin/brands/admin-brands-create.page.tsx"),
         route(
-          ":brandId/edytuj",
+          "/:brandId/edit",
           "./routes/admin/brands/admin-brands-edit.page.tsx"
         ),
       ]),
       // Brands Groups
-      ...prefix("/marki-grupy", [
+      ...prefix("/brands-groups", [
         index("./routes/admin/brands-groups/admin-brands-groups-list.page.tsx"),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/brands-groups/admin-brands-groups-create.page.tsx"
         ),
         route(
-          ":brandGroupId/edytuj",
+          "/:brandGroupId/edit",
           "./routes/admin/brands-groups/admin-brands-groups-edit.page.tsx"
         ),
       ]),
       // Sizes
-      ...prefix("/rozmiary", [
+      ...prefix("/sizes", [
         index("./routes/admin/sizes/admin-sizes-list.page.tsx"),
-        route("utworz", "./routes/admin/sizes/admin-sizes-create.page.tsx"),
+        route("/create", "./routes/admin/sizes/admin-sizes-create.page.tsx"),
         route(
-          ":sizeId/edytuj",
+          "/:sizeId/edit",
           "./routes/admin/sizes/admin-sizes-edit.page.tsx"
         ),
       ]),
       // Sizes Groups
-      ...prefix("/rozmiary-grupy", [
+      ...prefix("/sizes-groups", [
         index("./routes/admin/sizes-groups/admin-sizes-groups-list.page.tsx"),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/sizes-groups/admin-sizes-groups-create.page.tsx"
         ),
         route(
-          ":sizeGroupId/edytuj",
+          "/:sizeGroupId/edit",
           "./routes/admin/sizes-groups/admin-sizes-groups-edit.page.tsx"
         ),
       ]),
       // Tags
-      ...prefix("/tagi", [
+      ...prefix("/tags", [
         index("./routes/admin/tags/admin-tags-list.page.tsx"),
-        route("/utworz", "./routes/admin/tags/admin-tags-create.page.tsx"),
-        route("/:tagId/edytuj", "./routes/admin/tags/admin-tags-edit.page.tsx"),
+        route("/create", "./routes/admin/tags/admin-tags-create.page.tsx"),
+        route("/:tagId/edit", "./routes/admin/tags/admin-tags-edit.page.tsx"),
       ]),
       // Featured products
-      route("/polecane", "./routes/admin/featured-products-edit.page.tsx"),
+      route("/featured", "./routes/admin/featured-products-edit.page.tsx"),
       // Top featured pieces
-      route("/wyr-ubrania", "./routes/admin/top-featured-pieces-edit.page.tsx"),
       route(
-        "/wyr-projekty",
+        "/top-featured-pieces",
+        "./routes/admin/top-featured-pieces-edit.page.tsx"
+      ),
+      route(
+        "/top-featured-products",
         "./routes/admin/top-featured-products-edit.page.tsx"
       ),
-
       // Users
-      route("/uzytkownicy", "./routes/admin/admin-users-list.page.tsx"),
+      route("/users", "./routes/admin/admin-users-list.page.tsx"),
       // Orders
-      ...prefix("/zamowienia", [
+      ...prefix("/orders", [
         index("./routes/admin/orders/admin-orders-list.page.tsx"),
         route(
           "/:orderId",
@@ -216,7 +218,7 @@ export default [
         ),
       ]),
       // Returns
-      ...prefix("/zwroty", [
+      ...prefix("/returns", [
         index("./routes/admin/returns/admin-returns-list.page.tsx"),
         route(
           "/:returnId",
@@ -225,33 +227,36 @@ export default [
       ]),
 
       // Discounts
-      ...prefix("/rabaty", [
+      ...prefix("/discounts", [
         index("./routes/admin/discounts/admin-discounts-list.page.tsx"),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/discounts/admin-discounts-create.page.tsx"
         ),
         route(
-          ":discountId/edytuj",
+          "/:discountId/edit",
           "./routes/admin/discounts/admin-discounts-edit.page.tsx"
         ),
       ]),
       // Coupons
-      ...prefix("/kupony", [
+      ...prefix("/coupons", [
         index("./routes/admin/coupons/admin-coupons-list.page.tsx"),
-        route("utworz", "./routes/admin/coupons/admin-coupons-create.page.tsx"),
         route(
-          ":couponId/edytuj",
+          "/create",
+          "./routes/admin/coupons/admin-coupons-create.page.tsx"
+        ),
+        route(
+          "/:couponId/edit",
           "./routes/admin/coupons/admin-coupons-edit.page.tsx"
         ),
       ]),
       // Discount codes
-      ...prefix("/kody-rabatowe", [
+      ...prefix("/discount-codes", [
         index(
           "./routes/admin/discount-codes/admin-discount-codes-list.page.tsx"
         ),
         route(
-          "utworz",
+          "/create",
           "./routes/admin/discount-codes/admin-discount-codes-create.page.tsx"
         ),
       ]),

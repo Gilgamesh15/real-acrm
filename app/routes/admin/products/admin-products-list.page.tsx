@@ -332,7 +332,7 @@ export default function AdminProductsListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/projekty/utworz"
+              to="/admin/products/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -353,7 +353,7 @@ export default function AdminProductsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/projekty"
+            to="/admin/products"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

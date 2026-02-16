@@ -119,7 +119,7 @@ export const columns: ColumnDef<Brand>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/marki/${brand.id}/edytuj`}>
+                <Link to={`/admin/brands/${brand.id}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>

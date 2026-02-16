@@ -174,7 +174,7 @@ export default function AdminSizesEditPage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate("/admin/rozmiary");
+      navigate("/admin/sizes");
     }
   }, [fetcher.data, navigate]);
 
@@ -228,7 +228,7 @@ export default function AdminSizesEditPage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/rozmiary"
+          to="/admin/sizes"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

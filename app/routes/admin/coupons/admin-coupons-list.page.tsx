@@ -35,7 +35,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    throw redirect("/zaloguj-sie?callbackUrl=/admin/kupony");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin");
   }
 
   if (session.user.role !== "admin") {
@@ -249,7 +249,7 @@ export default function AdminCouponsListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/kupony/utworz"
+              to="/admin/coupons/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -269,7 +269,7 @@ export default function AdminCouponsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/kupony"
+            to="/admin/coupons"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

@@ -36,7 +36,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const session = context.get(sessionContext);
 
   if (!session) {
-    throw redirect("/zaloguj-sie?callbackUrl=/admin/discount-codes");
+    throw redirect("/zaloguj-sie?callbackUrl=/admin");
   }
 
   if (session.user?.role !== "admin") {
@@ -246,7 +246,7 @@ export default function AdminDiscountCodesCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/kody-rabatowe`);
+      navigate(`/admin/discount-codes`);
     }
   }, [fetcher.data, navigate]);
 
@@ -366,7 +366,7 @@ export default function AdminDiscountCodesCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/kody-rabatowe"
+          to="/admin/discount-codes"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

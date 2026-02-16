@@ -123,7 +123,7 @@ export const columns: ColumnDef<SizeGroup>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/rozmiary-grupy/${sizeGroup.id}/edytuj`}>
+                <Link to={`/admin/sizes-groups/${sizeGroup.id}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>

@@ -151,7 +151,7 @@ export default function AdminBrandsCreatePage({
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate(`/admin/marki`);
+      navigate(`/admin/brands`);
     }
   }, [fetcher.data, navigate]);
 
@@ -207,7 +207,7 @@ export default function AdminBrandsCreatePage({
 
       <AdminPageFooter>
         <Link
-          to="/admin/marki"
+          to="/admin/brands"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           <ChevronLeftIcon />

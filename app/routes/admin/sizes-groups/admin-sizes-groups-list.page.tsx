@@ -192,7 +192,7 @@ export default function AdminSizeGroupsListPage({
         <AdminPageHeader>
           <AdminPageActions>
             <Link
-              to="/admin/rozmiary-grupy/utworz"
+              to="/admin/sizes-groups/create"
               className={cn(buttonVariants({ size: "sm" }))}
             >
               <PlusIcon />
@@ -213,7 +213,7 @@ export default function AdminSizeGroupsListPage({
 
         <AdminPageFooter>
           <Link
-            to="/admin/rozmiary-grupy"
+            to="/admin/sizes-groups"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeftIcon />

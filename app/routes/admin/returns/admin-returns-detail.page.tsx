@@ -248,7 +248,7 @@ export default function ReturnDetailPage({ loaderData }: Route.ComponentProps) {
 
   React.useEffect(() => {
     if (fetcher.data?.success) {
-      navigate("/admin/zwroty");
+      navigate("/admin/returns");
     }
   }, [fetcher.data?.success, navigate]);
 
@@ -380,7 +380,7 @@ export default function ReturnDetailPage({ loaderData }: Route.ComponentProps) {
 
         <AdminPageFooter>
           <Link
-            to="/admin/zwroty"
+            to="/admin/returns"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <ChevronLeft />
