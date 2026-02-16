@@ -2,6 +2,7 @@ import * as schema from "db/schema";
 import { desc, eq } from "drizzle-orm";
 import { CheckIcon, MoreHorizontal, Truck } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
+import React from "react";
 import { Link, data, redirect, useFetcher } from "react-router";
 import { toast } from "sonner";
 
@@ -328,7 +329,13 @@ export default function OrderDetailPage({ loaderData }: Route.ComponentProps) {
     ),
   };
 
-  const orderDetails = orderDetailsFromOrder(order);
+  const orderDetails = React.useMemo(() => {
+    try {
+      return orderDetailsFromOrder(order);
+    } catch {
+      return undefined;
+    }
+  }, [order]);
   const orderStatus = orderStatusFromOrder(order);
 
   return (
@@ -417,7 +424,7 @@ export default function OrderDetailPage({ loaderData }: Route.ComponentProps) {
                 </ItemContent>
               </Item>
 
-              <OrderData orderData={orderDetails} />
+              {orderDetails && <OrderData orderData={orderDetails} />}
               <PriceSummary {...priceSummary} />
             </div>
 
