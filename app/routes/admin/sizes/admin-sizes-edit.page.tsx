@@ -27,7 +27,7 @@ import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { SizeFormSchema, type SizeFormSchemaType } from "~/lib/schemas";
-import { cn, convertFormDataToObjectUnsafe } from "~/lib/utils";
+import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-sizes-edit.page";
@@ -89,9 +89,15 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       );
     }
 
+    const existingSlugs = await db.query.sizes.findMany({
+      columns: { slug: true },
+    });
+    const slugs = existingSlugs.map((size) => size.slug);
+    const newSlug = generateSlug(args.name, slugs);
+
     const updatedSize = await db
       .update(schema.sizes)
-      .set({ name: args.name })
+      .set({ name: args.name, slug: newSlug })
       .where(eq(schema.sizes.id, sizeId))
       .returning()
       .then((result) => result[0]);

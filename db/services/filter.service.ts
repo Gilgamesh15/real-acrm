@@ -929,6 +929,7 @@ class FilterService {
           id: schema.brands.id,
           name: schema.brands.name,
           slug: schema.brands.slug,
+          order: schema.brands.order,
         })
         .from(schema.brands)
         .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
@@ -950,6 +951,7 @@ class FilterService {
           id: schema.sizes.id,
           name: schema.sizes.name,
           slug: schema.sizes.slug,
+          order: schema.sizes.order,
         })
         .from(schema.sizes)
         .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
