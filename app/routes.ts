@@ -18,6 +18,12 @@ export default [
       index("./api/brands/brands.handlers.ts"),
       route("/:slug", "./api/brands/:slug/brands-by-slug.handlers.ts"),
     ]),
+
+    // Sizes
+    ...prefix("/sizes", [
+      index("./api/sizes/sizes.handlers.ts"),
+      route("/:slug", "./api/sizes/:slug/sizes-by-slug.handlers.ts"),
+    ]),
   ]),
   // API
   route("/api/auth/*", "./api/auth.ts"),
@@ -167,10 +173,7 @@ export default [
       ...prefix("/sizes", [
         index("./routes/admin/sizes/admin-sizes-list.page.tsx"),
         route("/create", "./routes/admin/sizes/admin-sizes-create.page.tsx"),
-        route(
-          "/:sizeId/edit",
-          "./routes/admin/sizes/admin-sizes-edit.page.tsx"
-        ),
+        route("/:slug/edit", "./routes/admin/sizes/admin-sizes-edit.page.tsx"),
       ]),
       // Tags
       ...prefix("/tags", [

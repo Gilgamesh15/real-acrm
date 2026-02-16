@@ -1,20 +1,15 @@
-import { eq } from "drizzle-orm";
+import { SizeUpdateSchema } from "db/models/sizes.model";
 import { CheckCircleIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import React from "react";
-import {
-  Link,
-  isRouteErrorResponse,
-  useFetcher,
-  useNavigate,
-} from "react-router";
+import { Link, useNavigate } from "react-router";
 import { data, redirect } from "react-router";
 import { toast } from "sonner";
+import type z from "zod";
 
 import { Button, buttonVariants } from "~/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "~/components/ui/field";
 import { Spinner } from "~/components/ui/spinner";
 
-import * as schema from "~/../db/schema";
+import { api } from "~/api/api";
 import {
   AdminPageActions,
   AdminPageContainer,
@@ -23,12 +18,12 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
-import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
-import { db } from "~/lib/db";
-import { SizeFormSchema, type SizeFormSchemaType } from "~/lib/schemas";
-import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
-import { convertObjectToFormDataUnsafe } from "~/lib/utils";
+import {
+  getPersistedDefaultValue,
+  useFormPersistence,
+} from "~/hooks/use-form-persistance";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-sizes-edit.page";
 
@@ -45,144 +40,75 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     throw redirect("/");
   }
 
-  const { sizeId } = params;
+  const { slug } = params;
 
-  const size = await db.query.sizes.findFirst({
-    where: eq(schema.sizes.id, sizeId),
+  const response = await api.sizes.bySlug.get({
+    params: {
+      slug,
+    },
   });
 
-  if (!size) {
-    throw data({}, { status: 404 });
+  if (response.status !== 200) {
+    throw data(response.body, { status: response.status });
   }
+
+  const size = response.body.size;
 
   return data({ size }, { status: 200 });
 }
 
-// ========================== ACTIONS ==========================
-
-export async function action({ request, params, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
-  const adminId = session?.user?.id;
-  const { sizeId } = params;
-
-  try {
-    const args = convertFormDataToObjectUnsafe(
-      SizeFormSchema,
-      await request.formData()
-    );
-    const { success, error } = SizeFormSchema.safeParse(args);
-    if (!success) {
-      logger.warn("Size validation failed", {
-        adminId,
-        sizeId,
-        errors: error.issues.map((i) => i.message),
-      });
-      throw data(
-        {
-          success: false,
-          message: "Nieprawidłowe dane wejściowe",
-          error: error.issues.map((issue) => issue.message).join(", "),
-          size: null,
-        },
-        { status: 400 }
-      );
-    }
-
-    const existingSlugs = await db.query.sizes.findMany({
-      columns: { slug: true },
-    });
-    const slugs = existingSlugs.map((size) => size.slug);
-    const newSlug = generateSlug(args.name, slugs);
-
-    const updatedSize = await db
-      .update(schema.sizes)
-      .set({ name: args.name, slug: newSlug })
-      .where(eq(schema.sizes.id, sizeId))
-      .returning()
-      .then((result) => result[0]);
-
-    logger.info("Size updated", {
-      adminId,
-      sizeId,
-      sizeName: updatedSize?.name,
-    });
-
-    return data(
-      {
-        success: true,
-        size: updatedSize,
-        error: null,
-        message: "Rozmiar został zaktualizowany",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    logger.error("Failed to update size", { error, adminId, sizeId });
-    return data(
-      {
-        success: false,
-        error,
-        message: "Wystąpił nieoczekiwany błąd",
-        size: null,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function clientAction({ serverAction }: Route.ClientActionArgs) {
-  const result = await serverAction();
-
-  if (result.success) {
-    toast.success(result.message);
-  } else {
-    toast.error(result.message);
-  }
-
-  return result;
-}
-
 // ========================== PAGE ==========================
-
-const SIZE_FORM_ID = "size-form";
 
 export default function AdminSizesEditPage({
   loaderData,
+  params,
 }: Route.ComponentProps) {
+  const { slug } = params;
   const { size } = loaderData;
-
-  const fetcher = useFetcher<typeof action>();
-
-  const isUpdating = fetcher.state === "submitting";
 
   const navigate = useNavigate();
 
+  const formId = `size-form-${size.slug}`;
+  const defaultValues = {
+    name: size.name,
+  } as z.infer<typeof SizeUpdateSchema>;
+
   const form = useAppForm({
-    defaultValues: {
-      name: size.name,
-    } as SizeFormSchemaType,
+    defaultValues: getPersistedDefaultValue(formId, defaultValues),
     validators: {
-      onSubmit: SizeFormSchema,
+      onSubmit: SizeUpdateSchema,
     },
     onSubmit: async ({ value }) => {
-      fetcher.submit(convertObjectToFormDataUnsafe(SizeFormSchema, value), {
-        method: "post",
-      });
+      toast.promise(
+        api.sizes.bySlug.update({
+          params: {
+            slug,
+          },
+          body: {
+            name: value.name,
+          },
+        }),
+        {
+          loading: "Trwa aktualizacja rozmiaru...",
+          success: () => {
+            navigate(`/admin/sizes`);
+            return `Rozmiar została aktualizowana`;
+          },
+          error: "Wystąpił błąd podczas aktualizacji rozmiaru",
+        }
+      );
     },
   });
 
-  React.useEffect(() => {
-    if (fetcher.data?.success) {
-      navigate("/admin/sizes");
-    }
-  }, [fetcher.data, navigate]);
+  useFormPersistence(formId, form, defaultValues);
+
+  const isUpdating = form.state.isSubmitting;
 
   return (
     <AdminPageContainer>
       <AdminPageHeader>
         <AdminPageActions>
-          <Button variant="outline" form={SIZE_FORM_ID} type="reset">
+          <Button variant="outline" form={formId} type="reset">
             <RotateCcwIcon />
           </Button>
         </AdminPageActions>
@@ -193,7 +119,7 @@ export default function AdminSizesEditPage({
             e.preventDefault();
             form.handleSubmit();
           }}
-          id={SIZE_FORM_ID}
+          id={formId}
         >
           <FieldSet>
             <FieldLegend>Informacje o rozmiarze</FieldLegend>
@@ -202,7 +128,7 @@ export default function AdminSizesEditPage({
                 {(field) => (
                   <field.TextField
                     label="Nazwa rozmiaru"
-                    description="Unikalwa nazwa rozmiaru, która będzie wyświetlana w sklepie"
+                    description="Unikalwa nazwa marki, która będzie wyświetlana w sklepie"
                   />
                 )}
               </form.AppField>
@@ -220,35 +146,11 @@ export default function AdminSizesEditPage({
           Powrót
         </Link>
 
-        <Button
-          size="sm"
-          type="submit"
-          form={SIZE_FORM_ID}
-          disabled={isUpdating}
-        >
+        <Button size="sm" type="submit" form={formId} disabled={isUpdating}>
           {isUpdating ? <Spinner /> : <CheckCircleIcon />}
           <span>Zapisz rozmiar</span>
         </Button>
       </AdminPageFooter>
     </AdminPageContainer>
   );
-}
-
-// ========================== ERRORS ==========================
-
-export function ErrorBoundary({ error }: { error: Error }) {
-  if (
-    isRouteErrorResponse(error) &&
-    error instanceof Response &&
-    error.status === 404
-  )
-    return (
-      // TODO: Add a error component
-      <div>
-        <h1>Error</h1>
-        <p>{error.message}</p>
-      </div>
-    );
-
-  return null;
 }

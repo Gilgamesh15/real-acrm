@@ -1,14 +1,16 @@
+import { SizeCreateSchema } from "db/models/sizes.model";
 import { CheckCircleIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import React from "react";
-import { Link, useFetcher, useNavigate } from "react-router";
-import { data, redirect } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { redirect } from "react-router";
+import { data } from "react-router";
 import { toast } from "sonner";
+import type z from "zod";
 
 import { Button, buttonVariants } from "~/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "~/components/ui/field";
 import { Spinner } from "~/components/ui/spinner";
 
-import * as schema from "~/../db/schema";
+import { api } from "~/api/api";
 import {
   AdminPageActions,
   AdminPageContainer,
@@ -17,21 +19,23 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
-import { db } from "~/lib/db";
-import { SizeFormSchema, type SizeFormSchemaType } from "~/lib/schemas";
-import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
-import { convertObjectToFormDataUnsafe } from "~/lib/utils";
+import {
+  getPersistedDefaultValue,
+  useFormPersistence,
+} from "~/hooks/use-form-persistance";
+import { auth } from "~/lib/auth.server";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-sizes-create.page";
 
 // ========================== LOADING ==========================
 
-export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
 
-  if (!session) {
+  if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");
   }
 
@@ -42,124 +46,54 @@ export async function loader({ context }: Route.LoaderArgs) {
   return data({}, { status: 200 });
 }
 
-// ========================== ACTIONS ==========================
-
-export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
-  const adminId = session?.user?.id;
-
-  try {
-    const args = convertFormDataToObjectUnsafe(
-      SizeFormSchema,
-      await request.formData()
-    );
-
-    const { success, error } = SizeFormSchema.safeParse(args);
-    if (!success) {
-      logger.warn("Size validation failed", {
-        adminId,
-        errors: error.issues.map((i) => i.message),
-      });
-      throw data(
-        {
-          success: false,
-          message: "Nieprawidłowe dane wejściowe",
-          error: error.issues.map((issue) => issue.message).join(", "),
-          size: null,
-        },
-        { status: 400 }
-      );
-    }
-
-    const existingSlugs = await db.query.sizes.findMany({
-      columns: { slug: true },
-    });
-    const slugs = existingSlugs.map((size) => size.slug);
-    const slug = generateSlug(args.name, slugs);
-
-    const createdSize = await db
-      .insert(schema.sizes)
-      .values({ name: args.name, slug })
-      .returning()
-      .then((result) => result[0]);
-
-    logger.info("Size created", {
-      adminId,
-      sizeId: createdSize?.id,
-      sizeName: createdSize?.name,
-    });
-
-    return data(
-      {
-        success: true,
-        size: createdSize,
-        error: null,
-        message: "Rozmiar został utworzony",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    logger.error("Failed to create size", { error, adminId });
-    throw data(
-      {
-        success: false,
-        error,
-        message: "Wystąpił nieoczekiwany błąd",
-        size: null,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function clientAction({ serverAction }: Route.ClientActionArgs) {
-  const result = await serverAction();
-
-  if (result.success) {
-    toast.success(result.message);
-  } else {
-    toast.error(result.message);
-  }
-
-  return result;
-}
-
 // ========================== PAGE ==========================
 
-const SIZE_FORM_ID = "size-form";
+const formId = "size-form";
+
+const defaultValues = {
+  name: "",
+  groupId: undefined,
+} as z.infer<typeof SizeCreateSchema>;
 
 export default function AdminSizesCreatePage() {
-  const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
 
   const form = useAppForm({
-    defaultValues: {
-      name: "",
-    } as SizeFormSchemaType,
+    defaultValues: getPersistedDefaultValue(formId, defaultValues),
     validators: {
-      onSubmit: SizeFormSchema,
+      onSubmit: SizeCreateSchema,
     },
     onSubmit: async ({ value }) => {
-      fetcher.submit(convertObjectToFormDataUnsafe(SizeFormSchema, value), {
-        method: "post",
-      });
+      toast.promise(
+        api.sizes.create({
+          body: {
+            name: value.name,
+          },
+        }),
+        {
+          loading: "Trwa tworzenie rozmiaru...",
+          success: () => {
+            localStorage.removeItem(formId);
+            navigate(`/admin/sizes`);
+            return `Rozmiar został utworzony`;
+          },
+          error: (error) => {
+            return error.message;
+          },
+        }
+      );
     },
   });
 
-  React.useEffect(() => {
-    if (fetcher.data?.success) {
-      navigate(`/admin/sizes`);
-    }
-  }, [fetcher.data, navigate]);
+  useFormPersistence(formId, form, defaultValues);
 
-  const isCreating = fetcher.state === "submitting";
+  const isCreating = form.state.isSubmitting;
 
   return (
     <AdminPageContainer>
       <AdminPageHeader>
         <AdminPageActions>
-          <Button variant="outline" form={SIZE_FORM_ID} type="reset">
+          <Button variant="outline" form={formId} type="reset">
             <RotateCcwIcon />
           </Button>
         </AdminPageActions>
@@ -170,7 +104,7 @@ export default function AdminSizesCreatePage() {
             e.preventDefault();
             form.handleSubmit();
           }}
-          id={SIZE_FORM_ID}
+          id={formId}
         >
           <FieldSet>
             <FieldLegend>Informacje o rozmiarze</FieldLegend>
@@ -197,12 +131,7 @@ export default function AdminSizesCreatePage() {
           Powrót
         </Link>
 
-        <Button
-          size="sm"
-          type="submit"
-          form={SIZE_FORM_ID}
-          disabled={isCreating}
-        >
+        <Button size="sm" type="submit" form={formId} disabled={isCreating}>
           {isCreating ? <Spinner /> : <CheckCircleIcon />}
           <span>Zapisz rozmiar</span>
         </Button>

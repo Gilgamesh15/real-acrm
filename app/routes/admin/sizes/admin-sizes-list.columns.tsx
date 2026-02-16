@@ -1,4 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import type { Size } from "db/models/sizes.model";
 import { CalendarIcon, Edit, MoreHorizontal, TextIcon, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -23,12 +24,9 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 
 import { createColumnConfigHelper } from "~/components/shared/data-table-filter/core/filters";
-import type { DBQueryResult } from "~/lib/types";
 import { formatDate } from "~/lib/utils";
 
 import type { AdminSizesDataTableMeta } from "./admin-sizes-list.page";
-
-type Size = DBQueryResult<"sizes", {}>;
 
 const dtf = createColumnConfigHelper<Size>();
 
@@ -66,19 +64,13 @@ export const columns: ColumnDef<Size>[] = [
     id: "createdAt",
     accessorKey: "createdAt",
     header: "Utworzono",
-    cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return formatDate(date, "short");
-    },
+    cell: ({ row }) => formatDate(row.original.createdAt, "short"),
   },
   {
     id: "updatedAt",
     accessorKey: "updatedAt",
     header: "Zaktualizowano",
-    cell: ({ row }) => {
-      const date = row.getValue("updatedAt") as Date;
-      return formatDate(date, "short");
-    },
+    cell: ({ row }) => formatDate(row.original.updatedAt, "short"),
   },
   {
     id: "actions",
@@ -104,7 +96,7 @@ export const columns: ColumnDef<Size>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/sizes/${size.id}/edit`}>
+                <Link to={`/admin/sizes/${size.slug}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>
@@ -135,7 +127,7 @@ export const columns: ColumnDef<Size>[] = [
               </AlertDialogCancel>
               <Button
                 variant="destructive"
-                onClick={() => deleteSize(size.id)}
+                onClick={() => deleteSize(size.slug)}
                 disabled={isDeleting}
               >
                 {isDeleting ? (

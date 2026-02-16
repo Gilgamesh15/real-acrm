@@ -1,11 +1,11 @@
-import * as schema from "db/schema";
-import { asc, eq } from "drizzle-orm";
 import { ChevronLeftIcon, PlusIcon } from "lucide-react";
-import { Link, data, redirect, useFetcher } from "react-router";
+import React from "react";
+import { Link, data, redirect, useRevalidator } from "react-router";
 import { toast } from "sonner";
 
 import { buttonVariants } from "~/components/ui/button";
 
+import { api } from "~/api/api";
 import {
   AdminPageActions,
   AdminPageContainer,
@@ -21,9 +21,7 @@ import {
   DataTableProvider,
   DataTableRoot,
 } from "~/components/shared/data-table";
-import { loggerContext } from "~/context/logger-context.server";
 import { sessionContext } from "~/context/session-context.server";
-import { db } from "~/lib/db";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-sizes-list.page";
@@ -42,116 +40,25 @@ export async function loader({ context }: Route.LoaderArgs) {
     throw redirect("/");
   }
 
-  const sizes = await db.query.sizes.findMany({
-    orderBy: asc(schema.sizes.createdAt),
+  const response = await api.sizes.get({
+    query: {
+      sortOrder: "asc",
+      sortBy: "createdAt",
+    },
   });
+
+  if (response.status !== 200) {
+    throw data(response.body, { status: response.status });
+  }
+
+  const sizes = response.body.sizes;
 
   return data({ sizes }, { status: 200 });
 }
 
-export const HydrateFallback = () => {
-  // TODO: Add a loading skeleton
-  return (
-    <div>
-      <h1>Loading...</h1>
-    </div>
-  );
-};
-
-// ========================== ACTIONS ==========================
-
-enum Intent {
-  DELETE = "delete",
-}
-
-export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
-  const adminId = session?.user?.id;
-
-  try {
-    const formData = await request.formData();
-    const sizeId = formData.get("sizeId") as string | undefined;
-
-    if (!sizeId) {
-      logger.warn("Size delete failed - missing sizeId", { adminId });
-      throw data(
-        {
-          success: false,
-          error: "ID rozmiaru jest wymagane",
-          size: null,
-          message: "ID rozmiaru jest wymagane",
-        },
-        { status: 400 }
-      );
-    }
-
-    const existingSize = await db.query.sizes.findFirst({
-      where: eq(schema.sizes.id, sizeId),
-    });
-
-    if (!existingSize) {
-      logger.warn("Size delete failed - not found", { adminId, sizeId });
-      throw data(
-        {
-          success: false,
-          error: "Rozmiar nie został znaleziony",
-          size: null,
-          message: "Rozmiar nie został znaleziony",
-        },
-        { status: 404 }
-      );
-    }
-
-    const deletedSize = await db
-      .delete(schema.sizes)
-      .where(eq(schema.sizes.id, sizeId))
-      .returning()
-      .then((result) => result[0]);
-
-    logger.info("Size deleted", {
-      adminId,
-      sizeId,
-      sizeName: deletedSize?.name,
-    });
-
-    return data(
-      {
-        success: true,
-        error: null,
-        size: deletedSize,
-        message: "Rozmiar został usunięty",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    logger.error("Failed to delete size", { error, adminId });
-    return data(
-      {
-        success: false,
-        error: "Wystąpił nieoczekiwany błąd",
-        size: null,
-        message: "Wystąpił nieoczekiwany błąd",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function clientAction({ serverAction }: Route.ClientActionArgs) {
-  const result = await serverAction();
-
-  if (result.success) {
-    toast.success(result.message);
-  } else {
-    toast.error(result.message);
-  }
-
-  return result;
-}
 // ========================== PAGE ==========================
 export type AdminSizesDataTableMeta = {
-  deleteSize: (sizeId: string) => void;
+  deleteSize: (slug: string) => void;
   isDeleting: boolean;
 };
 
@@ -159,22 +66,31 @@ export default function AdminSizesListPage({
   loaderData,
 }: Route.ComponentProps) {
   const { sizes } = loaderData;
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const revalidator = useRevalidator();
 
-  const fetcher = useFetcher<typeof action>();
-
-  const isDeleting = fetcher.state === "submitting";
-
-  const handleDeleteSize = (sizeId: string) => {
+  const handleDeleteSize = (slug: string) => {
     if (isDeleting) return;
 
+    setIsDeleting(true);
+
     toast.promise(
-      fetcher.submit(
-        {
-          intent: Intent.DELETE,
-          sizeId,
+      api.sizes.bySlug.delete({
+        params: {
+          slug,
         },
-        { method: "post" }
-      )
+      }),
+      {
+        loading: "Trwa usuwanie rozmiaru...",
+        success: () => {
+          revalidator.revalidate();
+          return "Rozmiar został usunięty";
+        },
+        error: "Wystąpił błąd podczas usuwania rozmiaru",
+        finally: () => {
+          setIsDeleting(false);
+        },
+      }
     );
   };
 
