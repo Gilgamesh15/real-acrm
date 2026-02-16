@@ -119,17 +119,6 @@ type SizeFormSchemaType = z.infer<typeof SizeFormSchema>;
 
 export { SizeFormSchema, type SizeFormSchemaType };
 
-const BrandFormSchema = z.object({
-  name: z
-    .string({ message: "Nazwa marki musi być tekstem" })
-    .min(1, "Nazwa marki jest wymagana")
-    .max(100, "Nazwa marki nie może przekraczać 100 znaków"),
-});
-
-type BrandFormSchemaType = z.infer<typeof BrandFormSchema>;
-
-export { BrandFormSchema, type BrandFormSchemaType };
-
 const BrandGroupFormSchema = z.object({
   name: z
     .string({ message: "Nazwa grupy marek musi być tekstem" })

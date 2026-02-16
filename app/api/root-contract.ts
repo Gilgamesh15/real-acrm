@@ -1,9 +1,5 @@
-import { categoriesContract } from "./categories/api";
-import { piecesContract } from "./pieces/api";
-import { productsContract } from "./products/api";
+import { brandsContract } from "./brands/brands.contract";
 
 export const rootContract = {
-  categories: categoriesContract,
-  products: productsContract,
-  pieces: piecesContract,
+  brands: brandsContract,
 };

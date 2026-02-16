@@ -785,85 +785,86 @@ class FilterService {
     const childCategories = alias(schema.categories, "child");
 
     // Get all filter data in parallel
-    const [brands, sizes, categories, tags, priceRange] =
-      await Promise.all([
-        // Get brands for eligible pieces
-        db
-          .selectDistinct({
-            id: schema.brands.id,
-            name: schema.brands.name,
-            slug: schema.brands.slug,
-          })
-          .from(schema.brands)
-          .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
-          .orderBy(schema.brands.order, schema.brands.name),
+    const [brands, sizes, categories, tags, priceRange] = await Promise.all([
+      // Get brands for eligible pieces
+      db
+        .selectDistinct({
+          id: schema.brands.id,
+          name: schema.brands.name,
+          slug: schema.brands.slug,
+          order: schema.brands.order,
+        })
+        .from(schema.brands)
+        .innerJoin(schema.pieces, eq(schema.pieces.brandId, schema.brands.id))
+        .orderBy(schema.brands.order, schema.brands.name),
 
-        // Get sizes for eligible pieces
-        db
-          .selectDistinct({
-            id: schema.sizes.id,
-            name: schema.sizes.name,
-            slug: schema.sizes.slug,
-          })
-          .from(schema.sizes)
-          .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
-          .orderBy(schema.sizes.order, schema.sizes.name),
-        db
-          .selectDistinct({
-            id: schema.categories.id,
-            name: schema.categories.name,
-            slug: schema.categories.slug,
-            path: schema.categories.path,
-            image: sql`(
+      // Get sizes for eligible pieces
+      db
+        .selectDistinct({
+          id: schema.sizes.id,
+          name: schema.sizes.name,
+          slug: schema.sizes.slug,
+          order: schema.sizes.order,
+        })
+        .from(schema.sizes)
+        .innerJoin(schema.pieces, eq(schema.pieces.sizeId, schema.sizes.id))
+        .orderBy(schema.sizes.order, schema.sizes.name),
+      db
+        .selectDistinct({
+          id: schema.categories.id,
+          name: schema.categories.name,
+          slug: schema.categories.slug,
+          path: schema.categories.path,
+          image: sql`(
               SELECT url FROM images 
               WHERE category_id = ${schema.categories.id} 
               ORDER BY display_order ASC 
               LIMIT 1
             )`.as("image"),
-            updatedAt: schema.categories.updatedAt,
-          })
-          .from(schema.categories)
-          .innerJoin(
-            schema.pieces,
-            eq(schema.pieces.categoryId, schema.categories.id)
+          updatedAt: schema.categories.updatedAt,
+        })
+        .from(schema.categories)
+        .innerJoin(
+          schema.pieces,
+          eq(schema.pieces.categoryId, schema.categories.id)
+        )
+        .where(
+          // 👇 properly correlated leaf check
+          notExists(
+            db
+              .select()
+              .from(childCategories)
+              .where(eq(childCategories.parentId, schema.categories.id))
           )
-          .where(
-            // 👇 properly correlated leaf check
-            notExists(
-              db
-                .select()
-                .from(childCategories)
-                .where(eq(childCategories.parentId, schema.categories.id))
-            )
-          )
-          .orderBy(desc(schema.categories.updatedAt)),
+        )
+        .orderBy(desc(schema.categories.updatedAt)),
 
-        // Get tags for eligible pieces
-        db
-          .selectDistinct({
-            id: schema.tags.id,
-            name: schema.tags.name,
-            slug: schema.tags.slug,
-          })
-          .from(schema.tags)
-          .innerJoin(
-            schema.piecesToTags,
-            eq(schema.piecesToTags.tagId, schema.tags.id)
-          )
-          .orderBy(schema.tags.name),
+      // Get tags for eligible pieces
+      db
+        .selectDistinct({
+          id: schema.tags.id,
+          name: schema.tags.name,
+          slug: schema.tags.slug,
+        })
+        .from(schema.tags)
+        .innerJoin(
+          schema.piecesToTags,
+          eq(schema.piecesToTags.tagId, schema.tags.id)
+        )
+        .orderBy(schema.tags.name),
 
-        // Get price range for eligible pieces (using effective price after discounts)
-        (() => {
-          const effectivePrice = this.getPieceEffectivePriceExpr();
-          return db
-            .select({
-              min: sql<number>`MIN(${effectivePrice})`,
-              max: sql<number>`MAX(${effectivePrice})`,
-            })
-            .from(schema.pieces)
-            .then((result) => result[0] || { min: 0, max: 0 });
-        })(),
-      ]);
+      // Get price range for eligible pieces (using effective price after discounts)
+      (() => {
+        const effectivePrice = this.getPieceEffectivePriceExpr();
+        return db
+          .select({
+            min: sql<number>`MIN(${effectivePrice})`,
+            max: sql<number>`MAX(${effectivePrice})`,
+          })
+          .from(schema.pieces)
+          .then((result) => result[0] || { min: 0, max: 0 });
+      })(),
+    ]);
 
     return {
       brands,

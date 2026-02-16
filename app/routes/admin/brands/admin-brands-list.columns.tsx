@@ -1,4 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import type { Brand } from "db/models/brands.model";
 import { CalendarIcon, Edit, MoreHorizontal, TextIcon, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -23,12 +24,9 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 
 import { createColumnConfigHelper } from "~/components/shared/data-table-filter/core/filters";
-import type { DBQueryResult } from "~/lib/types";
 import { formatDate } from "~/lib/utils";
 
 import type { AdminBrandsDataTableMeta } from "./admin-brands-list.page";
-
-type Brand = DBQueryResult<"brands", {}>;
 
 const dtf = createColumnConfigHelper<Brand>();
 
@@ -66,19 +64,13 @@ export const columns: ColumnDef<Brand>[] = [
     id: "createdAt",
     accessorKey: "createdAt",
     header: "Utworzono",
-    cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return formatDate(date, "short");
-    },
+    cell: ({ row }) => formatDate(row.original.createdAt, "short"),
   },
   {
     id: "updatedAt",
     accessorKey: "updatedAt",
     header: "Zaktualizowano",
-    cell: ({ row }) => {
-      const date = row.getValue("updatedAt") as Date;
-      return formatDate(date, "short");
-    },
+    cell: ({ row }) => formatDate(row.original.updatedAt, "short"),
   },
   {
     id: "actions",
@@ -104,7 +96,7 @@ export const columns: ColumnDef<Brand>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link to={`/admin/brands/${brand.id}/edit`}>
+                <Link to={`/admin/brands/${brand.slug}/edit`}>
                   <Edit />
                   Edytuj
                 </Link>
@@ -134,7 +126,7 @@ export const columns: ColumnDef<Brand>[] = [
               </AlertDialogCancel>
               <Button
                 variant="destructive"
-                onClick={() => deleteBrand(brand.id)}
+                onClick={() => deleteBrand(brand.slug)}
                 disabled={isDeleting}
               >
                 {isDeleting ? (

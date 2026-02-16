@@ -12,6 +12,12 @@ export default [
     route("/products", "./api/products/api.ts"),
     route("/pieces", "./api/pieces/api.ts"),
     route("/categories", "./api/categories/api.ts"),
+
+    // Brands
+    ...prefix("/brands", [
+      index("./api/brands/brands.handlers.ts"),
+      route("/:slug", "./api/brands/:slug/brands-by-slug.handlers.ts"),
+    ]),
   ]),
   // API
   route("/api/auth/*", "./api/auth.ts"),
@@ -153,7 +159,7 @@ export default [
         index("./routes/admin/brands/admin-brands-list.page.tsx"),
         route("/create", "./routes/admin/brands/admin-brands-create.page.tsx"),
         route(
-          "/:brandId/edit",
+          "/:slug/edit",
           "./routes/admin/brands/admin-brands-edit.page.tsx"
         ),
       ]),
