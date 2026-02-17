@@ -16,3 +16,4 @@ storybook-static
 !/prisma/schema.prisma
 bundle-analysis.html
 .vercel
+.env*.local
