@@ -9,6 +9,7 @@ import type {
   OrderProduct,
   loader as pendingOrderLoader,
 } from "~/api/pending-order";
+import { authClient } from "~/lib/auth-client";
 import type { CreateOrderSchemaType } from "~/lib/schemas";
 import {
   groupPurchasableItems,
@@ -44,6 +45,11 @@ function useCheckout() {
 function CheckoutProvider({ children }: React.PropsWithChildren) {
   const location = useLocation();
 
+  const session = authClient.useSession.get();
+
+  const isLoggedIn =
+    !!session.data && !session.isPending && !session.data?.user.isAnonymous;
+
   const [stripeCheckoutUrl, setStripeCheckoutUrl] = React.useState<
     string | null
   >(null);
@@ -59,6 +65,14 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["pending-order", location.pathname],
     queryFn: async () => {
+      console.log("session", session);
+      console.log("!!session", !!session);
+      console.log("session.isPending", session.isPending);
+      console.log(
+        "session.data?.user.isAnonymous",
+        session.data?.user.isAnonymous
+      );
+      console.log("isLoggedIn", isLoggedIn);
       const response = await fetch("/api/pending-order");
       if (!response.ok) {
         throw new Error("Failed to fetch pending order");
@@ -67,6 +81,7 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
         ReturnType<typeof pendingOrderLoader>
       >["data"];
     },
+    enabled: isLoggedIn,
   });
 
   // Update state when pending order is fetched

@@ -1,5 +1,3 @@
-import * as schema from "db/schema";
-import { asc, desc } from "drizzle-orm";
 import {
   AlertCircleIcon,
   ChevronLeft,
@@ -7,7 +5,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import React from "react";
-import { Await, Link } from "react-router";
+import { Await, type AwaitProps, Link, useAsyncError } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
@@ -32,7 +30,8 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { MainProductCard } from "~/components/features/product-card/main-product-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { db } from "~/lib/db";
+import { useFeaturedProducts } from "~/hooks/use-featured-products";
+import { useHomeTags } from "~/hooks/use-home-tags";
 import type { DBQueryResult, PriceDisplayData } from "~/lib/types";
 import {
   calculatePiecePriceDisplayData,
@@ -47,8 +46,7 @@ import {
 
 import type { Route } from "./+types/home.page";
 
-const PAGE_TITLE =
-  "ACRM | Markowe ubrania z second-handu w dobrych cenach";
+const PAGE_TITLE = "ACRM | Markowe ubrania z second-handu w dobrych cenach";
 
 const WOMEN_HERO_SRC_SET = [
   "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
@@ -86,65 +84,6 @@ export async function loader() {
       },
     })
     .then((res) => res.body.categories);
-
-  const tagsPromise = db.query.tags
-    .findMany({
-      with: {
-        image: true,
-        piecesToTags: {
-          orderBy: desc(schema.piecesToTags.createdAt),
-          limit: 4,
-          with: {
-            piece: {
-              with: {
-                discount: true,
-                brand: true,
-                size: true,
-                category: true,
-                images: {
-                  limit: 1,
-                  orderBy: asc(schema.images.displayOrder),
-                },
-              },
-            },
-          },
-          where: (piecesToTags, { exists, and, eq, lte, or, isNull }) =>
-            exists(
-              db
-                .select()
-                .from(schema.pieces)
-                .where(
-                  and(
-                    eq(schema.pieces.id, piecesToTags.pieceId),
-                    eq(schema.pieces.status, "published"),
-                    or(
-                      isNull(schema.pieces.reservedUntil),
-                      lte(schema.pieces.reservedUntil, new Date())
-                    )
-                  )
-                )
-            ),
-        },
-      },
-      orderBy: asc(schema.tags.featuredOrder),
-    })
-    .then((res) => res);
-
-  const featuredProductsPromise = api.products.get
-    .all({
-      query: {
-        limit: 30,
-        scope: "featured",
-        orderBy: "featuredOrder",
-        sortOrder: "desc",
-        // 5 minutes
-        cache: 60 * 5,
-        description: false,
-        images: "primary",
-        piecesImages: "primary",
-      },
-    })
-    .then((res) => res.body.products);
 
   const topProductsPromise = api.products.get
     .all({
@@ -196,8 +135,6 @@ export async function loader() {
     categoriesPromise,
     topPiecesPromise,
     topProductsPromise,
-    tagsPromise,
-    featuredProductsPromise,
   };
 }
 
@@ -231,13 +168,8 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const {
-    categoriesPromise,
-    tagsPromise,
-    featuredProductsPromise,
-    topPiecesPromise,
-    topProductsPromise,
-  } = loaderData;
+  const { categoriesPromise, topPiecesPromise, topProductsPromise } =
+    loaderData;
 
   return (
     <main>
@@ -258,12 +190,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         className="pt-8 pb-16"
       />
 
-      <TagsSection tagsPromise={tagsPromise} />
+      <TagsSection />
 
       {/* Featured products */}
-      <FeaturedProductsSection
-        featuredProductsPromise={featuredProductsPromise}
-      />
+      <FeaturedProductsSection />
     </main>
   );
 }
@@ -454,7 +384,7 @@ function TopFeaturedSection({
             </Carousel>
           }
         >
-          <Await
+          <AsyncError
             resolve={promise}
             errorElement={
               <Error>
@@ -546,7 +476,7 @@ function TopFeaturedSection({
                 </Carousel>
               );
             }}
-          </Await>
+          </AsyncError>
         </React.Suspense>
 
         <div className="h-px from-primary/50 to-transparent w-full bg-linear-to-r" />
@@ -584,7 +514,7 @@ function CategoriesSection({
           />
         ))}
       >
-        <Await
+        <AsyncError
           resolve={categoriesPromise}
           errorElement={
             <Error>
@@ -633,7 +563,7 @@ function CategoriesSection({
               </ul>
             </nav>
           )}
-        </Await>
+        </AsyncError>
       </React.Suspense>
 
       <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-4" />
@@ -641,42 +571,96 @@ function CategoriesSection({
   );
 }
 
-function TagsSection({
-  tagsPromise,
-}: {
-  tagsPromise: Promise<
-    DBQueryResult<
-      "tags",
-      {
-        with: {
-          image: true;
-          piecesToTags: {
-            with: {
-              piece: {
-                with: {
-                  images: true;
-                  brand: true;
-                  size: true;
-                  category: true;
-                  discount: true;
-                };
-              };
-            };
-          };
-        };
-      }
-    >[]
-  >;
-}) {
+function TagsSection() {
   const { isInCart, addPiece, removePiece } = useCart();
-  return (
-    <React.Suspense
-      fallback={Array.from({ length: 4 }).map((_, index) => (
-        <React.Fragment key={index}>
-          <section className="flex flex-col relative">
-            <Skeleton className="absolute inset-0 size-full" />
+  const { data: tags, isPending, isError } = useHomeTags();
 
-            <nav className="pb-18">
+  if (isPending) {
+    return (
+      <>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <React.Fragment key={index}>
+            <section className="flex flex-col relative">
+              <Skeleton className="absolute inset-0 size-full" />
+
+              <nav className="pb-18">
+                <Carousel
+                  opts={{
+                    dragFree: true,
+                    align: "start",
+                  }}
+                  className="w-full h-fit"
+                >
+                  <CarouselContent className="max-w-7xl mx-auto">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <CarouselItem key={index} className="basis-[248px]">
+                        <Skeleton className="w-[248px] h-[417.98px]" />
+                        <Skeleton className="w-[248px] h-[417.98px]" />
+                        <Skeleton className="w-[248px] h-[417.98px]" />
+                        <Skeleton className="w-[248px] h-[417.98px]" />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+              </nav>
+            </section>
+            {index < 4 - 1 && (
+              <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
+            )}
+          </React.Fragment>
+        ))}
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Error>
+        <ErrorMedia>
+          <AlertCircleIcon />
+        </ErrorMedia>
+        <ErrorContent>
+          <ErrorTitle>Wystąpił błąd podczas ładowania tagów</ErrorTitle>
+          <ErrorDescription>
+            Spróbuj odświeżyć stronę lub wrócić później.
+          </ErrorDescription>
+        </ErrorContent>
+      </Error>
+    );
+  }
+
+  return (
+    <>
+      {tags.map((tag, index) => (
+        <React.Fragment key={tag.id}>
+          <section
+            className="flex flex-col relative"
+            aria-labelledby={`tag-${tag.id}`}
+          >
+            <div className="absolute inset-0 size-full bg-linear-to-t from-background/90 via-background/20 via-80% to-background/90 z-0" />
+            <Image
+              src={tag.image?.url || ""}
+              alt={tag.name}
+              lazyload
+              resize="fill"
+              responsive
+              className="size-full absolute -z-10 object-cover"
+            />
+
+            <Link
+              to={`/kategorie?tags=${tag.slug}`}
+              className="h-36 md:h-44 lg:h-60"
+            >
+              <div className="size-full flex items-center justify-center p-12 font-secondary">
+                <h2 className="text-4xl leading-tight font-medium text-foreground sm:text-5xl md:text-6xl lg:text-7xl relative z-10">
+                  {tag.name}
+                </h2>
+              </div>
+            </Link>
+            <nav
+              className="pb-18"
+              aria-label={`Produkty z kategorii ${tag.name}`}
+            >
               <Carousel
                 opts={{
                   dragFree: true,
@@ -685,174 +669,74 @@ function TagsSection({
                 className="w-full h-fit"
               >
                 <CarouselContent className="max-w-7xl mx-auto">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <CarouselItem key={index} className="basis-[248px]">
-                      <Skeleton className="w-[248px] h-[417.98px]" />
-                      <Skeleton className="w-[248px] h-[417.98px]" />
-                      <Skeleton className="w-[248px] h-[417.98px]" />
-                      <Skeleton className="w-[248px] h-[417.98px]" />
+                  {tag.piecesToTags.map(({ piece }, pieceIndex) => (
+                    <CarouselItem key={piece.id} className="basis-[248px]">
+                      <MainPieceCard
+                        piece={piece}
+                        href={`/ubrania/${piece.slug}`}
+                        isInCart={isInCart(piece.id)}
+                        onClick={() => {
+                          window.gtag?.("event", "select_item", {
+                            item_list_id: `tag_${tag.id}`,
+                            item_list_name: tag.name,
+                            items: [
+                              pieceToGoogleAnalyticsItem(piece, {
+                                item_list_id: `tag_${tag.id}`,
+                                item_list_name: tag.name,
+                                index: pieceIndex,
+                              }),
+                            ],
+                          });
+                        }}
+                        onToggleCart={() => {
+                          if (isInCart(piece.id)) {
+                            removePiece(piece.id, true, {
+                              item_list_id: `tag_${tag.id}`,
+                              item_list_name: tag.name,
+                              index: pieceIndex,
+                            });
+                          } else {
+                            addPiece(piece, true, {
+                              item_list_id: `tag_${tag.id}`,
+                              item_list_name: tag.name,
+                              index: pieceIndex,
+                            });
+                          }
+                        }}
+                      />
                     </CarouselItem>
                   ))}
+                  <CarouselItem className="basis-[248px]">
+                    <Link
+                      to={`/kategorie?tags=${tag.slug}`}
+                      className={cn(
+                        buttonVariants({
+                          variant: "ghost",
+                        }),
+                        "min-w-full min-h-full"
+                      )}
+                    >
+                      Zobacz więcej
+                      <ChevronRight />
+                    </Link>
+                  </CarouselItem>
                 </CarouselContent>
               </Carousel>
             </nav>
           </section>
-          {index < 4 - 1 && (
+          {index < tags.length - 1 && (
             <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
           )}
         </React.Fragment>
       ))}
-    >
-      <Await
-        resolve={tagsPromise}
-        errorElement={
-          <Error>
-            <ErrorMedia>
-              <AlertCircleIcon />
-            </ErrorMedia>
-            <ErrorContent>
-              <ErrorTitle>Wystąpił błąd podczas ładowania tagów</ErrorTitle>
-              <ErrorDescription>
-                Spróbuj odświeżyć stronę lub wrócić później.
-              </ErrorDescription>
-            </ErrorContent>
-          </Error>
-        }
-      >
-        {(tags) =>
-          tags.map((tag, index) => (
-            <React.Fragment key={tag.id}>
-              <section
-                className="flex flex-col relative"
-                aria-labelledby={`tag-${tag.id}`}
-              >
-                <div className="absolute inset-0 size-full bg-linear-to-t from-background/90 via-background/20 via-80% to-background/90 z-0" />
-                <Image
-                  src={tag.image?.url || ""}
-                  alt={tag.name}
-                  lazyload
-                  resize="fill"
-                  responsive
-                  className="size-full absolute -z-10 object-cover"
-                />
-
-                <Link
-                  to={`/kategorie?tags=${tag.slug}`}
-                  className="h-36 md:h-44 lg:h-60"
-                >
-                  <div className="size-full flex items-center justify-center p-12 font-secondary">
-                    <h2 className="text-4xl leading-tight font-medium text-foreground sm:text-5xl md:text-6xl lg:text-7xl relative z-10">
-                      {tag.name}
-                    </h2>
-                  </div>
-                </Link>
-                <nav
-                  className="pb-18"
-                  aria-label={`Produkty z kategorii ${tag.name}`}
-                >
-                  <Carousel
-                    opts={{
-                      dragFree: true,
-                      align: "start",
-                    }}
-                    className="w-full h-fit"
-                  >
-                    <CarouselContent className="max-w-7xl mx-auto">
-                      {tag.piecesToTags.map(({ piece }, pieceIndex) => (
-                        <CarouselItem key={piece.id} className="basis-[248px]">
-                          <MainPieceCard
-                            piece={piece}
-                            href={`/ubrania/${piece.slug}`}
-                            isInCart={isInCart(piece.id)}
-                            onClick={() => {
-                              window.gtag?.("event", "select_item", {
-                                item_list_id: `tag_${tag.id}`,
-                                item_list_name: tag.name,
-                                items: [
-                                  pieceToGoogleAnalyticsItem(piece, {
-                                    item_list_id: `tag_${tag.id}`,
-                                    item_list_name: tag.name,
-                                    index: pieceIndex,
-                                  }),
-                                ],
-                              });
-                            }}
-                            onToggleCart={() => {
-                              if (isInCart(piece.id)) {
-                                removePiece(piece.id, true, {
-                                  item_list_id: `tag_${tag.id}`,
-                                  item_list_name: tag.name,
-                                  index: pieceIndex,
-                                });
-                              } else {
-                                addPiece(piece, true, {
-                                  item_list_id: `tag_${tag.id}`,
-                                  item_list_name: tag.name,
-                                  index: pieceIndex,
-                                });
-                              }
-                            }}
-                          />
-                        </CarouselItem>
-                      ))}
-                      <CarouselItem className="basis-[248px]">
-                        <Link
-                          to={`/kategorie?tags=${tag.slug}`}
-                          className={cn(
-                            buttonVariants({
-                              variant: "ghost",
-                            }),
-                            "min-w-full min-h-full"
-                          )}
-                        >
-                          Zobacz więcej
-                          <ChevronRight />
-                        </Link>
-                      </CarouselItem>
-                    </CarouselContent>
-                  </Carousel>
-                </nav>
-              </section>
-              {index < tags.length - 1 && (
-                <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
-              )}
-            </React.Fragment>
-          ))
-        }
-      </Await>
-    </React.Suspense>
+    </>
   );
 }
 
-function FeaturedProductsSection({
-  featuredProductsPromise,
-}: {
-  featuredProductsPromise: Promise<
-    DBQueryResult<
-      "products",
-      {
-        columns: {
-          description: false;
-        };
-        with: {
-          images: true;
-          discount: true;
-          pieces: {
-            with: {
-              images: true;
-              brand: true;
-              size: true;
-              category: true;
-              discount: true;
-            };
-          };
-        };
-      }
-    >[]
-  >;
-}) {
+function FeaturedProductsSection() {
   const { isInCart, addProduct, removeProduct } = useCart();
   const { onProductBuyNow } = useCheckoutDialog();
+  const { data: products, isPending, isError } = useFeaturedProducts();
 
   return (
     <section
@@ -868,127 +752,138 @@ function FeaturedProductsSection({
 
       <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mb-4" />
 
-      <React.Suspense
-        fallback={
-          <Carousel
-            opts={{
-              dragFree: true,
-              align: "start",
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {Array.from({ length: 8 }).map((_, index) => (
-                <CarouselItem key={index} className="basis-[312px] pl-8">
-                  <Skeleton className="w-[280px] h-[373.3px]" />
-                </CarouselItem>
-              ))}
-              <CarouselItem className="basis-[280px]">
-                <Link
-                  to="/projekty"
-                  className={cn(
-                    buttonVariants({
-                      variant: "ghost",
-                    }),
-                    "min-w-full min-h-full"
-                  )}
-                >
-                  Zobacz więcej
-                  <ChevronRight />
-                </Link>
-              </CarouselItem>
-            </CarouselContent>
-          </Carousel>
-        }
-      >
-        <Await
-          resolve={featuredProductsPromise}
-          errorElement={
-            <Error>
-              <ErrorMedia>
-                <AlertCircleIcon />
-              </ErrorMedia>
-              <ErrorContent>
-                <ErrorTitle>
-                  Wystąpił błąd podczas ładowania projektów
-                </ErrorTitle>
-                <ErrorDescription>
-                  Spróbuj odświeżyć stronę lub wrócić później.
-                </ErrorDescription>
-              </ErrorContent>
-            </Error>
-          }
+      {isPending ? (
+        <Carousel
+          opts={{
+            dragFree: true,
+            align: "start",
+          }}
+          className="w-full"
         >
-          {(products) => (
-            <Carousel
-              opts={{
-                dragFree: true,
-                align: "start",
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {products.map((product, index) => (
-                  <CarouselItem key={product.id} className="basis-[312px] pl-8">
-                    <MainProductCard
-                      product={product}
-                      href={`/projekty/${product.slug}`}
-                      onClick={() => {
-                        window.gtag?.("event", "select_item", {
-                          item_list_id: "featured_products",
-                          item_list_name: "Polecane projekty",
-                          items: productToGoogleAnalyticsItem(product, {
-                            item_list_id: "featured_products",
-                            item_list_name: "Polecane projekty",
-                            index,
-                          }),
-                        });
-                      }}
-                      onToggleCart={() => {
-                        if (isInCart(product.id)) {
-                          removeProduct(product.id, true, {
-                            item_list_id: `featured_products`,
-                            item_list_name: "Polecane projekty",
-                            index: index,
-                          });
-                        } else {
-                          addProduct(product, true, {
-                            item_list_id: `featured_products`,
-                            item_list_name: "Polecane projekty",
-                            index: index,
-                          });
-                        }
-                      }}
-                      isInCart={isInCart(product.id)}
-                      onBuyNow={() =>
-                        onProductBuyNow(product, {
-                          item_list_id: `featured_products`,
-                          item_list_name: "Polecane projekty",
-                          index: index,
-                        })
-                      }
-                    />
-                  </CarouselItem>
-                ))}
-                <CarouselItem className="basis-[280px]">
-                  <Link
-                    to="/projekty"
-                    className={cn(
-                      buttonVariants({
-                        variant: "ghost",
+          <CarouselContent>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <CarouselItem key={index} className="basis-[312px] pl-8">
+                <Skeleton className="w-[280px] h-[373.3px]" />
+              </CarouselItem>
+            ))}
+            <CarouselItem className="basis-[280px]">
+              <Link
+                to="/projekty"
+                className={cn(
+                  buttonVariants({
+                    variant: "ghost",
+                  }),
+                  "min-w-full min-h-full"
+                )}
+              >
+                Zobacz więcej
+                <ChevronRight />
+              </Link>
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+      ) : isError ? (
+        <Error>
+          <ErrorMedia>
+            <AlertCircleIcon />
+          </ErrorMedia>
+          <ErrorContent>
+            <ErrorTitle>
+              Wystąpił błąd podczas ładowania projektów
+            </ErrorTitle>
+            <ErrorDescription>
+              Spróbuj odświeżyć stronę lub wrócić później.
+            </ErrorDescription>
+          </ErrorContent>
+        </Error>
+      ) : (
+        <Carousel
+          opts={{
+            dragFree: true,
+            align: "start",
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {products.map((product, index) => (
+              <CarouselItem key={product.id} className="basis-[312px] pl-8">
+                <MainProductCard
+                  product={product}
+                  href={`/projekty/${product.slug}`}
+                  onClick={() => {
+                    window.gtag?.("event", "select_item", {
+                      item_list_id: "featured_products",
+                      item_list_name: "Polecane projekty",
+                      items: productToGoogleAnalyticsItem(product, {
+                        item_list_id: "featured_products",
+                        item_list_name: "Polecane projekty",
+                        index,
                       }),
-                      "min-w-full min-h-full"
-                    )}
-                  >
-                    Zobacz więcej
-                    <ChevronRight />
-                  </Link>
-                </CarouselItem>
-              </CarouselContent>
-            </Carousel>
-          )}
-        </Await>
-      </React.Suspense>
+                    });
+                  }}
+                  onToggleCart={() => {
+                    if (isInCart(product.id)) {
+                      removeProduct(product.id, true, {
+                        item_list_id: `featured_products`,
+                        item_list_name: "Polecane projekty",
+                        index: index,
+                      });
+                    } else {
+                      addProduct(product, true, {
+                        item_list_id: `featured_products`,
+                        item_list_name: "Polecane projekty",
+                        index: index,
+                      });
+                    }
+                  }}
+                  isInCart={isInCart(product.id)}
+                  onBuyNow={() =>
+                    onProductBuyNow(product, {
+                      item_list_id: `featured_products`,
+                      item_list_name: "Polecane projekty",
+                      index: index,
+                    })
+                  }
+                />
+              </CarouselItem>
+            ))}
+            <CarouselItem className="basis-[280px]">
+              <Link
+                to="/projekty"
+                className={cn(
+                  buttonVariants({
+                    variant: "ghost",
+                  }),
+                  "min-w-full min-h-full"
+                )}
+              >
+                Zobacz więcej
+                <ChevronRight />
+              </Link>
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+      )}
     </section>
+  );
+}
+
+function AsyncError<Resolve>({
+  errorElement,
+  ...props
+}: {
+  errorElement: ((error: unknown) => React.ReactNode) | React.ReactNode;
+} & Omit<AwaitProps<Resolve>, "errorElement">) {
+  const error = useAsyncError();
+
+  console.error(error);
+
+  return (
+    <Await
+      errorElement={
+        typeof errorElement === "function" ? errorElement(error) : errorElement
+      }
+      {...props}
+    />
   );
 }

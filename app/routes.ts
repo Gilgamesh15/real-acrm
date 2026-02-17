@@ -12,6 +12,7 @@ export default [
     route("/products", "./api/products/api.ts"),
     route("/pieces", "./api/pieces/api.ts"),
     route("/categories", "./api/categories/api.ts"),
+    route("/tags", "./api/tags/index.ts"),
 
     // Brands
     ...prefix("/brands", [

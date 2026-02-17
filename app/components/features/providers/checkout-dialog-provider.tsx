@@ -129,7 +129,7 @@ function CheckoutDialogProvider({ children }: React.PropsWithChildren) {
   const session = authClient.useSession.get();
 
   const isLoggedIn =
-    !!session && !session.isPending && !session.data?.user.isAnonymous;
+    !!session.data && !session.isPending && !session.data?.user.isAnonymous;
 
   // Fetch default locker for logged-in users
   const { data: defaultLocker, isLoading: isDefaultLockerLoading } = useQuery({
