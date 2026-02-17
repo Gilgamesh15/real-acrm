@@ -788,9 +788,7 @@ function FeaturedProductsSection() {
             <AlertCircleIcon />
           </ErrorMedia>
           <ErrorContent>
-            <ErrorTitle>
-              Wystąpił błąd podczas ładowania projektów
-            </ErrorTitle>
+            <ErrorTitle>Wystąpił błąd podczas ładowania projektów</ErrorTitle>
             <ErrorDescription>
               Spróbuj odświeżyć stronę lub wrócić później.
             </ErrorDescription>
@@ -876,7 +874,9 @@ function AsyncError<Resolve>({
 } & Omit<AwaitProps<Resolve>, "errorElement">) {
   const error = useAsyncError();
 
-  console.error(error);
+  if (error !== undefined) {
+    console.error(error);
+  }
 
   return (
     <Await

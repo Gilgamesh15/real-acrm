@@ -141,8 +141,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         ? asc(schema.products[orderByParam])
         : desc(schema.products[orderByParam]);
 
-    console.log("orderBy", limit);
-
     const products = await db.query.products.findMany({
       limit,
       offset,
@@ -174,8 +172,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         },
       },
     });
-
-    console.log("Products", products.length);
 
     return data(superjson.serialize({ products }), {
       status: 200,

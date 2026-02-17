@@ -65,14 +65,6 @@ function CheckoutProvider({ children }: React.PropsWithChildren) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["pending-order", location.pathname],
     queryFn: async () => {
-      console.log("session", session);
-      console.log("!!session", !!session);
-      console.log("session.isPending", session.isPending);
-      console.log(
-        "session.data?.user.isAnonymous",
-        session.data?.user.isAnonymous
-      );
-      console.log("isLoggedIn", isLoggedIn);
       const response = await fetch("/api/pending-order");
       if (!response.ok) {
         throw new Error("Failed to fetch pending order");

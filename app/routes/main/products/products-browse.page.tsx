@@ -46,8 +46,7 @@ import type { Route } from "./+types/products-browse.page";
 
 const PRODUCTS_PER_PAGE = 10;
 
-const PAGE_TITLE =
-  "Komplety ubrań z second-handu – gotowe stylizacje | ACRM";
+const PAGE_TITLE = "Komplety ubrań z second-handu – gotowe stylizacje | ACRM";
 const PAGE_DESCRIPTION =
   "Gotowe zestawy odzieży używanej w topowych stylach. Marki premium w przystępnych cenach. Darmowa dostawa InPost, realizacja w 24h.";
 
@@ -87,8 +86,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   const sortBy = parsed.sortBy.split("-")[0] as CatalogSortBy;
   const sortOrder = parsed.sortBy.split("-")[1] as CatalogSortOrder;
 
-  console.log("sortBy", sortBy);
-  console.log("sortOrder", sortOrder);
   const filterData = await filterService.getProductFilterData();
   const productsPromise = filterService
     .findFilteredProducts(
