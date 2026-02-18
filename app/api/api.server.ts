@@ -6,7 +6,7 @@ import { rootContract } from "./root-contract-legacy";
 
 export const api = initClient(rootContract, {
   baseUrl: `${process.env.VITE_APP_URL}/api`,
-  baseHeaders: {},
+  credentials: "include",
   throwOnUnknownStatus: true,
   api: async (args: ApiFetcherArgs) => {
     const result = await tsRestFetchApi(args);

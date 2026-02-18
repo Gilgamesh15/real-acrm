@@ -10,6 +10,7 @@ export default [
   // API
   ...prefix("/api", [
     route("/products", "./api/products/api.ts"),
+    route("/featured-products", "./api/featured-products/api.ts"),
     route("/pieces", "./api/pieces/api.ts"),
     route("/categories", "./api/categories/api.ts"),
     route("/tags", "./api/tags/index.ts"),

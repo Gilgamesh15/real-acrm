@@ -75,30 +75,12 @@ const SIZES = `
 export async function loader() {
   const categoriesPromise = api.categories.get
     .all({
-      query: {
-        scope: "featured",
-        orderBy: "featuredOrder",
-        sortOrder: "asc",
-        // 1 hour
-        cache: 60 * 60,
-      },
+      query: {},
     })
     .then((res) => res.body.categories);
 
   const topProductsPromise = api.products.get
-    .all({
-      query: {
-        limit: 16,
-        scope: "all",
-        orderBy: "homeFeaturedOrder",
-        sortOrder: "desc",
-        // 5 minutes
-        cache: 60 * 5,
-        description: false,
-        images: "primary",
-        piecesImages: "primary",
-      },
-    })
+    .all({ query: {} })
     .then((res) =>
       res.body.products.map((item) => ({
         id: item.id,
@@ -111,15 +93,7 @@ export async function loader() {
 
   const topPiecesPromise = api.pieces.get
     .all({
-      query: {
-        limit: 16,
-        scope: "featured",
-        orderBy: "homeFeaturedOrder",
-        sortOrder: "desc",
-        images: "primary",
-        // 5 minutes
-        cache: 60 * 5,
-      },
+      query: {},
     })
     .then((res) =>
       res.body.pieces.map((item) => ({

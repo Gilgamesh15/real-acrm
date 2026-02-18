@@ -1,5 +1,5 @@
 import * as schema from "db/schema";
-import { asc, sql } from "drizzle-orm";
+import { asc, eq, getTableColumns, sql } from "drizzle-orm";
 import { Outlet, useLoaderData } from "react-router";
 
 import { Footer } from "~/components/features/footer/footer";
@@ -14,32 +14,30 @@ import { generateOrganizationStructuredData } from "~/lib/seo";
 import type { Route } from "./+types/main.layout";
 
 export async function loader() {
-  const categoriesPromise = db.query.categories
-    .findMany({
-      with: {
-        image: true,
-      },
-      extras: {
-        piecesCount: sql<number>`
+  const categoriesPromise = db
+    .select({
+      ...getTableColumns(schema.categories),
+      image: getTableColumns(schema.images),
+      piecesCount: sql<number>`
         (SELECT
           COUNT(DISTINCT pieces.id)
         FROM 
           ${schema.pieces} 
         WHERE 
-          pieces.category_id = categories.id AND pieces.status = 'published' AND (pieces.reserved_until IS NULL OR pieces.reserved_until > NOW()))`.as(
-          "piecesCount"
-        ),
-      },
-      orderBy: asc(schema.categories.updatedAt),
+          pieces.category_id = categories.id AND pieces.status = 'published')`,
     })
+    .from(schema.categories)
+    .leftJoin(schema.images, eq(schema.categories.id, schema.images.categoryId))
+    .orderBy(asc(schema.categories.updatedAt))
     .then((res) => res);
 
-  const tagsPromise = db.query.tags
-    .findMany({
-      with: {
-        image: true,
-      },
+  const tagsPromise = db
+    .select({
+      ...getTableColumns(schema.tags),
+      image: getTableColumns(schema.images),
     })
+    .from(schema.tags)
+    .leftJoin(schema.images, eq(schema.tags.id, schema.images.tagId))
     .then((res) => res);
 
   return {

@@ -29,18 +29,7 @@ export function useFeaturedProducts() {
   return useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        scope: "featured",
-        orderBy: "featuredOrder",
-        sortOrder: "desc",
-        limit: "30",
-        cache: "300",
-        description: "false",
-        images: "primary",
-        piecesImages: "primary",
-      });
-
-      const response = await fetch(`/api/products?${params}`);
+      const response = await fetch("/api/featured-products");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

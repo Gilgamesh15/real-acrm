@@ -16,6 +16,7 @@ import {
   eq,
   exists,
   getTableColumns,
+  gte,
   inArray,
   lte,
   or,
@@ -32,11 +33,11 @@ import { db } from "~/lib/db";
 
 const c = initContract();
 
-export const productsContract = {
+export const featuredProductsContract = {
   get: {
     all: c.query({
       method: "GET",
-      path: "/products",
+      path: "/featured-products",
       query: z.object({}),
       responses: {
         200: z.object({
@@ -97,6 +98,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       .where(
         and(
           eq(schema.products.status, "published"),
+          gte(schema.products.featuredOrder, 0),
           exists(
             db
               .select({ one: sql`1` })
@@ -116,13 +118,13 @@ export async function loader({ context }: LoaderFunctionArgs) {
           )
         )
       )
-      .orderBy(desc(schema.products.homeFeaturedOrder))
-      .limit(16);
+      .orderBy(desc(schema.products.featuredOrder))
+      .limit(15);
 
     if (productsRes.length === 0) {
       return data(
         superjson.serialize({ products: [] } satisfies z.infer<
-          (typeof productsContract.get.all.responses)["200"]
+          (typeof featuredProductsContract.get.all.responses)["200"]
         >),
         {
           status: 200,
@@ -217,7 +219,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
     return data(
       superjson.serialize({ products } satisfies z.infer<
-        (typeof productsContract.get.all.responses)["200"]
+        (typeof featuredProductsContract.get.all.responses)["200"]
       >),
       {
         status: 200,
@@ -227,9 +229,12 @@ export async function loader({ context }: LoaderFunctionArgs) {
       }
     );
   } catch (error) {
-    logger.error("Failed to fetch products", { error });
-    return data(superjson.serialize({ error: "Failed to fetch products" }), {
-      status: 500,
-    });
+    logger.error("Failed to fetch featured products", { error });
+    return data(
+      superjson.serialize({ error: "Failed to fetch featured products" }),
+      {
+        status: 500,
+      }
+    );
   }
 }
