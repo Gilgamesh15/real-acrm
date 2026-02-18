@@ -4925,6 +4925,11 @@ hermes-parser@^0.25.1:
   dependencies:
     hermes-estree "0.25.1"
 
+hono@^4.11.10:
+  version "4.11.10"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.11.10.tgz#0cb40d3d8e2ff764c761b4267b99e3c7a6edf6a0"
+  integrity sha512-kyWP5PAiMooEvGrA9jcD3IXF7ATu8+o7B3KCbPXid5se52NPqnOpM/r9qeW2heMnOekF4kqR1fXJqCYeCLKrZg==
+
 html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
