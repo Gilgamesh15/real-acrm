@@ -12,7 +12,6 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 
 import { ContactUsEmail } from "~/components/emails/contact-us-email";
-import { loggerContext } from "~/context/logger-context.server";
 import { resend } from "~/lib/resend";
 import {
   convertFormDataToObjectUnsafe,
@@ -28,7 +27,7 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
   const formData = await request.formData();
 
   const args = convertFormDataToObjectUnsafe(ContactFormSchema, formData);

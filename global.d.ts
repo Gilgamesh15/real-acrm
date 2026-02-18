@@ -1,3 +1,6 @@
+import type { Logger } from "~/lib/logger.server";
+import type { ServerSession } from "~/lib/types";
+
 declare global {
   interface ImportMetaEnv {
     // client
@@ -253,6 +256,14 @@ declare global {
       arg2: TArg2,
       data: Args[TArg1][TArg2]
     ) => void;
+  }
+}
+
+// This is the magic "bridge" for React Router v7 types
+declare module "react-router" {
+  interface AppLoadContext {
+    logger: Logger;
+    session: ServerSession | null;
   }
 }
 

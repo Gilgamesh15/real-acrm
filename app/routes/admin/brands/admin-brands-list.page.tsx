@@ -21,7 +21,6 @@ import {
   DataTableProvider,
   DataTableRoot,
 } from "~/components/shared/data-table";
-import { sessionContext } from "~/context/session-context.server";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-brands-list.page";
@@ -30,7 +29,7 @@ import { columns, columnsConfig } from "./admin-brands-list.columns";
 // ========================== LOADING ==========================
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");

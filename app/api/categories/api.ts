@@ -6,7 +6,6 @@ import { type LoaderFunctionArgs, data } from "react-router";
 import superjson from "superjson";
 import z from "zod";
 
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 
 const c = initContract();
@@ -32,7 +31,7 @@ export const categoriesContract = {
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   const start = performance.now();
   logger.debug("Loading categories loader", {

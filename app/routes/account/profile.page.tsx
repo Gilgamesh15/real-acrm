@@ -34,8 +34,6 @@ import {
 } from "~/components/ui/item";
 import { Spinner } from "~/components/ui/spinner";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { stripe } from "~/lib/stripe";
 import {
@@ -47,7 +45,7 @@ import type { Route } from "./+types/profile.page";
 
 // ========================== LOADERS ==========================
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     return redirect("/zaloguj-sie");
@@ -70,8 +68,8 @@ const ChangeProfileDataSchema = z.object({
 });
 export const action = async ({ request, context }: Route.ActionArgs) => {
   try {
-    const logger = context.get(loggerContext);
-    const session = context.get(sessionContext);
+    const { logger } = context;
+    const { session } = context;
 
     if (!session || session.user.isAnonymous) {
       throw redirect("/zaloguj-sie", { status: 302 });
@@ -128,9 +126,9 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
       { status: 200 }
     );
   } catch (error) {
-    const session = context.get(sessionContext);
+    const { session } = context;
     const userId = session?.user?.id;
-    const logger = context.get(loggerContext);
+    const { logger } = context;
     logger.error("Failed to update profile", { error, userId });
 
     return data(

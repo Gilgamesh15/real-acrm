@@ -4,6 +4,7 @@ import {
 } from "@abyrd9/zod-form-data";
 import type { VariantProps } from "class-variance-authority";
 import { type ClassValue, clsx } from "clsx";
+import type { GTagItem } from "global";
 import {
   parseAsArrayOf,
   parseAsInteger,
@@ -12,7 +13,6 @@ import {
 } from "nuqs";
 import baseSlugify from "slugify";
 import { twMerge } from "tailwind-merge";
-import type { GTagItem } from "types";
 import * as z4 from "zod/v4/core";
 
 import type { badgeVariants } from "~/components/ui/badge";

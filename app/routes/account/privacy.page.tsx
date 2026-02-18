@@ -28,8 +28,6 @@ import {
 } from "~/components/ui/item";
 import { Spinner } from "~/components/ui/spinner";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { authClient } from "~/lib/auth-client";
 import { db } from "~/lib/db";
 
@@ -37,7 +35,7 @@ import type { Route } from "./+types/privacy.page";
 
 // ========================== LOADERS ==========================
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", { status: 302 });
@@ -55,8 +53,8 @@ enum Intent {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
 
   if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", { status: 302 });

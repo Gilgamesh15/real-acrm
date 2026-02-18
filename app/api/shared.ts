@@ -1,25 +1,19 @@
 import { AppError, InternalServerError, UnauthorizedError } from "db/error";
 import type { DBUser } from "db/schema";
+import type { AppLoadContext } from "react-router";
 import type {
   ActionFunction,
   ActionFunctionArgs,
   LoaderFunction,
   LoaderFunctionArgs,
-  RouterContextProvider,
 } from "react-router";
 import SuperJSON from "superjson";
 import z from "zod";
 
-import {
-  type LoggerContext,
-  loggerContext,
-} from "~/context/logger-context.server";
-import {
-  type SessionContext,
-  sessionContext,
-} from "~/context/session-context.server";
+import type { Logger } from "~/lib/logger.server";
+import type { ServerSession } from "~/lib/types";
 
-type AppContext = { session: SessionContext; logger: LoggerContext };
+type AppContext = { session: ServerSession | null; logger: Logger };
 
 /**
  * Protection function that validates request context and returns either
@@ -101,8 +95,8 @@ export const anyone: ProtectFn<AnyoneResource> = (ctx) =>
  */
 function createHandler<
   THandlerArgs extends
-    | LoaderFunctionArgs<Readonly<RouterContextProvider>>
-    | ActionFunctionArgs<Readonly<RouterContextProvider>>,
+    | LoaderFunctionArgs<AppLoadContext>
+    | ActionFunctionArgs<AppLoadContext>,
   TProtectResult extends object = {},
 >(
   protect: ProtectFn<TProtectResult>,
@@ -114,8 +108,8 @@ function createHandler<
     try {
       const { context } = args;
 
-      const logger = context.get(loggerContext);
-      const session = context.get(sessionContext);
+      const { logger } = context;
+      const { session } = context;
 
       const protectResult = await protect({ session, logger });
 
@@ -162,7 +156,7 @@ const parseParams = (
  * 3. Validate the parsed params against the schema
  */
 export const createLoader = <
-  TLoaderArgs extends LoaderFunctionArgs<Readonly<RouterContextProvider>>,
+  TLoaderArgs extends LoaderFunctionArgs<AppLoadContext>,
   TProtectResult extends object = {},
   TSchema extends z.ZodType<unknown, unknown> = z.ZodType<unknown, unknown>,
 >(
@@ -217,7 +211,7 @@ export function combineActions(
 }
 
 export const createAction = <
-  TActionArgs extends ActionFunctionArgs<Readonly<RouterContextProvider>>,
+  TActionArgs extends ActionFunctionArgs<AppLoadContext>,
   TProtectResult extends object = {},
   TSchema extends z.ZodType<unknown, unknown> = z.ZodType<unknown, unknown>,
 >(

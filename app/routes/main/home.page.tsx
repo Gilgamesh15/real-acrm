@@ -30,7 +30,6 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { MainProductCard } from "~/components/features/product-card/main-product-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { loggerContext } from "~/context/logger-context.server";
 import { useFeaturedProducts } from "~/hooks/use-featured-products";
 import { useHomeTags } from "~/hooks/use-home-tags";
 import type { DBQueryResult, PriceDisplayData } from "~/lib/types";
@@ -74,7 +73,7 @@ const SIZES = `
 `;
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   const start = performance.now();
   logger.debug("Loading home page loader", {

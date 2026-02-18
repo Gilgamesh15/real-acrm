@@ -2,12 +2,9 @@ import { inpostService } from "db/services/inpost.service";
 import type { LoaderFunctionArgs } from "react-router";
 import { type ActionFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
-
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
 
   if (!session || !session.user) {
     logger.warn("Unauthorized attempt to get default locker");
@@ -24,8 +21,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
 
   if (!session || !session.user) {
     logger.warn("Unauthorized attempt to set default locker");

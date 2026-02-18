@@ -12,13 +12,11 @@ import {
   isRouteErrorResponse,
   useRevalidator,
 } from "react-router";
-import type { MiddlewareFunction } from "react-router";
 
 import { GoogleConsentMode } from "~/components/features/cookie-consent";
 import { CookieBanner } from "~/components/features/cookie-consent/cookie-banner";
 import { CookieConsentProvider } from "~/components/features/cookie-consent/cookie-provider";
 import { CookieSettings } from "~/components/features/cookie-consent/cookie-settings";
-
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -33,9 +31,6 @@ import {
 } from "./components/ui/empty";
 import { Toaster } from "./components/ui/sonner";
 import { SpecialText } from "./components/ui/special-text";
-import { sessionContext } from "./context/session-context.server";
-import { loggingMiddleware } from "./middleware/logging.server";
-import { sessionMiddleware } from "./middleware/session.server";
 
 export const meta: Route.MetaFunction = () => [
   { title: "ACRM | Markowe ubrania z second-handu" },
@@ -49,20 +44,7 @@ export const meta: Route.MetaFunction = () => [
   { name: "twitter:card", content: "summary_large_image" },
 ];
 
-export const middleware: MiddlewareFunction[] = [
-  loggingMiddleware,
-  sessionMiddleware,
-];
-
 const queryClient = new QueryClient();
-
-export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
-
-  return {
-    session,
-  };
-}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

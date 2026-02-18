@@ -2,8 +2,6 @@ import * as schema from "db/schema";
 import { asc, desc, eq } from "drizzle-orm";
 import { type LoaderFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { stripe } from "~/lib/stripe";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
@@ -52,8 +50,8 @@ export const orderPieceSelect = {
 export type OrderPiece = DBQueryResult<"pieces", typeof orderPieceSelect>;
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const userId = session?.user.id;
 
   if (!userId) {

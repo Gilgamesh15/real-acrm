@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { SitemapStream, streamToPromise } from "sitemap";
 
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import { getSlugPath } from "~/lib/utils";
 
@@ -26,7 +25,7 @@ type SitemapEntry = {
  * Called by React Router's sitemap route handler
  */
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
   const entries: SitemapEntry[] = [];
 
   // ==========================================

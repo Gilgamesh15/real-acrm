@@ -32,8 +32,6 @@ import {
   DragSwapDragHandle,
   DragSwapItem,
 } from "~/components/shared/drag-swap/drag-swap";
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import {
   convertFormDataToObjectUnsafe,
@@ -44,7 +42,7 @@ import { cn } from "~/lib/utils";
 import type { Route } from "./+types/top-featured-pieces-edit.page";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");
@@ -83,8 +81,8 @@ const UpdateFeaturedSchema = z.array(
 );
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const adminId = session?.user?.id;
 
   try {

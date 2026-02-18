@@ -2,14 +2,12 @@ import { orderService } from "db/services/order.service";
 import { type ActionFunctionArgs, data } from "react-router";
 import type z from "zod";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { auth } from "~/lib/auth.server";
 import { CreateOrderSchema } from "~/lib/schemas";
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
 
   let userId = session?.user.id;
 

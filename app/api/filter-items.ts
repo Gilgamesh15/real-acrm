@@ -3,10 +3,8 @@ import { filterService } from "db/services/filter.service";
 import { asc } from "drizzle-orm";
 import { type LoaderFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
-
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";

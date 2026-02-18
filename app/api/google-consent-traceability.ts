@@ -2,13 +2,12 @@ import * as schema from "db/schema";
 import { data } from "react-router";
 
 import type { ConsentRecord } from "~/components/features/cookie-consent";
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 
 import type { Route } from "./+types/google-consent-traceability";
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   const record = (await request.json()) as ConsentRecord;
   logger.info("Google consent traceability record", { record });

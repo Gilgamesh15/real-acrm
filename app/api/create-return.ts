@@ -3,7 +3,6 @@ import { eq, inArray } from "drizzle-orm";
 import { type ActionFunctionArgs, data } from "react-router";
 import { z } from "zod";
 
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import { createIdentificationNumber } from "~/lib/utils";
 
@@ -14,7 +13,7 @@ const CreateReturnSchema = z.object({
 });
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
   const formData = await request.formData();
 
   const parsed = CreateReturnSchema.safeParse({

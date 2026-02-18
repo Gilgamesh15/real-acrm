@@ -1,10 +1,8 @@
 import { inpostService } from "db/services/inpost.service";
 import { type LoaderFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
-
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   const url = new URL(request.url);
   const latitudeParam = url.searchParams.get("latitude");

@@ -28,8 +28,6 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { TagFormSchema, type TagFormSchemaType } from "~/lib/schemas";
 import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
@@ -40,7 +38,7 @@ import type { Route } from "./+types/admin-tags-edit.page";
 // ========================== LOADING ==========================
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");
@@ -69,7 +67,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 // ========================== ACTIONS ==========================
 
 export async function action({ request, params, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
   const { tagId } = params;
 
   try {

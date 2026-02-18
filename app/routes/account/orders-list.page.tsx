@@ -20,14 +20,13 @@ import {
 } from "~/components/ui/error";
 
 import { OrderCard } from "~/components/features/order-card/order-card";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/orders-list.page";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session || session?.user.isAnonymous) {
     throw redirect("/zaloguj-sie", { status: 302 });

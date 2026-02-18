@@ -28,8 +28,6 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { CategoryFormSchema, type CategoryFormSchemaType } from "~/lib/schemas";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
@@ -45,7 +43,7 @@ import type { Route } from "./+types/admin-categories-edit.page";
 // ========================== LOADING ==========================
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");
@@ -78,8 +76,8 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 // ========================== ACTIONS ==========================
 
 export async function action({ request, params, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const adminId = session?.user?.id;
   const { categoryId } = params;
 

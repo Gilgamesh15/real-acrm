@@ -1,11 +1,9 @@
 import { redirect } from "react-router";
 
-import { sessionContext } from "~/context/session-context.server";
-
 import type { Route } from "./+types/admin.page";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) return redirect("/zaloguj-sie?callbackUrl=/admin");
 

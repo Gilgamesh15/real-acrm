@@ -27,8 +27,6 @@ import {
   ActionDialog,
   ConfirmActionDialogContent,
 } from "~/components/shared/action-dialog/action-dialog";
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { useDialogState } from "~/hooks/use-dialog-state";
 import { auth } from "~/lib/auth.server";
 import { formatDate, returnDetailsFromReturn } from "~/lib/utils";
@@ -122,8 +120,8 @@ enum Intent {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const adminId = session?.user?.id;
 
   try {

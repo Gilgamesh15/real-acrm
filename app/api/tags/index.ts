@@ -4,11 +4,10 @@ import type { LoaderFunctionArgs } from "react-router";
 import { data } from "react-router";
 import superjson from "superjson";
 
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   try {
     const tags = await db.query.tags.findMany({

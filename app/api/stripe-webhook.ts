@@ -2,7 +2,6 @@ import { type ActionFunctionArgs, data } from "react-router";
 import Stripe from "stripe";
 
 import { orderService } from "~/../db/services/order.service";
-import { loggerContext } from "~/context/logger-context.server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-01-28.clover",
@@ -11,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   if (request.method !== "POST") {
     logger.warn("Stripe webhook received non-POST request", {

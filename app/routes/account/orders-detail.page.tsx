@@ -30,7 +30,6 @@ import {
   ProductCardRoot,
 } from "~/components/features/product-card/product-card-primitives";
 import { OrderTimeline } from "~/components/features/timeline/order-timeline";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import {
   ORDER_STATUS_BADGE_TEXT_MAP,
@@ -47,7 +46,7 @@ import type { Route } from "./+types/orders-detail.page";
 export async function loader({ params, context }: Route.LoaderArgs) {
   const { orderNumber } = params;
 
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session || session.user.isAnonymous) {
     throw redirect("/zaloguj-sie", {

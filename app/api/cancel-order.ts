@@ -1,12 +1,9 @@
 import { orderService } from "db/services/order.service";
 import { type ActionFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
-
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const userId = session?.user.id;
 
   if (!userId) {

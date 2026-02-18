@@ -18,7 +18,6 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
-import { sessionContext } from "~/context/session-context.server";
 import {
   getPersistedDefaultValue,
   useFormPersistence,
@@ -30,7 +29,7 @@ import type { Route } from "./+types/admin-sizes-edit.page";
 // ========================== LOADING ==========================
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     throw redirect("/zaloguj-sie?callbackUrl=/admin");

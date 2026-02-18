@@ -2,7 +2,6 @@ import * as schema from "db/schema";
 import { and, asc, eq, exists, inArray, isNull, or } from "drizzle-orm";
 import { type ActionFunctionArgs, data } from "react-router";
 
-import { loggerContext } from "~/context/logger-context.server";
 import { db } from "~/lib/db";
 import type { DBQueryArgs, DBQueryResult, LocalStorageCart } from "~/lib/types";
 
@@ -91,7 +90,7 @@ export type CartPiece = DBQueryResult<
   ReturnType<typeof getCartPieceSelect>
 >;
 export async function action({ request, context }: ActionFunctionArgs) {
-  const logger = context.get(loggerContext);
+  const { logger } = context;
 
   try {
     const cartData = (await request.json()) as LocalStorageCart;

@@ -19,7 +19,6 @@ import {
   DataTableProvider,
   DataTableRoot,
 } from "~/components/shared/data-table";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 import { cn } from "~/lib/utils";
 
@@ -29,7 +28,7 @@ import { columns, columnsConfig } from "./admin-users.columns";
 // ========================== LOADING ==========================
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const session = context.get(sessionContext);
+  const { session } = context;
 
   if (!session) {
     return redirect("/zaloguj-sie?callbackUrl=/admin");

@@ -24,8 +24,6 @@ import { data } from "react-router";
 import superjson from "superjson";
 import z from "zod";
 
-import { loggerContext } from "~/context/logger-context.server";
-import { sessionContext } from "~/context/session-context.server";
 import { db } from "~/lib/db";
 
 const c = initContract();
@@ -61,8 +59,8 @@ export const productsContract = {
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const logger = context.get(loggerContext);
-  const session = context.get(sessionContext);
+  const { logger } = context;
+  const { session } = context;
   const userId = session?.user.id;
 
   const start = performance.now();
