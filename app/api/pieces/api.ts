@@ -63,13 +63,13 @@ export async function loader({ context }: LoaderFunctionArgs) {
           .as("images"),
         sql`true`
       )
-      .innerJoin(schema.brands, eq(schema.pieces.brandId, schema.brands.id))
-      .innerJoin(schema.sizes, eq(schema.pieces.sizeId, schema.sizes.id))
-      .innerJoin(
+      .leftJoin(schema.brands, eq(schema.pieces.brandId, schema.brands.id))
+      .leftJoin(schema.sizes, eq(schema.pieces.sizeId, schema.sizes.id))
+      .leftJoin(
         schema.categories,
         eq(schema.pieces.categoryId, schema.categories.id)
       )
-      .innerJoin(
+      .leftJoin(
         schema.discounts,
         eq(schema.pieces.discountId, schema.discounts.id)
       )
