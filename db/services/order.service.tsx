@@ -878,6 +878,30 @@ class OrderService {
       );
     }
   }
+  // ========================== CANCEL ORDER BY STRIPE SESSION ==========================
+  async cancelOrderByStripeSession(stripeSessionId: string) {
+    const order = await db.query.orders.findFirst({
+      where: eq(schema.orders.stripeCheckoutSessionId, stripeSessionId),
+    });
+
+    if (!order) {
+      this.logger.error("Order not found for Stripe session cancellation", {
+        stripeSessionId,
+      });
+      throw data(
+        {
+          success: false,
+          order: null,
+          issues: null,
+          message: "Order not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return this.cancelOrder(order.id);
+  }
+
   // ========================== CREATE ORDER ==========================
 
   async createOrder(

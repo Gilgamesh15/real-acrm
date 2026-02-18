@@ -56,7 +56,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         break;
 
       case "checkout.session.expired":
-        await orderService.cancelOrder(stripeSession.id);
+        await orderService.cancelOrderByStripeSession(stripeSession.id);
         logger.info("Order cancelled - Stripe session expired", {
           stripeSessionId: stripeSession.id,
         });

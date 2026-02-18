@@ -71,8 +71,6 @@ function useCart() {
   return context;
 }
 
-const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
-
 function CartProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
@@ -115,11 +113,9 @@ function CartProvider({ children }: { children: React.ReactNode }) {
         message: string;
       };
     },
-    refetchInterval: REFRESH_INTERVAL,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    refetchIntervalInBackground: true,
     initialData: {
       products: [] as CartProduct[],
       pieces: [] as CartPiece[],
