@@ -34,6 +34,10 @@ export const categoriesContract = {
 export async function loader({ context }: LoaderFunctionArgs) {
   const logger = context.get(loggerContext);
 
+  const start = performance.now();
+  logger.debug("Loading categories loader", {
+    start,
+  });
   try {
     const categories = await db
       .select({
@@ -47,6 +51,11 @@ export async function loader({ context }: LoaderFunctionArgs) {
       )
       .where(gte(schema.categories.featuredOrder, 0))
       .orderBy(asc(schema.categories.featuredOrder));
+
+    logger.debug("Categories loader completed", {
+      end: performance.now(),
+      duration: performance.now() - start,
+    });
 
     return data(
       superjson.serialize({ categories } satisfies z.infer<

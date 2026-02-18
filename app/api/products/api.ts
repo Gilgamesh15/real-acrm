@@ -12,9 +12,7 @@ import * as schema from "db/schema";
 import {
   and,
   asc,
-  desc,
   eq,
-  exists,
   getTableColumns,
   inArray,
   lte,
@@ -67,15 +65,19 @@ export async function loader({ context }: LoaderFunctionArgs) {
   const session = context.get(sessionContext);
   const userId = session?.user.id;
 
+  const start = performance.now();
+  logger.debug("Loading products loader", {
+    start,
+  });
   try {
     // eslint-disable-next-line tsPlugin/no-unused-vars
-    const { description: _description, ...productCols } = getTableColumns(
+    const { description: _, ...productsColumns } = getTableColumns(
       schema.products
     );
 
     const productsRes = await db
       .select({
-        products: productCols,
+        products: productsColumns,
         discounts: schema.discounts,
         images: schema.images,
       })
@@ -88,50 +90,14 @@ export async function loader({ context }: LoaderFunctionArgs) {
         db
           .select()
           .from(schema.images)
-          .where(eq(schema.images.productId, schema.products.id))
           .limit(1)
           .orderBy(asc(schema.images.displayOrder))
+          .where(eq(schema.images.productId, schema.products.id))
           .as("images"),
         sql`true`
       )
-      .where(
-        and(
-          eq(schema.products.status, "published"),
-          exists(
-            db
-              .select({ one: sql`1` })
-              .from(schema.pieces)
-              .where(
-                and(
-                  or(
-                    eq(schema.pieces.status, "published"),
-                    lte(schema.pieces.reservedUntil, new Date()),
-                    ...(userId
-                      ? [eq(schema.pieces.reservedByUserId, userId)]
-                      : [])
-                  ),
-                  eq(schema.products.id, schema.pieces.productId)
-                )
-              )
-          )
-        )
-      )
-      .orderBy(desc(schema.products.homeFeaturedOrder))
-      .limit(16);
-
-    if (productsRes.length === 0) {
-      return data(
-        superjson.serialize({ products: [] } satisfies z.infer<
-          (typeof productsContract.get.all.responses)["200"]
-        >),
-        {
-          status: 200,
-          headers: {
-            "Cache-Control": "public, max-age=300",
-          },
-        }
-      );
-    }
+      .where(eq(schema.products.status, "published"))
+      .limit(1);
 
     const piecesRes = await db
       .select()
@@ -153,9 +119,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
         db
           .select()
           .from(schema.images)
-          .where(eq(schema.images.pieceId, schema.pieces.id))
           .limit(1)
           .orderBy(asc(schema.images.displayOrder))
+          .where(eq(schema.images.pieceId, schema.pieces.id))
           .as("images"),
         sql`true`
       )
@@ -170,62 +136,50 @@ export async function loader({ context }: LoaderFunctionArgs) {
         eq(schema.categories.id, schema.pieces.categoryId)
       );
 
-    const products = productsRes.map((item) => {
-      const images = productsRes
+    const products = productsRes.map((item) => ({
+      ...item.products,
+      images: productsRes
         .filter((i) => i.images?.productId === item.products.id)
         .map((i) => i.images)
-        .filter((i) => i !== null);
-
-      const discount = item.discounts ?? null;
-
-      const pieces = piecesRes
+        .filter((i) => i !== null),
+      discount:
+        productsRes.find((i) => i.products.discountId === i.discounts?.id)
+          ?.discounts ?? null,
+      pieces: piecesRes
         .filter((i) => i.pieces.productId === item.products.id)
-        .map((i) => {
-          const brand =
+        .map((i) => ({
+          ...i.pieces,
+          brand:
             piecesRes.find((j) => j.brands?.id === i.pieces.brandId)?.brands ??
-            null;
-          const size =
+            null,
+          size:
             piecesRes.find((j) => j.sizes?.id === i.pieces.sizeId)?.sizes ??
-            null;
-          const images = piecesRes
+            null,
+          images: piecesRes
             .filter((j) => j.images?.pieceId === i.pieces.id)
             .map((j) => j.images)
-            .filter((j) => j !== null);
-          const category =
+            .filter((j) => j !== null),
+          category:
             piecesRes.find((j) => j.categories?.id === i.pieces.categoryId)
-              ?.categories ?? null;
-          const discount =
+              ?.categories ?? null,
+          discount:
             piecesRes.find((j) => j.discounts?.id === i.pieces.discountId)
-              ?.discounts ?? null;
-          return {
-            ...i.pieces,
-            brand,
-            size,
-            images,
-            category,
-            discount,
-          };
-        });
+              ?.discounts ?? null,
+        })),
+    }));
 
-      return {
-        ...item.products,
-        images,
-        discount,
-        pieces,
-      };
+    logger.debug("Products loader completed", {
+      end: performance.now(),
+      duration: performance.now() - start,
     });
 
-    return data(
-      superjson.serialize({ products } satisfies z.infer<
-        (typeof productsContract.get.all.responses)["200"]
-      >),
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": "public, max-age=300",
-        },
-      }
-    );
+    return data(superjson.serialize({ products }), {
+      status: 200,
+      headers: {
+        // 10 minutes
+        "Cache-Control": `public, max-age=600`,
+      },
+    });
   } catch (error) {
     logger.error("Failed to fetch products", { error });
     return data(superjson.serialize({ error: "Failed to fetch products" }), {

@@ -30,6 +30,7 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { MainProductCard } from "~/components/features/product-card/main-product-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
+import { loggerContext } from "~/context/logger-context.server";
 import { useFeaturedProducts } from "~/hooks/use-featured-products";
 import { useHomeTags } from "~/hooks/use-home-tags";
 import type { DBQueryResult, PriceDisplayData } from "~/lib/types";
@@ -72,24 +73,28 @@ const SIZES = `
   100vw
 `;
 
-export async function loader() {
+export async function loader({ context }: Route.LoaderArgs) {
+  const logger = context.get(loggerContext);
+
+  const start = performance.now();
+  logger.debug("Loading home page loader", {
+    start,
+  });
   const categoriesPromise = api.categories.get
     .all({
       query: {},
     })
     .then((res) => res.body.categories);
 
-  const topProductsPromise = api.products.get
-    .all({ query: {} })
-    .then((res) =>
-      res.body.products.map((item) => ({
-        id: item.id,
-        images: item.images,
-        name: item.name,
-        pricing: calculateProductPriceDisplayData(item),
-        href: `/projekty/${item.slug}`,
-      }))
-    );
+  const topProductsPromise = api.products.get.all({ query: {} }).then((res) =>
+    res.body.products.map((item) => ({
+      id: item.id,
+      images: item.images,
+      name: item.name,
+      pricing: calculateProductPriceDisplayData(item),
+      href: `/projekty/${item.slug}`,
+    }))
+  );
 
   const topPiecesPromise = api.pieces.get
     .all({
@@ -104,6 +109,11 @@ export async function loader() {
         href: `/ubrania/${item.slug}`,
       }))
     );
+
+  logger.debug("Home page loader completed", {
+    end: performance.now(),
+    duration: performance.now() - start,
+  });
 
   return {
     categoriesPromise,

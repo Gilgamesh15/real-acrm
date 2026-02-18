@@ -49,6 +49,11 @@ export async function loader({ context }: LoaderFunctionArgs) {
   const session = context.get(sessionContext);
   const userId = session?.user.id;
 
+  const start = performance.now();
+  logger.debug("Loading pieces loader", {
+    start,
+  });
+
   try {
     const piecesRes = await db
       .select()
@@ -120,6 +125,11 @@ export async function loader({ context }: LoaderFunctionArgs) {
         size,
         category,
       };
+    });
+
+    logger.debug("Pieces loader completed", {
+      end: performance.now(),
+      duration: performance.now() - start,
     });
 
     return data(
