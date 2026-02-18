@@ -97,7 +97,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
         sql`true`
       )
       .where(eq(schema.products.status, "published"))
-      .limit(1);
+      .limit(16);
 
     const piecesRes = await db
       .select()
@@ -135,6 +135,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
         schema.categories,
         eq(schema.categories.id, schema.pieces.categoryId)
       );
+
+    console.log("products", productsRes.length);
 
     const products = productsRes.map((item) => ({
       ...item.products,
