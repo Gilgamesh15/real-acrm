@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { eq, inArray } from "drizzle-orm";
-import { type ActionFunctionArgs, data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
+import { data } from "react-router";
 import { z } from "zod";
 
 import { db } from "~/lib/db";

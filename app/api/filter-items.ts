@@ -1,7 +1,8 @@
 import * as schema from "db/schema";
 import { filterService } from "db/services/filter.service";
 import { asc } from "drizzle-orm";
-import { type LoaderFunctionArgs, data } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
+import { data } from "react-router";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const { logger } = context;

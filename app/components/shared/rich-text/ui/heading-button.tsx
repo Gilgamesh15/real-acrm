@@ -1,4 +1,5 @@
-import { HeadingIcon, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { HeadingIcon } from "lucide-react";
 import {
   Heading1Icon,
   Heading2Icon,
@@ -15,13 +16,8 @@ import {
   DropdownMenuItem,
 } from "~/components/ui/dropdown-menu";
 
-import {
-  LEVELS,
-  type Level,
-  type UseHeadingConfig,
-  useHeading,
-  useHeadingLevel,
-} from "../hooks/use-heading";
+import type { Level, UseHeadingConfig } from "../hooks/use-heading";
+import { LEVELS, useHeading, useHeadingLevel } from "../hooks/use-heading";
 import { RichTextDropdownMenuItem } from "../primitives/rich-text-editor-dropdown-menu-item";
 import { RichTextEditorDropdownMenuTrigger } from "../primitives/rich-text-editor-dropdown-menu-trigger";
 

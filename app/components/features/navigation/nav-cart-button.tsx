@@ -29,10 +29,8 @@ import {
   productToGoogleAnalyticsItem,
 } from "~/lib/utils";
 
-import {
-  PriceSummary,
-  type PriceSummaryProps,
-} from "../price-summary/price-summary";
+import type { PriceSummaryProps } from "../price-summary/price-summary";
+import { PriceSummary } from "../price-summary/price-summary";
 import {
   ProductCardContent,
   ProductCardImage,

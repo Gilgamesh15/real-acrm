@@ -3,7 +3,8 @@ import React from "react";
 
 import { Button } from "~/components/ui/button";
 
-import { type UseCodeBlockConfig, useCodeBlock } from "../hooks/use-code-block";
+import type { UseCodeBlockConfig } from "../hooks/use-code-block";
+import { useCodeBlock } from "../hooks/use-code-block";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const SHORTCUT_KEY = "mod+alt+c";

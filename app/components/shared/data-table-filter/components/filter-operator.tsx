@@ -31,7 +31,8 @@ import type {
   FilterModel,
   FilterOperators,
 } from "../core/types";
-import { type Locale, t } from "../lib/i18n";
+import { t } from "../lib/i18n";
+import type { Locale } from "../lib/i18n";
 
 interface FilterOperatorProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>;

@@ -19,7 +19,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { DiscountFormSchema, type DiscountFormSchemaType } from "~/lib/schemas";
+import { DiscountFormSchema } from "~/lib/schemas";
+import type { DiscountFormSchemaType } from "~/lib/schemas";
 import { cn, convertFormDataToObjectUnsafe } from "~/lib/utils";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 

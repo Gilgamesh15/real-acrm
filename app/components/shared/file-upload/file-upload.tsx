@@ -12,13 +12,13 @@ import {
   XIcon,
 } from "lucide-react";
 import React, { useCallback } from "react";
-import {
-  type Accept,
-  type DropzoneOptions,
-  type DropzoneState,
-  type FileRejection,
-  useDropzone,
+import type {
+  Accept,
+  DropzoneOptions,
+  DropzoneState,
+  FileRejection,
 } from "react-dropzone";
+import { useDropzone } from "react-dropzone";
 
 import { Button, buttonVariants } from "~/components/ui/button";
 import {

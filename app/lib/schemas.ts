@@ -88,7 +88,8 @@ const CategoryFormSchema = z.object({
 
 type CategoryFormSchemaType = z.infer<typeof CategoryFormSchema>;
 
-export { CategoryFormSchema, type CategoryFormSchemaType };
+export { CategoryFormSchema };
+export type { CategoryFormSchemaType };
 
 const SizeGroupFormSchema = z.object({
   name: z
@@ -103,7 +104,8 @@ const SizeGroupFormSchema = z.object({
 
 type SizeGroupFormSchemaType = z.infer<typeof SizeGroupFormSchema>;
 
-export { SizeGroupFormSchema, type SizeGroupFormSchemaType };
+export { SizeGroupFormSchema };
+export type { SizeGroupFormSchemaType };
 
 const SizeFormSchema = z.object({
   name: z
@@ -117,7 +119,8 @@ const SizeFormSchema = z.object({
 
 type SizeFormSchemaType = z.infer<typeof SizeFormSchema>;
 
-export { SizeFormSchema, type SizeFormSchemaType };
+export { SizeFormSchema };
+export type { SizeFormSchemaType };
 
 const BrandGroupFormSchema = z.object({
   name: z
@@ -132,7 +135,8 @@ const BrandGroupFormSchema = z.object({
 
 type BrandGroupFormSchemaType = z.infer<typeof BrandGroupFormSchema>;
 
-export { BrandGroupFormSchema, type BrandGroupFormSchemaType };
+export { BrandGroupFormSchema };
+export type { BrandGroupFormSchemaType };
 
 const ProductFormSchema = z.object({
   name: z
@@ -162,7 +166,8 @@ const ProductFormSchema = z.object({
 
 type ProductFormSchemaType = z.infer<typeof ProductFormSchema>;
 
-export { ProductFormSchema, type ProductFormSchemaType };
+export { ProductFormSchema };
+export type { ProductFormSchemaType };
 
 const TagFormSchema = z.object({
   name: z
@@ -180,7 +185,8 @@ const TagFormSchema = z.object({
 
 type TagFormSchemaType = z.infer<typeof TagFormSchema>;
 
-export { TagFormSchema, type TagFormSchemaType };
+export { TagFormSchema };
+export type { TagFormSchemaType };
 
 const MeasurementsFormSchema = z.array(
   z.object({
@@ -203,7 +209,8 @@ const MeasurementsFormSchema = z.array(
 
 type MeasurementsFormSchemaType = z.infer<typeof MeasurementsFormSchema>;
 
-export { MeasurementsFormSchema, type MeasurementsFormSchemaType };
+export { MeasurementsFormSchema };
+export type { MeasurementsFormSchemaType };
 
 const PieceFormSchema = z.object({
   name: z
@@ -249,11 +256,29 @@ const PieceFormSchema = z.object({
     })
     .int("Kolejność wyświetlania na stronie głównej musi być liczbą całkowitą")
     .optional(),
+  description: z.any(),
+  metaTitle: z
+    .string({ message: "Meta tytuł musi być tekstem" })
+    .min(1, "Meta tytuł jest wymagany"),
+  metaDescription: z
+    .string({ message: "Meta opis musi być tekstem" })
+    .min(1, "Meta opis jest wymagany"),
+  ogDescription: z
+    .string({ message: "OG opis musi być tekstem" })
+    .min(1, "OG opis jest wymagany"),
+  bulletPoints: z.array(z.string()),
+  condition: z
+    .string({ message: "Stan musi być tekstem" })
+    .min(1, "Stan jest wymagany"),
+  color: z.string().optional(),
+  material: z.string().optional(),
+  pattern: z.string().optional(),
 });
 
 type PieceFormSchemaType = z.infer<typeof PieceFormSchema>;
 
-export { PieceFormSchema, type PieceFormSchemaType };
+export { PieceFormSchema };
+export type { PieceFormSchemaType };
 
 const FeaturedProductsFormSchema = z.array(
   z.object({
@@ -303,13 +328,13 @@ type TopFeaturedPiecesFormSchemaType = z.infer<
   typeof TopFeaturedPiecesFormSchema
 >;
 
-export {
-  TopFeaturedProductsFormSchema,
-  type TopFeaturedProductsFormSchemaType,
-};
-export { TopFeaturedPiecesFormSchema, type TopFeaturedPiecesFormSchemaType };
+export { TopFeaturedProductsFormSchema };
+export type { TopFeaturedProductsFormSchemaType };
+export { TopFeaturedPiecesFormSchema };
+export type { TopFeaturedPiecesFormSchemaType };
 
-export { FeaturedProductsFormSchema, type FeaturedProductsFormSchemaType };
+export { FeaturedProductsFormSchema };
+export type { FeaturedProductsFormSchemaType };
 
 const CreateOrderSchema = z
   .object({
@@ -339,7 +364,8 @@ const CreateOrderSchema = z
 
 type CreateOrderSchemaType = z.infer<typeof CreateOrderSchema>;
 
-export { CreateOrderSchema, type CreateOrderSchemaType };
+export { CreateOrderSchema };
+export type { CreateOrderSchemaType };
 
 const DiscountFormSchema = z
   .object({
@@ -383,4 +409,5 @@ const DiscountFormSchema = z
 
 type DiscountFormSchemaType = z.infer<typeof DiscountFormSchema>;
 
-export { DiscountFormSchema, type DiscountFormSchemaType };
+export { DiscountFormSchema };
+export type { DiscountFormSchemaType };

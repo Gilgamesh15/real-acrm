@@ -1,9 +1,5 @@
-import {
-  ListIcon,
-  ListOrderedIcon,
-  ListTodoIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { ListIcon, ListOrderedIcon, ListTodoIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import React from "react";
 
 import { Button } from "~/components/ui/button";
@@ -13,13 +9,8 @@ import {
   DropdownMenuItem,
 } from "~/components/ui/dropdown-menu";
 
-import {
-  LIST_VARIANTS,
-  type ListVariant,
-  type UseListConfig,
-  useList,
-  useListVariant,
-} from "../hooks/use-list";
+import type { ListVariant, UseListConfig } from "../hooks/use-list";
+import { LIST_VARIANTS, useList, useListVariant } from "../hooks/use-list";
 import { RichTextDropdownMenuItem } from "../primitives/rich-text-editor-dropdown-menu-item";
 import { RichTextEditorDropdownMenuTrigger } from "../primitives/rich-text-editor-dropdown-menu-trigger";
 

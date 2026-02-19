@@ -3,10 +3,8 @@ import React from "react";
 
 import type { Button } from "~/components/ui/button";
 
-import {
-  type UseBlockquoteConfig,
-  useBlockquote,
-} from "../hooks/use-blockquote";
+import type { UseBlockquoteConfig } from "../hooks/use-blockquote";
+import { useBlockquote } from "../hooks/use-blockquote";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const SHORTCUT_KEY = "mod+shift+b";

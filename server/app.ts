@@ -5,7 +5,8 @@ import * as build from "virtual:react-router/server-build";
 
 import { auth } from "~/lib/auth.server";
 // 1. Import your existing server-side utilities
-import { type Logger, logger as baseLogger } from "~/lib/logger.server";
+import { logger as baseLogger } from "~/lib/logger.server";
+import type { Logger } from "~/lib/logger.server";
 import type { ServerSession } from "~/lib/types";
 
 type Env = {

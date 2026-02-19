@@ -2,7 +2,8 @@ import { initContract } from "@ts-rest/core";
 import { SCategory, SImage } from "db/db-zod-schemas";
 import * as schema from "db/schema";
 import { asc, eq, getTableColumns, gte } from "drizzle-orm";
-import { type LoaderFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import superjson from "superjson";
 import z from "zod";
 

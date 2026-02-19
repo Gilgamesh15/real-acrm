@@ -2,9 +2,8 @@ import * as sizesService from "db/services/sizes.service";
 
 import { db } from "~/lib/db";
 
+import type { AdminResource, AnyoneResource } from "../../shared";
 import {
-  type AdminResource,
-  type AnyoneResource,
   AppResponse,
   adminOnly,
   anyone,

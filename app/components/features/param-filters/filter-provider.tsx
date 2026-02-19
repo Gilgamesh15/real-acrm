@@ -1,4 +1,5 @@
-import { type UseQueryStatesReturn, useQueryStates } from "nuqs";
+import type { UseQueryStatesReturn } from "nuqs";
+import { useQueryStates } from "nuqs";
 import React from "react";
 
 import { formatCurrency, getFilterSearchParams } from "~/lib/utils";

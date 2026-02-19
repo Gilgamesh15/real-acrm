@@ -2,13 +2,13 @@ import { CheckCircle, Send, XOctagon } from "lucide-react";
 import React from "react";
 import {
   Link,
-  type LoaderFunctionArgs,
   data,
   isRouteErrorResponse,
   useNavigate,
   useRouteError,
   useSearchParams,
 } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";

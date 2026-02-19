@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { asc, desc, eq } from "drizzle-orm";
-import { type LoaderFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 
 import { db } from "~/lib/db";
 import { stripe } from "~/lib/stripe";
@@ -13,6 +14,9 @@ export const orderProductSelect = {
   with: {
     discount: true,
     pieces: {
+      columns: {
+        description: false,
+      },
       with: {
         discount: true,
         brand: true,
@@ -35,6 +39,9 @@ export const orderProductSelect = {
 export type OrderProduct = DBQueryResult<"products", typeof orderProductSelect>;
 
 export const orderPieceSelect = {
+  columns: {
+    description: false,
+  },
   with: {
     discount: true,
     images: {

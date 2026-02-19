@@ -1,4 +1,5 @@
-import { AlignCenterIcon, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { AlignCenterIcon } from "lucide-react";
 import { AlignJustifyIcon } from "lucide-react";
 import { AlignLeftIcon } from "lucide-react";
 import { AlignRightIcon } from "lucide-react";
@@ -6,11 +7,11 @@ import React from "react";
 
 import { Button } from "~/components/ui/button";
 
-import {
-  type TextAlignVariant,
-  type UseTextAlignConfig,
-  useTextAlign,
+import type {
+  TextAlignVariant,
+  UseTextAlignConfig,
 } from "../hooks/use-text-align";
+import { useTextAlign } from "../hooks/use-text-align";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const SHORTCUT_KEYS: Record<TextAlignVariant, string> = {

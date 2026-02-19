@@ -29,7 +29,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { TagFormSchema, type TagFormSchemaType } from "~/lib/schemas";
+import { TagFormSchema } from "~/lib/schemas";
+import type { TagFormSchemaType } from "~/lib/schemas";
 import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 

@@ -5,7 +5,8 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import React from "react";
-import { Await, type AwaitProps, Link, useAsyncError } from "react-router";
+import { Await, Link, useAsyncError } from "react-router";
+import type { AwaitProps } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";

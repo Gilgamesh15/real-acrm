@@ -1,5 +1,6 @@
 import type { ChainedCommands } from "@tiptap/react";
-import { type Editor, useCurrentEditor } from "@tiptap/react";
+import type { Editor } from "@tiptap/react";
+import { useCurrentEditor } from "@tiptap/react";
 import React from "react";
 
 import {

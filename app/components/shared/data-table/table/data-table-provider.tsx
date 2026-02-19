@@ -1,9 +1,10 @@
-import {
-  type ColumnDef,
-  type RowData,
-  useReactTable,
+import { useReactTable } from "@tanstack/react-table";
+import type {
+  ColumnDef,
+  RowData,
+  TableMeta,
+  Table as TableType,
 } from "@tanstack/react-table";
-import type { TableMeta, Table as TableType } from "@tanstack/react-table";
 import {
   getCoreRowModel,
   getFilteredRowModel,
@@ -14,11 +15,11 @@ import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { createContext, useContext, useMemo, useState } from "react";
 
 import { useDataTableFilters } from "~/components/shared/data-table-filter";
-import {
-  type Column,
-  type ColumnConfig,
-  type DataTableFilterActions,
-  type FiltersState,
+import type {
+  Column,
+  ColumnConfig,
+  DataTableFilterActions,
+  FiltersState,
 } from "~/components/shared/data-table-filter/core/types";
 import {
   createTSTColumns,

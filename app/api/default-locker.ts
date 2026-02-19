@@ -1,6 +1,7 @@
 import { inpostService } from "db/services/inpost.service";
 import type { LoaderFunctionArgs } from "react-router";
-import { type ActionFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { logger } = context;

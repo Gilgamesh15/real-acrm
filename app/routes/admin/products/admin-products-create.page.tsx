@@ -19,7 +19,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { ProductFormSchema, type ProductFormSchemaType } from "~/lib/schemas";
+import { ProductFormSchema } from "~/lib/schemas";
+import type { ProductFormSchemaType } from "~/lib/schemas";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 import { cn, convertFormDataToObjectUnsafe, generateSlug } from "~/lib/utils";
 

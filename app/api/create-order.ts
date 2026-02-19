@@ -1,5 +1,6 @@
 import { orderService } from "db/services/order.service";
-import { type ActionFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 import type z from "zod";
 
 import { auth } from "~/lib/auth.server";

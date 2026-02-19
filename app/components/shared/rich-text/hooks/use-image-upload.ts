@@ -1,4 +1,4 @@
-import { type Editor } from "@tiptap/react";
+import type { Editor } from "@tiptap/react";
 import React from "react";
 
 import { isExtensionAvailable } from "~/components/shared/rich-text/utils";

@@ -31,10 +31,8 @@ import {
   AdminPageHeader,
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { OrderData } from "~/components/features/order-data/order-data";
-import {
-  PriceSummary,
-  type PriceSummaryProps,
-} from "~/components/features/price-summary/price-summary";
+import { PriceSummary } from "~/components/features/price-summary/price-summary";
+import type { PriceSummaryProps } from "~/components/features/price-summary/price-summary";
 import { OrderTimeline } from "~/components/features/timeline/order-timeline";
 import {
   ActionDialog,

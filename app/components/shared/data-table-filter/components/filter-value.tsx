@@ -44,10 +44,11 @@ import type {
   FilterModel,
   FilterStrategy,
 } from "../core/types";
+import type { Locale } from "../core/types";
 import { useDebounceCallback } from "../hooks/use-debounce-callback";
 import { take } from "../lib/array";
 import { createNumberRange } from "../lib/helpers";
-import { type Locale, t } from "../lib/i18n";
+import { t } from "../lib/i18n";
 import { DebouncedInput } from "../ui/debounced-input";
 
 interface FilterValueProps<TData, TType extends ColumnDataType> {

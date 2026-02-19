@@ -1,13 +1,10 @@
 import React from "react";
-import {
-  type ReactZoomPanPinchContentRef,
-  TransformComponent,
-  TransformWrapper,
-} from "react-zoom-pan-pinch";
+import type { ReactZoomPanPinchContentRef } from "react-zoom-pan-pinch";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
+import type { CarouselApi } from "~/components/ui/carousel";
 import {
   Carousel,
-  type CarouselApi,
   CarouselContent,
   CarouselItem,
 } from "~/components/ui/carousel";

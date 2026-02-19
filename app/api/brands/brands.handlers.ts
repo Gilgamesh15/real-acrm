@@ -2,9 +2,8 @@ import * as brandsService from "db/services/brands.service";
 
 import { db } from "~/lib/db";
 
+import type { AdminResource, AnyoneResource } from "../shared";
 import {
-  type AdminResource,
-  type AnyoneResource,
   AppResponse,
   adminOnly,
   anyone,

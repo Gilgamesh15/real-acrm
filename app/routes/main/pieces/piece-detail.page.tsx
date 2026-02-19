@@ -2,26 +2,47 @@ import * as schema from "db/schema";
 import { filterService } from "db/services/filter.service";
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { exists } from "drizzle-orm";
-import { ChevronsRightIcon, ShoppingCartIcon, ZapIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsRightIcon,
+  InfoIcon,
+  ShoppingCartIcon,
+  ZapIcon,
+} from "lucide-react";
 import React from "react";
-import { Await, Link, type MetaDescriptor } from "react-router";
+import { Await, Link } from "react-router";
+import type { MetaDescriptor } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
+import type { CarouselApi } from "~/components/ui/carousel";
 import {
   Carousel,
-  type CarouselApi,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "~/components/ui/carousel";
+import { DirectionAwareTabs } from "~/components/ui/direction-aware-tabs";
 import Image from "~/components/ui/image";
-import { Container, Section } from "~/components/ui/layout";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "~/components/ui/item";
+import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
+import { RichText } from "~/components/shared/rich-text/rich-text";
 import { db } from "~/lib/db";
 import { generatePieceStructuredData } from "~/lib/seo";
 import {
@@ -81,7 +102,6 @@ export async function loader({ params }: Route.LoaderArgs) {
       },
     },
   });
-
   if (!piece) {
     throw new Response("Piece not found", { status: 404 });
   }
@@ -110,36 +130,17 @@ export async function loader({ params }: Route.LoaderArgs) {
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   const { piece } = loaderData;
   const pricingData = calculatePiecePriceDisplayData(piece);
-  let pageTitle = piece.name;
-  if (piece.brand) {
-    pageTitle += ` – ${piece.brand.name}`;
-  }
-  if (piece.size) {
-    pageTitle += `, rozm. ${piece.size.name}`;
-  }
-  pageTitle += " | ACRM";
 
-  let pageDescription = `Kup ${piece.name}`;
-  if (piece.brand) {
-    pageDescription += ` ${piece.brand.name}`;
-  }
-  if (piece.size) {
-    pageDescription += `, rozmiar ${piece.size.name}`;
-  }
-  if (piece.category) {
-    pageDescription += ` ${piece.category.name}`;
-  }
-  pageDescription += `. Cena: ${formatCurrency(pricingData.finalPrice)}. Darmowa dostawa InPost, zwroty do 14 dni.`;
   const pageUrl = `https://www.acrm.pl/ubrania/${piece.slug}`;
   const pageImage = piece.images[0]?.url || "https://www.acrm.pl/logo-dark.png";
 
   const metaTags: MetaDescriptor[] = [
-    { title: pageTitle },
-    { name: "description", content: pageDescription },
+    { title: piece.metaTitle },
+    { name: "description", content: piece.metaDescription },
     { name: "robots", content: "index, follow" },
     { property: "og:type", content: "product" },
-    { property: "og:title", content: pageTitle },
-    { property: "og:description", content: pageDescription },
+    { property: "og:title", content: piece.metaTitle },
+    { property: "og:description", content: piece.metaDescription },
     { property: "og:url", content: pageUrl },
     { property: "og:image", content: pageImage },
     { property: "og:site_name", content: "ACRM | Fashion Projects" },
@@ -152,8 +153,8 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     },
     { property: "product:condition", content: "used" },
     { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: pageTitle },
-    { name: "twitter:description", content: pageDescription },
+    { name: "twitter:title", content: piece.metaTitle },
+    { name: "twitter:description", content: piece.ogDescription },
     { name: "twitter:image", content: pageImage },
     { tagName: "link", rel: "canonical", href: pageUrl },
     { "script:ld+json": generatePieceStructuredData(piece) },
@@ -220,193 +221,309 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
 
   const onSelect = React.useCallback(() => {
     if (!mainApi || !thumbsApi) return;
-    setSelectedIndex(mainApi.selectedScrollSnap()); // v8
-    thumbsApi.scrollTo(mainApi.selectedScrollSnap()); // v8
+    setSelectedIndex(mainApi.selectedScrollSnap());
+    thumbsApi.scrollTo(mainApi.selectedScrollSnap());
   }, [mainApi, thumbsApi]);
 
   React.useEffect(() => {
     if (!mainApi) return;
     onSelect();
-    mainApi.on("select", onSelect).on("reInit", onSelect); // v8
+    mainApi.on("select", onSelect).on("reInit", onSelect);
   }, [mainApi, onSelect]);
 
   return (
-    <>
-      <Container>
-        <Section>
-          <div className="relative grid w-full grid-cols-1 md:grid-cols-2 gap-4.5 md:gap-8">
-            <div className="max-w-full h-full space-y-2">
-              <Carousel
-                setApi={setMainApi}
-                opts={{
-                  loop: true,
-                }}
-              >
-                <CarouselContent>
-                  {loopedImages.map((image) => (
-                    <CarouselItem
-                      key={image.id}
-                      className="cursor-zoom-in"
-                      onClick={() => {
-                        setIsDialogOpen(true);
-                      }}
+    <main>
+      <section className="mx-auto max-w-7xl md:pt-8 md:pb-4">
+        <div className="flex flex-col gap-6 md:flex-row md:gap-10 lg:gap-14">
+          {/* LEFT — Image gallery */}
+          <div className="md:flex md:gap-3 md:flex-6">
+            {/* Vertical thumbnail strip (desktop) */}
+            <Carousel
+              opts={{
+                loop: true,
+                dragFree: true,
+              }}
+              setApi={setThumbsApi}
+              orientation="vertical"
+              className="hidden md:block"
+            >
+              <CarouselContent className="w-18 max-h-[600px]">
+                {loopedImages.map((img, index) => (
+                  <CarouselItem key={img.id} className="md:max-h-[600px]">
+                    <button
+                      onClick={() => onThumbClick(index)}
+                      className={cn(
+                        "border transition-all",
+                        index === selectedIndex
+                          ? "border-foreground"
+                          : "border-transparent opacity-75 hover:opacity-100"
+                      )}
                     >
                       <Image
-                        src={image.url}
-                        alt={image.alt}
-                        aspectRatio={6 / 5}
-                        resize="autoPad"
-                        className="size-full object-contain"
-                        quality="auto:good"
-                        responsive
+                        aspectRatio={1}
+                        width={72}
+                        height={72}
+                        resize="fill"
+                        className="aspect-square object-cover"
+                        src={img.url}
+                        alt={img.alt}
                       />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-              <Carousel
-                setApi={setThumbsApi}
-                opts={{
-                  loop: true,
-                  dragFree: true,
-                }}
-                className="h-16"
-              >
-                <CarouselContent>
-                  {loopedImages.map((image, index) => (
-                    <CarouselItem
-                      key={image.id}
-                      className={cn("basis-24 p-1")}
-                      onClick={() => onThumbClick(index)}
-                    >
-                      <div
-                        className={cn(
-                          "basis-24 aspect-square border transition-all duration-300",
-                          index === selectedIndex
-                            ? "border-primary scale-105"
-                            : "border-primary/50 scale-100"
-                        )}
-                      >
-                        <Image
-                          src={image.url}
-                          alt={image.alt}
-                          aspectRatio={1}
-                          resize="autoPad"
-                          className="size-full object-cover bg-background"
-                          width={96}
-                          height={96}
-                          lazyload
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
+                    </button>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
 
-            <div className="pt-4.5 flex flex-col h-full justify-between">
-              <div className="flex flex-col">
-                <div className="flex flex-row gap-4 md:flex-col items-center md:items-start justify-between">
-                  <h1 className="text-4xl leading-none font-normal lg:text-7xl">
-                    {piece.name}
-                  </h1>
-                  {pricingData.hasDiscount ? (
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold line-through">
-                          {formatCurrency(pricingData.originalPrice)}
-                        </span>
-                        <Badge variant="success">
-                          {formatDiscountLabel(pricingData.discount)}
-                        </Badge>
-                      </div>
-                      <span className="text-3xl font-bold">
-                        {formatCurrency(pricingData.finalPrice)}
-                      </span>
-                    </div>
-                  ) : (
-                    <p className="text-3xl font-bold">
-                      {formatCurrency(pricingData.finalPrice)}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-row gap-4 md:flex-col items-center md:items-start justify-between mt-4">
-                  <div className="flex items-center gap-2 text-lg font-secondary">
-                    <span className="">Marka:</span>
-                    <span className="font-bold">
-                      {piece.brand?.name || "NN"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-lg font-secondary">
-                    <span className="">Rozmiar:</span>
-                    <span className="font-bold">
-                      {piece.size?.name || "NN"}
-                    </span>
-                  </div>
-                </div>
-                <div className="font-secondary grid grid-cols-2 border border-primary border-1.5 divide-x divide-primary divide-1.5 divide-y mt-6 text-sm">
-                  {piece.measurements.map((measurement) => (
-                    <div
-                      key={measurement.id}
-                      className="flex justify-between  p-1 md:p-2"
-                    >
-                      <span className="font-bold">{measurement.name}</span>
-                      <span>
-                        {measurement.value} {measurement.unit}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Produkt używany (second-hand). Nie jesteśmy oficjalnym
-                  dystrybutorem ani przedstawicielem marki{" "}
-                  {piece.brand?.name || ""}. Nie rościmy sobie prawa do
-                  współpracy z marką ani jej reprezentowania.
-                </p>
-                <div className="flex gap-2 w-full mt-8 md:mt-16">
-                  <Button
-                    onClick={() => onPieceBuyNow(piece)}
-                    className="flex-1"
-                  >
-                    <ZapIcon /> Kup teraz
-                  </Button>
-                  <Button
-                    variant={isInCart(piece.id) ? "default" : "secondary"}
+            {/* Main image */}
+            <Carousel
+              opts={{
+                loop: true,
+              }}
+              setApi={setMainApi}
+            >
+              <CarouselContent>
+                {loopedImages.map((image) => (
+                  <CarouselItem
+                    key={image.id}
+                    className="cursor-zoom-in aspect-4/5 sm:aspect-square md:aspect-auto md:max-h-[600px]"
                     onClick={() => {
-                      if (isInCart(piece.id)) {
-                        removePiece(piece.id, true);
-                      } else {
-                        addPiece(piece, true);
-                      }
+                      setIsDialogOpen(true);
                     }}
                   >
-                    <ShoppingCartIcon />
-                  </Button>
-                </div>
-                {piece.product && (
-                  <Link
-                    to={`/projekty/${piece.product.slug}`}
+                    <Image
+                      responsive
+                      resize="autoPad"
+                      src={image.url}
+                      alt={image.alt}
+                      className="object-contain size-full"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 backdrop-blur-sm">
+                <ChevronLeftIcon className="size-4" />
+              </CarouselPrevious>
+              <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 backdrop-blur-sm">
+                <ChevronRightIcon className="size-4" />
+              </CarouselNext>
+
+              {/* mobile thumbnails */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
+                {piece.images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onThumbClick(i)}
                     className={cn(
-                      buttonVariants({
-                        variant: "outline",
-                        className: "mt-4 h-fit whitespace-normal",
-                      })
+                      "size-2 transition-colors",
+                      i === selectedIndex % piece.images.length
+                        ? "bg-foreground"
+                        : "bg-foreground/30"
                     )}
-                  >
-                    Dostępne też w projekcie {piece.product.name}
-                    <ChevronsRightIcon />
-                  </Link>
+                    aria-label={`View image ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </Carousel>
+          </div>
+
+          {/* RIGHT — Purchase info (compact) */}
+          <div
+            className="flex flex-col px-4 sm:px-6 lg:px-8 md:flex-5 md:justify-center"
+            //className="flex flex-col md:flex-5 justify-center"
+          >
+            <div className="flex flex-row justify-between items-end md:flex-col md:items-start">
+              <div>
+                <Badge variant="outline" className="mb-4">
+                  Produkt używany
+                </Badge>
+
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  {piece.brand?.name || "N/A"}
+                </p>
+                <h1 className="mt-1.5 font-heading text-3xl font-semibold leading-tight text-balance md:text-5xl">
+                  {piece.name}
+                </h1>
+              </div>
+
+              <div>
+                {pricingData.hasDiscount ? (
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold line-through">
+                        {formatCurrency(pricingData.originalPrice)}
+                      </span>
+                      <Badge variant="success">
+                        {formatDiscountLabel(pricingData.discount)}
+                      </Badge>
+                    </div>
+                    <span className="text-3xl font-bold">
+                      {formatCurrency(pricingData.finalPrice)}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold">
+                    {formatCurrency(pricingData.finalPrice)}
+                  </p>
                 )}
               </div>
             </div>
-          </div>
-        </Section>
-      </Container>
 
-      <section
-        className="py-18 flex flex-col gap-4"
-        aria-labelledby="categories-heading"
-      >
+            <Separator className="my-5" />
+
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm">
+              <div>
+                <span className="text-muted-foreground">Rozmiar</span>{" "}
+                <span className="ml-2 font-medium">
+                  {piece.size?.name || "N/A"}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Stan</span>{" "}
+                <span className="ml-2 font-medium">{piece.condition}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Kategoria</span>{" "}
+                <span className="ml-2 font-medium">{piece.category?.name}</span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-2">
+              <Button onClick={() => onPieceBuyNow(piece)} className="flex-1">
+                <ZapIcon /> Kup teraz
+              </Button>
+              <Button
+                variant={isInCart(piece.id) ? "default" : "secondary"}
+                onClick={() => {
+                  if (isInCart(piece.id)) {
+                    removePiece(piece.id, true);
+                  } else {
+                    addPiece(piece, true);
+                  }
+                }}
+              >
+                <ShoppingCartIcon />
+              </Button>
+            </div>
+
+            {piece.product && (
+              <Link
+                to={`/projekty/${piece.product.slug}`}
+                className={cn(
+                  buttonVariants({
+                    variant: "outline",
+                    className: "mt-4 h-fit whitespace-normal",
+                  })
+                )}
+              >
+                Dostępne też w projekcie {piece.product.name}
+                <ChevronsRightIcon />
+              </Link>
+            )}
+
+            {/* Small inline disclaimer beneath CTA */}
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              <AlertTriangleIcon className="mr-1.5 inline size-3" />
+              Produkt używany (second-hand). Nie jesteśmy oficjalnym
+              dystrybutorem ani przedstawicielem marki {piece.brand?.name || ""}
+              . Zobacz sekcję Dodatkowe informacje poniżej w celu uzyskania
+              pełnych szczegółów.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========== FULL-WIDTH TABS ========== */}
+      <section className="mt-6">
+        <DirectionAwareTabs
+          tabs={[
+            {
+              id: 0,
+              label: "Opis",
+              content: piece.description ? (
+                <RichText
+                  className="px-4 py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 max-w-7xl mx-auto"
+                  content={piece.description}
+                />
+              ) : (
+                <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
+                  <p className="text-muted-foreground">Brak opisu</p>
+                  <p className="text-muted-foreground">
+                    Opis zostanie dodany wkrótce.
+                  </p>
+                </div>
+              ),
+            },
+            {
+              id: 1,
+              label: "Pomiary",
+              content: (
+                <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
+                  <div className="grid grid-cols-2 gap-px border border-border bg-border w-full">
+                    {piece.measurements.map((m) => (
+                      <div
+                        key={m.id}
+                        className="flex justify-between bg-background px-4 py-3 text-sm"
+                      >
+                        <span className="font-medium">{m.name}</span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {m.value} {m.unit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {/**TODO ADD STYLE GUIDE LINK */}
+                  {/* <p className="mt-4 text-xs text-muted-foreground leading-relaxed max-w-md">
+                    Zobacz nasz
+                  </p>*/}
+                </div>
+              ),
+            },
+            {
+              id: 2,
+              label: "Dodatkowe informacje",
+              content: (
+                <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row">
+                  {/* Item 1: Product Condition */}
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <AlertTriangleIcon className="size-4 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>Stan produktu: Używany</ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Artykuł pochodzi z drugiego obiegu (second-hand). Może
+                        nosić ślady poprzedniego użytkowania, co jest zgodne z
+                        jego charakterem.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+
+                  {/* Item 2: Legal/Authorization Disclaimer */}
+                  <Item>
+                    <ItemMedia variant="icon">
+                      {/* Added className for visual consistency */}
+                      <InfoIcon className="size-4 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>Niezależny sprzedawca</ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Nie jesteśmy autoryzowanym dystrybutorem ani
+                        przedstawicielem marki{" "}
+                        <strong>{piece.brand?.name || "tej marki"}</strong>.
+                        Działamy niezależnie od producenta – marka nie jest
+                        sponsorem ani autorem tej oferty.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </ItemGroup>
+              ),
+            },
+          ]}
+        />
+      </section>
+
+      {/* ---- Similar items placeholder ---- */}
+      <section className="space-y-4 mt-10">
         <h2
           id="categories-heading"
           className="text-3xl uppercase tracking-[0.2em] font-light text-center font-secondary"
@@ -426,7 +543,7 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
             >
               <CarouselContent>
                 {Array.from({ length: 8 }).map((_, index) => (
-                  <CarouselItem key={index} className="basis-[248px]">
+                  <CarouselItem className="basis-[248px]" key={index}>
                     <Skeleton className="w-[248px] h-[373.3px]" />
                   </CarouselItem>
                 ))}
@@ -496,6 +613,6 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
         setIsDialogOpen={setIsDialogOpen}
         defaultActiveIndex={selectedIndex}
       />
-    </>
+    </main>
   );
 }

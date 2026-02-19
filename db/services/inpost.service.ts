@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { data } from "react-router";
 
 import { db } from "~/lib/db";
-import { type Logger } from "~/lib/logger.server";
+import type { Logger } from "~/lib/logger.server";
 import { logger } from "~/lib/logger.server";
 import type { InpostApiLocker } from "~/lib/types";
 

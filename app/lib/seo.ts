@@ -31,14 +31,6 @@ const GENDER_MAP: Record<Gender, string> = {
   unisex: "Unisex",
 };
 
-function toTitleCase(str: string): string {
-  return str
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export function extractTextFromRichText(richText: RichText): string {
   if (!richText) return "";
 
@@ -55,6 +47,9 @@ export function extractTextFromRichText(richText: RichText): string {
 
       if (typeof node === "object") {
         if ("text" in node && node.text) return node.text;
+        if ("content" in node && node.content) {
+          return extractText(node.content);
+        }
         if ("children" in node && node.children) {
           return extractText(node.children);
         }
@@ -295,6 +290,10 @@ function generatePieceStructuredData(
         gender: true;
         slug: true;
         priceInGrosz: true;
+        description: true;
+        color: true;
+        material: true;
+        pattern: true;
       };
       with: {
         images: {
@@ -326,7 +325,7 @@ function generatePieceStructuredData(
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: toTitleCase(piece.name),
+    name: piece.name,
     image: piece.images.map((img) => img.url),
     offers: {
       "@type": "Offer",
@@ -360,10 +359,12 @@ function generatePieceStructuredData(
           }
         : {}),
     },
-    //color:
-    //description:
-    //material
-    //pattern
+    ...(piece.color ? { color: piece.color } : {}),
+    ...(piece.material ? { material: piece.material } : {}),
+    ...(piece.pattern ? { pattern: piece.pattern } : {}),
+    ...(piece.description
+      ? { description: extractTextFromRichText(piece.description) }
+      : {}),
     ...(piece.size
       ? {
           size: {
@@ -438,7 +439,7 @@ function generateProductStructuredData(
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: toTitleCase(product.name),
+    name: product.name,
     image: product.images.map((img) => img.url),
     offers: {
       "@type": "Offer",

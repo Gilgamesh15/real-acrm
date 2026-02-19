@@ -3,10 +3,8 @@ import React from "react";
 
 import { Button } from "~/components/ui/button";
 
-import {
-  type UseImageUploadConfig,
-  useImageUpload,
-} from "../hooks/use-image-upload";
+import type { UseImageUploadConfig } from "../hooks/use-image-upload";
+import { useImageUpload } from "../hooks/use-image-upload";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const SHORTCUT_KEY = "mod+shift+i";

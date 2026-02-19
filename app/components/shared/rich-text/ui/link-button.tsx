@@ -16,7 +16,8 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
-import { type UseLinkPopoverConfig, useLink } from "../hooks/use-link";
+import type { UseLinkPopoverConfig } from "../hooks/use-link";
+import { useLink } from "../hooks/use-link";
 import { RichTextEditorPopoverTrigger } from "../primitives/rich-text-editor-popover-trigger";
 
 const LinkPopover = ({

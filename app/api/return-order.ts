@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { type LoaderFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 
 import { db } from "~/lib/db";
 import { orderStatusFromOrder } from "~/lib/utils";

@@ -24,7 +24,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { CategoryFormSchema, type CategoryFormSchemaType } from "~/lib/schemas";
+import { CategoryFormSchema } from "~/lib/schemas";
+import type { CategoryFormSchemaType } from "~/lib/schemas";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 import {
   cn,

@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
-  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -686,7 +686,6 @@ export const pieces = pgTable(
       onDelete: "set null",
     }),
     productDisplayOrder: integer("product_display_order").default(-1).notNull(),
-    description: jsonb("description").$type<RichText>(),
 
     brandId: uuid("brand_id").references(() => brands.id, {
       onDelete: "set null",
@@ -703,6 +702,16 @@ export const pieces = pgTable(
     discountId: uuid("discount_id").references(() => discounts.id, {
       onDelete: "set null",
     }),
+
+    description: jsonb("description").$type<RichText>(),
+    metaTitle: text("meta_title").notNull(),
+    metaDescription: text("meta_description").notNull(),
+    ogDescription: text("og_description").notNull(),
+    bulletPoints: text("bullet_points").array().default([]),
+    condition: text("condition").notNull(),
+    color: text("color"),
+    material: text("material"),
+    pattern: text("pattern"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

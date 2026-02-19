@@ -4,7 +4,8 @@ import Stripe from "stripe";
 
 import * as schema from "~/../db/schema";
 import { OrderConfirmationEmail } from "~/components/emails/order-confirmation-email";
-import { type DbTransactionClient, db } from "~/lib/db";
+import { db } from "~/lib/db";
+import type { DbTransactionClient } from "~/lib/db";
 import type { Logger } from "~/lib/logger.server";
 import { logger } from "~/lib/logger.server";
 import { resend } from "~/lib/resend";

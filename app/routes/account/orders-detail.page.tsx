@@ -15,10 +15,8 @@ import {
 } from "~/components/ui/item";
 
 import { OrderData } from "~/components/features/order-data/order-data";
-import {
-  PriceSummary,
-  type PriceSummaryProps,
-} from "~/components/features/price-summary/price-summary";
+import { PriceSummary } from "~/components/features/price-summary/price-summary";
+import type { PriceSummaryProps } from "~/components/features/price-summary/price-summary";
 import {
   ProductCardContent,
   ProductCardImage,

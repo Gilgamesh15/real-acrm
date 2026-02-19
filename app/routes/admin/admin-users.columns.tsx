@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import * as schema from "db/schema";
 import { roleEnum } from "db/schema";
 import { CalendarIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";

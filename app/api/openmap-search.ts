@@ -1,5 +1,6 @@
 import { openMapService } from "db/services/openmap.service";
-import { type LoaderFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const { logger } = context;

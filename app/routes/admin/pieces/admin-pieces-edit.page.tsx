@@ -36,7 +36,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { PieceFormSchema, type PieceFormSchemaType } from "~/lib/schemas";
+import { PieceFormSchema } from "~/lib/schemas";
+import type { PieceFormSchemaType } from "~/lib/schemas";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 import {
   cn,
@@ -47,6 +48,61 @@ import {
 } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-pieces-edit.page";
+
+const MATERIAL_OPTIONS = [
+  "Bawełna",
+  "Wełna",
+  "Poliester",
+  "Jedwab",
+  "Len",
+  "Wiskoza",
+  "Elastan",
+  "Nylon",
+  "Akryl",
+  "Skóra",
+  "Skóra ekologiczna",
+  "Denim",
+  "Kaszmir",
+  "Sztruks",
+  "Satyna",
+  "Aksamit",
+  "Polar",
+];
+
+const PATTERN_OPTIONS = [
+  "Jednolity",
+  "W paski",
+  "W kratę",
+  "W grochy",
+  "Kwiatowy",
+  "Geometryczny",
+  "Zwierzęcy",
+  "Moro",
+  "Pepitka",
+  "Tie-dye",
+  "Abstrakcyjny",
+  "Logo/Nadruk",
+];
+
+const COLOR_OPTIONS = [
+  "Czarny",
+  "Biały",
+  "Szary",
+  "Granatowy",
+  "Niebieski",
+  "Czerwony",
+  "Różowy",
+  "Zielony",
+  "Żółty",
+  "Pomarańczowy",
+  "Fioletowy",
+  "Brązowy",
+  "Beżowy",
+  "Kremowy",
+  "Złoty",
+  "Srebrny",
+  "Wielokolorowy",
+];
 
 // ========================== LOADING ==========================
 
@@ -155,6 +211,15 @@ export async function loader({ params, context }: Route.LoaderArgs) {
       name: m.name,
       value: m.value,
     })),
+    description: piece.description,
+    metaTitle: piece.metaTitle,
+    metaDescription: piece.metaDescription,
+    ogDescription: piece.ogDescription,
+    bulletPoints: piece.bulletPoints || [],
+    condition: piece.condition,
+    color: piece.color ?? undefined,
+    material: piece.material ?? undefined,
+    pattern: piece.pattern ?? undefined,
   };
 
   return data(
@@ -223,6 +288,15 @@ export async function action({ request, params, context }: Route.ActionArgs) {
           categoryId: args.categoryId ?? null,
           homeFeaturedOrder: args.homeFeaturedOrder ?? -1,
           productDisplayOrder: args.productDisplayOrder ?? -1,
+          description: args.description,
+          metaTitle: args.metaTitle,
+          metaDescription: args.metaDescription,
+          ogDescription: args.ogDescription,
+          bulletPoints: args.bulletPoints,
+          condition: args.condition,
+          color: args.color || null,
+          material: args.material || null,
+          pattern: args.pattern || null,
         })
         .where(eq(schema.pieces.id, pieceId))
         .returning()
@@ -636,6 +710,65 @@ export default function AdminPiecesEditPage({
               );
             }}
           </form.Field>
+          <form.AppField name="condition">
+            {(field) => (
+              <field.TextField label="Stan" description="Stan ubrania" />
+            )}
+          </form.AppField>
+          <form.AppField name="color">
+            {(field) => (
+              <field.ComboboxField
+                label="Kolor"
+                options={COLOR_OPTIONS.map((c) => ({ label: c, value: c }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="material">
+            {(field) => (
+              <field.ComboboxField
+                label="Materiał"
+                options={MATERIAL_OPTIONS.map((m) => ({ label: m, value: m }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="pattern">
+            {(field) => (
+              <field.ComboboxField
+                label="Wzór"
+                options={PATTERN_OPTIONS.map((p) => ({ label: p, value: p }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="bulletPoints">
+            {(field) => (
+              <field.TagsField
+                label="Punkty bullet"
+                description="Krótkie cechy ubrania"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="description">
+            {(field) => (
+              <field.RichTextField
+                label="Opis"
+                description="Szczegółowy opis ubrania"
+              />
+            )}
+          </form.AppField>
+          <FieldSet>
+            <FieldLegend>SEO</FieldLegend>
+            <FieldGroup>
+              <form.AppField name="metaTitle">
+                {(field) => <field.TextField label="Meta tytuł" />}
+              </form.AppField>
+              <form.AppField name="metaDescription">
+                {(field) => <field.TextField label="Meta opis" />}
+              </form.AppField>
+              <form.AppField name="ogDescription">
+                {(field) => <field.TextField label="OG opis" />}
+              </form.AppField>
+            </FieldGroup>
+          </FieldSet>
         </form>
       </AdminPageContent>
 

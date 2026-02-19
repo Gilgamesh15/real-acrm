@@ -1,13 +1,11 @@
-import { type LucideIcon, Redo2Icon, Undo2Icon } from "lucide-react";
+import { Redo2Icon, Undo2Icon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import React from "react";
 
 import { Button } from "~/components/ui/button";
 
-import {
-  type UndoRedoAction,
-  type UseUndoRedoConfig,
-  useUndoRedo,
-} from "../hooks/use-undo-redo";
+import type { UndoRedoAction, UseUndoRedoConfig } from "../hooks/use-undo-redo";
+import { useUndoRedo } from "../hooks/use-undo-redo";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const SHORTCUT_KEYS: Record<UndoRedoAction, string> = {

@@ -1,6 +1,6 @@
 import { data } from "react-router";
 
-import { type Logger } from "~/lib/logger.server";
+import type { Logger } from "~/lib/logger.server";
 import { logger } from "~/lib/logger.server";
 import type { OpenStreetMapResult } from "~/lib/types";
 

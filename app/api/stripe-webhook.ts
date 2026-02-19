@@ -1,4 +1,5 @@
-import { type ActionFunctionArgs, data } from "react-router";
+import { data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 import Stripe from "stripe";
 
 import { orderService } from "~/../db/services/order.service";

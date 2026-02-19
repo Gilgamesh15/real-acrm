@@ -1,6 +1,6 @@
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   DndContext,
-  type DragEndEvent,
   KeyboardSensor,
   MouseSensor,
   TouchSensor,

@@ -18,7 +18,8 @@ import { db } from "~/lib/db";
 //import type { Logger } from "~/lib/logger.server";
 //import { logger } from "~/lib/logger.server";
 import type { DBQueryArgs, DBQueryResult } from "~/lib/types";
-import { type FilterArgs, priceFromGrosz } from "~/lib/utils";
+import { priceFromGrosz } from "~/lib/utils";
+import type { FilterArgs } from "~/lib/utils";
 
 class FilterService {
   constructor() {

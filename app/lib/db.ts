@@ -11,4 +11,5 @@ type DbTransactionClient = Parameters<
   Parameters<DbClient["transaction"]>[0]
 >[0];
 
-export { db, type DbClient, type DbTransactionClient };
+export type { DbClient, DbTransactionClient };
+export { db };

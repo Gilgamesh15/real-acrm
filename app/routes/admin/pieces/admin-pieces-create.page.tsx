@@ -25,7 +25,8 @@ import {
 } from "~/components/features/admin-page-layout/admin-page-layout";
 import { useAppForm } from "~/components/shared/form";
 import { db } from "~/lib/db";
-import { PieceFormSchema, type PieceFormSchemaType } from "~/lib/schemas";
+import { PieceFormSchema } from "~/lib/schemas";
+import type { PieceFormSchemaType } from "~/lib/schemas";
 import { convertObjectToFormDataUnsafe } from "~/lib/utils";
 import {
   cn,
@@ -35,6 +36,61 @@ import {
 } from "~/lib/utils";
 
 import type { Route } from "./+types/admin-pieces-create.page";
+
+const MATERIAL_OPTIONS = [
+  "Bawełna",
+  "Wełna",
+  "Poliester",
+  "Jedwab",
+  "Len",
+  "Wiskoza",
+  "Elastan",
+  "Nylon",
+  "Akryl",
+  "Skóra",
+  "Skóra ekologiczna",
+  "Denim",
+  "Kaszmir",
+  "Sztruks",
+  "Satyna",
+  "Aksamit",
+  "Polar",
+];
+
+const PATTERN_OPTIONS = [
+  "Jednolity",
+  "W paski",
+  "W kratę",
+  "W grochy",
+  "Kwiatowy",
+  "Geometryczny",
+  "Zwierzęcy",
+  "Moro",
+  "Pepitka",
+  "Tie-dye",
+  "Abstrakcyjny",
+  "Logo/Nadruk",
+];
+
+const COLOR_OPTIONS = [
+  "Czarny",
+  "Biały",
+  "Szary",
+  "Granatowy",
+  "Niebieski",
+  "Czerwony",
+  "Różowy",
+  "Zielony",
+  "Żółty",
+  "Pomarańczowy",
+  "Fioletowy",
+  "Brązowy",
+  "Beżowy",
+  "Kremowy",
+  "Złoty",
+  "Srebrny",
+  "Wielokolorowy",
+];
 
 // ========================== LOADING ==========================
 
@@ -138,8 +194,8 @@ export async function action({ request, context }: Route.ActionArgs) {
       const [createdPiece] = await tx
         .insert(schema.pieces)
         .values({
-          gender: args.gender as "female" | "male" | "unisex",
           name: args.name,
+          gender: args.gender as "female" | "male" | "unisex",
           slug,
           keywords: args.keywords,
           priceInGrosz: priceToGrosz(args.price),
@@ -148,6 +204,15 @@ export async function action({ request, context }: Route.ActionArgs) {
           categoryId: args.categoryId ?? null,
           homeFeaturedOrder: args.homeFeaturedOrder ?? -1,
           productDisplayOrder: args.productDisplayOrder ?? -1,
+          description: args.description,
+          metaTitle: args.metaTitle,
+          metaDescription: args.metaDescription,
+          ogDescription: args.ogDescription,
+          bulletPoints: args.bulletPoints,
+          condition: args.condition,
+          color: args.color || null,
+          material: args.material || null,
+          pattern: args.pattern || null,
         })
         .returning();
 
@@ -259,6 +324,15 @@ export default function AdminPiecesCreatePage({
       gender: "unisex",
       productDisplayOrder: -1,
       homeFeaturedOrder: -1,
+      description: { type: "doc", content: [] },
+      metaTitle: "",
+      metaDescription: "",
+      ogDescription: "",
+      bulletPoints: [],
+      condition: "",
+      color: "",
+      material: "",
+      pattern: "",
     } as PieceFormSchemaType,
     validators: {
       onSubmit: PieceFormSchema,
@@ -478,6 +552,65 @@ export default function AdminPiecesCreatePage({
               );
             }}
           </form.Field>
+          <form.AppField name="condition">
+            {(field) => (
+              <field.TextField label="Stan" description="Stan ubrania" />
+            )}
+          </form.AppField>
+          <form.AppField name="color">
+            {(field) => (
+              <field.ComboboxField
+                label="Kolor"
+                options={COLOR_OPTIONS.map((c) => ({ label: c, value: c }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="material">
+            {(field) => (
+              <field.ComboboxField
+                label="Materiał"
+                options={MATERIAL_OPTIONS.map((m) => ({ label: m, value: m }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="pattern">
+            {(field) => (
+              <field.ComboboxField
+                label="Wzór"
+                options={PATTERN_OPTIONS.map((p) => ({ label: p, value: p }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="bulletPoints">
+            {(field) => (
+              <field.TagsField
+                label="Punkty bullet"
+                description="Krótkie cechy ubrania"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="description">
+            {(field) => (
+              <field.RichTextField
+                label="Opis"
+                description="Szczegółowy opis ubrania"
+              />
+            )}
+          </form.AppField>
+          <FieldSet>
+            <FieldLegend>SEO</FieldLegend>
+            <FieldGroup>
+              <form.AppField name="metaTitle">
+                {(field) => <field.TextField label="Meta tytuł" />}
+              </form.AppField>
+              <form.AppField name="metaDescription">
+                {(field) => <field.TextField label="Meta opis" />}
+              </form.AppField>
+              <form.AppField name="ogDescription">
+                {(field) => <field.TextField label="OG opis" />}
+              </form.AppField>
+            </FieldGroup>
+          </FieldSet>
         </form>
       </AdminPageContent>
 

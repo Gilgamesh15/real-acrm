@@ -2,21 +2,18 @@ import {
   BoldIcon,
   Code2Icon,
   ItalicIcon,
-  type LucideIcon,
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
   UnderlineIcon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import React from "react";
 
 import { Button } from "~/components/ui/button";
 
-import {
-  type MarkVariant,
-  type UseMarkConfig,
-  useMark,
-} from "../hooks/use-mark";
+import type { MarkVariant, UseMarkConfig } from "../hooks/use-mark";
+import { useMark } from "../hooks/use-mark";
 import { RichTextEditorButton } from "../primitives/rich-text-editor-button";
 
 const ICONS: Record<MarkVariant, LucideIcon> = {

@@ -1,6 +1,7 @@
 import * as schema from "db/schema";
 import { and, asc, eq, exists, inArray, isNull, or } from "drizzle-orm";
-import { type ActionFunctionArgs, data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
+import { data } from "react-router";
 
 import { db } from "~/lib/db";
 import type { DBQueryArgs, DBQueryResult, LocalStorageCart } from "~/lib/types";
@@ -27,6 +28,9 @@ const getCartProductSelect = (ids: string[]) =>
     },
     with: {
       pieces: {
+        columns: {
+          description: false,
+        },
         where: inArray(schema.pieces.status, ["published", "in_checkout"]),
         with: {
           brand: true,
@@ -73,6 +77,9 @@ const getCartPieceSelect = (ids: string[]) =>
         )
       )
     ),
+    columns: {
+      description: false,
+    },
     with: {
       images: {
         limit: 1,

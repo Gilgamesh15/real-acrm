@@ -75,7 +75,9 @@ const MainPieceCard = ({
         </Button>
       </div>
       <div className="px-1 flex flex-col items-center gap-0.5 tracking-wider h-[96px]">
-        <h3 className="text-lg font-secondary font-medium">{piece.name}</h3>
+        <h3 className="text-lg font-secondary font-medium text-center">
+          {piece.name}
+        </h3>
         <p className="text-xs font-secondary text-muted-foreground font-normal">
           {piece.brand?.name}
         </p>

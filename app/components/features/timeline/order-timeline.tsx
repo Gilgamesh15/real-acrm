@@ -1,17 +1,10 @@
-import {
-  CheckCircle,
-  Clock,
-  type LucideIcon,
-  Package,
-  Truck,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle, Clock, Package, Truck, XCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-import {
-  Timeline,
-  type TimelineEvent,
-} from "~/components/features/timeline/timeline";
-import type { DBQueryResult, OrderStatus } from "~/lib/types";
+import type { TimelineEvent } from "~/components/features/timeline/timeline";
+import { Timeline } from "~/components/features/timeline/timeline";
+import type { OrderStatus } from "~/lib/types";
+import type { DBQueryResult } from "~/lib/types";
 
 const OrderTimeline = ({
   events,

@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { orderStatusEnum } from "db/schema";
 import {
   BadgeIcon,
@@ -28,7 +28,7 @@ import {
 } from "~/components/shared/action-dialog/action-dialog";
 import { createColumnConfigHelper } from "~/components/shared/data-table-filter/core/filters";
 import { useDialogState } from "~/hooks/use-dialog-state";
-import { type DBQueryResult } from "~/lib/types";
+import type { DBQueryResult } from "~/lib/types";
 import {
   ORDER_STATUS_BADGE_TEXT_MAP,
   ORDER_STATUS_BADGE_VARIANT_MAP,
