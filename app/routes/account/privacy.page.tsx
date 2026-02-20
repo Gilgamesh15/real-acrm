@@ -114,42 +114,6 @@ export async function action({ request, context }: Route.ActionArgs) {
                 },
               },
             },
-            returns: {
-              with: {
-                items: {
-                  with: {
-                    events: {
-                      orderBy: desc(schema.returnTimelineEvents.timestamp),
-                    },
-                    orderItem: {
-                      with: {
-                        product: {
-                          with: {
-                            images: true,
-                            pieces: {
-                              with: {
-                                brand: true,
-                                size: true,
-                                images: true,
-                                measurements: true,
-                              },
-                            },
-                          },
-                        },
-                        piece: {
-                          with: {
-                            brand: true,
-                            size: true,
-                            images: true,
-                            measurements: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
           },
         });
 

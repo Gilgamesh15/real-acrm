@@ -1327,7 +1327,7 @@ export default function TermsOfServicePage() {
                                             content: [
                                               {
                                                 type: "text",
-                                                text: "Płatności elektroniczne i płatności kartą płatniczą za pośrednictwem serwisu Przelewy24.pl oraz Stripe.com – możliwe aktualne sposoby płatności określone są na stronie Sklepu Internetowego w zakładce informacyjnej dotyczącej sposobów płatności oraz na stronie internetowej https://www.przelewy24.pl/ oraz https://stripe.com/en-pl.",
+                                                text: "Płatności elektroniczne i płatności kartą płatniczą za pośrednictwem serwisu Stripe.com – możliwe aktualne sposoby płatności określone są na stronie Sklepu Internetowego w zakładce informacyjnej dotyczącej sposobów płatności oraz na stronie internetowej https://stripe.com/en-pl.",
                                               },
                                             ],
                                           },
@@ -1367,23 +1367,6 @@ export default function TermsOfServicePage() {
                                                               {
                                                                 type: "text",
                                                                 text: "Stripe.com - spółka Stripe Payments Europe, Ltd. (1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Irlandia).",
-                                                              },
-                                                            ],
-                                                          },
-                                                        ],
-                                                      },
-                                                      {
-                                                        type: "listItem",
-                                                        content: [
-                                                          {
-                                                            type: "paragraph",
-                                                            attrs: {
-                                                              textAlign: null,
-                                                            },
-                                                            content: [
-                                                              {
-                                                                type: "text",
-                                                                text: "Przelewy24 - PAYPRO SPÓŁKA AKCYJNA z siedzibą w Poznaniu (adres siedziby: ul. Pastelowa 8, 60-198 Poznań), wpisana do Rejestru Przedsiębiorców Krajowego Rejestru Sądowego pod numerem 0000347935, akta rejestrowe przechowywane przez Sąd Rejonowy Poznań – Nowe Miasto i Wilda w Poznaniu VIII Wydział Gospodarczy Krajowego Rejestru Sądowego, kapitał zakładowy w wysokości 4.737.100,00 zł w całości opłacony, NIP: 7792369887, REGON: 301345068. Spółka posiada zezwolenie na prowadzenie działalności w charakterze instytucji płatniczej i podlega nadzorowi Komisji Nadzoru Finansowego (nr licencji IP24/2014).",
                                                               },
                                                             ],
                                                           },
@@ -1533,7 +1516,7 @@ export default function TermsOfServicePage() {
                                       },
                                       {
                                         type: "text",
-                                        text: " wynosi do 5 Dni Roboczych, chyba że w opisie danego Produktu lub w trakcie składania Zamówienia podano krótszy termin. W przypadku Produktów o różnych terminach dostawy, terminem dostawy jest najdłuższy podany termin, który jednak nie może przekroczyć 5 Dni Roboczych. Początek biegu terminu dostawy Produktu do Klienta liczy się od dnia uznania rachunku bankowego lub rachunku rozliczeniowego Sprzedawcy.",
+                                        text: " wynosi do 3 Dni Roboczych, chyba że w opisie danego Produktu lub w trakcie składania Zamówienia podano krótszy termin. W przypadku Produktów o różnych terminach dostawy, terminem dostawy jest najdłuższy podany termin, który jednak nie może przekroczyć 3 Dni Roboczych. Początek biegu terminu dostawy Produktu do Klienta liczy się od dnia uznania rachunku bankowego lub rachunku rozliczeniowego Sprzedawcy.",
                                       },
                                     ],
                                   },

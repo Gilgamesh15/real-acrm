@@ -17,5 +17,4 @@ storybook-static
 bundle-analysis.html
 .vercel
 .env*.local
-descs/
-/map.ts
+/ignore/

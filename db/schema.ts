@@ -50,13 +50,6 @@ export const productStatusEnum = pgEnum("product_status", [
 ]);
 export type ProductStatus = (typeof productStatusEnum.enumValues)[number];
 
-export const returnStatusEnum = pgEnum("return_status", [
-  "pending",
-  "accepted",
-  "rejected",
-]);
-export type ReturnStatus = (typeof returnStatusEnum.enumValues)[number];
-
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export type Role = (typeof roleEnum.enumValues)[number];
 
@@ -151,7 +144,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   orders: many(orders),
-  returns: many(returns),
   reservedPieces: many(pieces, {
     relationName: "reserved_pieces",
   }),
@@ -243,88 +235,6 @@ export const orderTimelineEventsRelations = relations(
     order: one(orders, {
       fields: [orderTimelineEvents.orderId],
       references: [orders.id],
-    }),
-  })
-);
-
-export const returns = pgTable(
-  "returns",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    returnNumber: text("return_number").notNull(),
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => orders.id, {
-        onDelete: "restrict",
-      }),
-    userId: text("user_id").references(() => users.id, {
-      onDelete: "set null",
-    }),
-    // contact details
-    firstName: text("first_name").notNull(),
-    lastName: text("last_name").notNull(),
-    phoneNumber: text("phone_number").notNull(),
-    email: text("email").notNull(),
-
-    // address
-    city: text("city").notNull(),
-    country: text("country").notNull().default("PL"),
-    line1: text("line1").notNull(),
-    line2: text("line2"),
-    postalCode: text("postal_code").notNull(),
-    state: text("state").notNull(),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    index().on(table.orderId),
-    index().on(table.userId),
-    uniqueIndex().on(table.returnNumber),
-  ]
-);
-
-export type DBReturn = typeof returns.$inferSelect;
-
-export const returnsRelations = relations(returns, ({ one, many }) => ({
-  user: one(users, {
-    fields: [returns.userId],
-    references: [users.id],
-  }),
-  items: many(returnItems),
-  order: one(orders, {
-    fields: [returns.orderId],
-    references: [orders.id],
-  }),
-}));
-
-export const returnTimelineEvents = pgTable(
-  "return_timeline_events",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    status: returnStatusEnum("status").notNull(),
-    returnItemId: uuid("return_item_id")
-      .notNull()
-      .references(() => returnItems.id, {
-        onDelete: "cascade",
-      }),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
-  },
-  (table) => [index().on(table.returnItemId)]
-);
-
-export type DBReturnTimelineEvent = typeof returnTimelineEvents.$inferSelect;
-
-export const returnTimelineEventsRelations = relations(
-  returnTimelineEvents,
-  ({ one }) => ({
-    returnItem: one(returnItems, {
-      fields: [returnTimelineEvents.returnItemId],
-      references: [returnItems.id],
     }),
   })
 );
@@ -503,48 +413,6 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   }),
   items: many(orderItems),
   events: many(orderTimelineEvents),
-  returns: many(returns),
-}));
-
-export const returnItems = pgTable(
-  "return_items",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    returnId: uuid("return_id")
-      .notNull()
-      .references(() => returns.id, {
-        onDelete: "cascade",
-      }),
-    orderItemId: uuid("order_item_id")
-      .notNull()
-      .references(() => orderItems.id, {
-        onDelete: "cascade",
-      }),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    index().on(table.returnId),
-    index().on(table.orderItemId),
-    uniqueIndex().on(table.returnId, table.orderItemId),
-  ]
-);
-
-export const returnItemsRelations = relations(returnItems, ({ one, many }) => ({
-  return: one(returns, {
-    fields: [returnItems.returnId],
-    references: [returns.id],
-  }),
-  events: many(returnTimelineEvents),
-  orderItem: one(orderItems, {
-    fields: [returnItems.orderItemId],
-    references: [orderItems.id],
-  }),
 }));
 
 export const orderItems = pgTable(

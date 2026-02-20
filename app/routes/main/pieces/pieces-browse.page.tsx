@@ -327,7 +327,7 @@ export default function PiecesBrowsePage({
           </DrawerContent>
         </Drawer>
 
-        <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4 w-full px-4 md:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 gap-x-4 gap-y-6 w-full px-4 md:px-6 lg:px-8">
           {categories.map((category) => {
             return (
               <Link

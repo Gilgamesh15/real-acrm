@@ -88,19 +88,39 @@ function generateOrganizationStructuredData() {
     foundingDate: "2025-09-09",
     hasMerchantReturnPolicy: {
       "@type": "MerchantReturnPolicy",
+
+      // Where policy applies and where items are returned to
       applicableCountry: "PL",
+      returnPolicyCountry: "PL",
+
+      // Link to the actual policy page
+      merchantReturnLink: "https://www.acrm.pl/odstapienie-od-umowy",
+
+      // 14-day finite window
       returnPolicyCategory:
         "https://schema.org/MerchantReturnFiniteReturnWindow",
       merchantReturnDays: 14,
+
+      // Mail only — matches store policy (postal address given, no drop-off mentioned)
+      returnMethod: "https://schema.org/ReturnByMail",
+
+      // Customer pays return shipping
       returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
-      returnPolicyCountry: "PL",
-      itemCondition: "https://schema.org/UsedCondition",
+
+      // Customer creates their own label
+      returnLabelSource: "https://schema.org/ReturnLabelCustomerResponsibility",
+
+      // Full monetary refund — matches policy (all payments returned)
       refundType: "https://schema.org/FullRefund",
+
+      // Used condition — matches product type (used clothing)
+      itemCondition: "https://schema.org/UsedCondition",
+
+      // Customer remorse (non-defective) — explicitly covered by the withdrawal page
       customerRemorseReturnFees:
         "https://schema.org/ReturnFeesCustomerResponsibility",
       customerRemorseReturnLabelSource:
         "https://schema.org/ReturnLabelCustomerResponsibility",
-      returnMethod: "https://schema.org/ReturnByMail",
     },
     hasShippingService: [
       {
@@ -346,18 +366,18 @@ function generatePieceStructuredData(
           }
         : {}),
     },
+    ...(piece.brand
+      ? {
+          brand: {
+            "@type": "Brand",
+            name: piece.brand.name,
+          },
+        }
+      : {}),
     audience: {
       "@type": "PeopleAudience",
       suggestedGender: GENDER_MAP[piece.gender] || "Unisex",
       suggestedMinAge: 5.0,
-      ...(piece.brand
-        ? {
-            brand: {
-              "@type": "Brand",
-              name: piece.brand.name,
-            },
-          }
-        : {}),
     },
     ...(piece.color ? { color: piece.color } : {}),
     ...(piece.material ? { material: piece.material } : {}),
@@ -368,7 +388,7 @@ function generatePieceStructuredData(
     ...(piece.size
       ? {
           size: {
-            type: "SizeSpecification",
+            "@type": "SizeSpecification",
             name: piece.size.name,
             //sizeGroup:
             sizeSystem: "https://schema.org/WearableSizeSystemEurope",
@@ -380,7 +400,7 @@ function generatePieceStructuredData(
 }
 
 /**
- * Generates Schema.org Product structured data for a piece
+ * Generates Schema.org Product structured data for a product
  */
 function generateProductStructuredData(
   product: DBQueryResult<

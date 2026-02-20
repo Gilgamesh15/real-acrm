@@ -6,15 +6,14 @@ import type { LoaderFunctionArgs } from "react-router";
 import { db } from "~/lib/db";
 import { orderStatusFromOrder } from "~/lib/utils";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const { logger } = context;
+export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const orderNumber = url.searchParams.get("orderNumber");
   const email = url.searchParams.get("email");
 
   if (!orderNumber || !email) {
     return data(
-      { success: false, error: "Brak wymaganych danych" },
+      { success: false as const, error: "Brak wymaganych danych" },
       { status: 400 }
     );
   }
@@ -28,12 +27,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       events: { orderBy: desc(schema.orderTimelineEvents.timestamp) },
       items: {
         with: {
+          product: {
+            with: {
+              images: { limit: 1, orderBy: asc(schema.images.displayOrder) },
+            },
+          },
           piece: {
             with: {
-              images: {
-                limit: 1,
-                orderBy: asc(schema.images.displayOrder),
-              },
+              images: { limit: 1, orderBy: asc(schema.images.displayOrder) },
+              brand: true,
+              size: true,
             },
           },
         },
@@ -43,36 +46,67 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   if (!order) {
     return data(
-      { success: false, error: "Zamówienie nie znalezione" },
+      { success: false as const, error: "Zamówienie nie znalezione" },
       { status: 404 }
     );
   }
 
   const status = orderStatusFromOrder(order);
   if (status === "pending" || status === "cancelled") {
-    logger.info("STATUS:" + status);
     return data(
       {
-        success: false,
+        success: false as const,
         error: "Zamówienie musi być opłacone, aby złożyć zwrot",
       },
       { status: 400 }
     );
   }
 
+  const hasEligibleItems = order.items.some(
+    (item) => item.piece.status === "sold"
+  );
+
+  if (!hasEligibleItems) {
+    return data(
+      {
+        success: false as const,
+        error: "Żaden przedmiot z tego zamówienia nie kwalifikuje się do zwrotu",
+      },
+      { status: 400 }
+    );
+  }
+
   return data({
-    success: true,
+    success: true as const,
     order: {
       id: order.id,
       orderNumber: order.orderNumber,
+      deliveryName: order.deliveryName,
+      phoneNumber: order.phoneNumber,
+      email: order.email,
       items: order.items.map((item) => ({
         id: item.id,
+        productId: item.productId,
         pieceId: item.pieceId,
-        pieceName: item.piece.name,
-        pieceImage: item.piece.images[0]?.url ?? null,
+        product: item.product
+          ? {
+              id: item.product.id,
+              name: item.product.name,
+              images: item.product.images,
+            }
+          : null,
+        piece: {
+          id: item.piece.id,
+          name: item.piece.name,
+          status: item.piece.status,
+          images: item.piece.images,
+          brand: item.piece.brand,
+          size: item.piece.size,
+        },
         unitPriceInGrosz: item.unitPriceInGrosz,
         lineTotalInGrosz: item.lineTotalInGrosz,
         discountAmountInGrosz: item.discountAmountInGrosz,
+        taxInGrosz: item.taxInGrosz,
       })),
     },
   });

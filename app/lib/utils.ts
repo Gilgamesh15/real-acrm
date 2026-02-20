@@ -30,7 +30,6 @@ import type {
   PriceData,
   PriceDisplayData,
   ProductStatus,
-  ReturnRequestDetails,
   TreeNode,
   TreeNodePathSegment,
   TreeNodeWithPath,
@@ -274,26 +273,6 @@ export const ORDER_STATUS_BADGE_TEXT_MAP: Record<OrderStatus, string> = {
   processing: "W trakcie realizacji",
   in_transit: "W drodze do odbiorcy",
   delivered: "Dostarczone",
-};
-
-export const returnDetailsFromReturn = (
-  returnReq: DBQueryResult<"returns", {}>
-): ReturnRequestDetails => {
-  if (
-    !returnReq.firstName ||
-    !returnReq.lastName ||
-    !returnReq.email ||
-    !returnReq.phoneNumber
-  ) {
-    throw new Error("Personal details are required");
-  }
-  const personalDetails: ReturnRequestDetails["personalDetails"] = {
-    firstName: returnReq.firstName,
-    lastName: returnReq.lastName,
-    email: returnReq.email,
-    phoneNumber: returnReq.phoneNumber,
-  };
-  return { personalDetails };
 };
 
 export const orderDetailsFromOrder = (

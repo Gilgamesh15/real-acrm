@@ -3,12 +3,16 @@ import { filterService } from "db/services/filter.service";
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { exists } from "drizzle-orm";
 import {
-  AlertTriangleIcon,
+  InfoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsRightIcon,
-  InfoIcon,
+  CreditCard,
+  Package,
+  RotateCcw,
+  ShieldCheck,
   ShoppingCartIcon,
+  Truck,
   ZapIcon,
 } from "lucide-react";
 import React from "react";
@@ -233,7 +237,7 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <main>
-      <section className="mx-auto max-w-7xl md:pt-8 md:pb-4">
+      <section className="mx-auto max-w-7xl md:pt-8 md:pb-4 md:px-4">
         <div className="flex flex-col gap-6 md:flex-row md:gap-10 lg:gap-14">
           {/* LEFT — Image gallery */}
           <div className="md:flex md:gap-3 md:flex-6">
@@ -365,6 +369,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                     {formatCurrency(pricingData.finalPrice)}
                   </p>
                 )}
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {"Cena zawiera VAT · Darmowa dostawa InPost"}
+                </p>
               </div>
             </div>
 
@@ -420,13 +427,11 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
               </Link>
             )}
 
-            {/* Small inline disclaimer beneath CTA */}
             <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              <AlertTriangleIcon className="mr-1.5 inline size-3" />
-              Produkt używany (second-hand). Nie jesteśmy oficjalnym
-              dystrybutorem ani przedstawicielem marki {piece.brand?.name || ""}
-              . Zobacz sekcję Dodatkowe informacje poniżej w celu uzyskania
-              pełnych szczegółów.
+              <InfoIcon className="mr-1.5 inline size-3" />
+              Produkt oryginalny, z drugiego obiegu. ACRM nie jest powiązane z
+              marką <strong>{piece.brand?.name || "tą marką"}</strong> —
+              działamy jako niezależny sklep second-hand.
             </p>
           </div>
         </div>
@@ -455,7 +460,101 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
             },
             {
               id: 1,
-              label: "Pomiary",
+              label: "Dostawa i płatność",
+              content: (
+                <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row md:flex-wrap">
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <Truck className="size-6 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="text-base font-medium">
+                        Kurier InPost
+                      </ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Darmowa dostawa kurierem InPost prosto pod Twoje drzwi.
+                        Wysyłamy w ciągu 24h od zaksięgowania płatności.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <Package className="size-6 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="text-base font-medium">
+                        Paczkomat InPost 24/7
+                      </ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Darmowa dostawa do wybranego paczkomatu InPost —
+                        odbierz, kiedy Ci wygodnie. Wysyłamy w ciągu 24h od
+                        zaksięgowania płatności.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <CreditCard className="size-6 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="text-base font-medium">
+                        Płatność
+                      </ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Płać wygodnie: karta, BLIK lub Apple Pay. Płatności
+                        obsługuje Stripe. Wszystkie ceny zawierają VAT.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </ItemGroup>
+              ),
+            },
+            {
+              id: 2,
+              label: "Zwroty i reklamacje",
+              content: (
+                <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row md:flex-wrap">
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <RotateCcw className="size-6 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>Zwroty</ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Masz 14 dni na zwrot — bez podawania przyczyny.
+                        Wystarczy napisać na kontakt@acrm.pl lub wypełnić
+                        formularz na acrm.pl/zwroty. Koszt przesyłki zwrotnej
+                        po stronie kupującego.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+
+                  <Item>
+                    <ItemMedia variant="icon">
+                      <ShieldCheck className="size-6 text-muted-foreground" />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>Reklamacje</ItemTitle>
+                      <ItemDescription className="line-clamp-none">
+                        Coś nie tak z zamówieniem? Napisz do nas na
+                        kontakt@acrm.pl lub zgłoś przez formularz na
+                        acrm.pl/zwroty — odpowiemy w ciągu 14 dni. Dbamy o to,
+                        żeby każdy zakup był zgodny z opisem.
+                      </ItemDescription>
+                      <ItemDescription className="line-clamp-none">
+                        Możesz też skorzystać z pozasądowego rozwiązywania
+                        sporów — szczegóły na polubowne.uokik.gov.pl.
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </ItemGroup>
+              ),
+            },
+            {
+              id: 3,
+              label: "Dane produktu",
               content: (
                 <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
                   <div className="grid grid-cols-2 gap-px border border-border bg-border w-full">
@@ -473,49 +572,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                   </div>
                   {/**TODO ADD STYLE GUIDE LINK */}
                   {/* <p className="mt-4 text-xs text-muted-foreground leading-relaxed max-w-md">
-                    Zobacz nasz
-                  </p>*/}
+                  Zobacz nasz
+                </p>*/}
                 </div>
-              ),
-            },
-            {
-              id: 2,
-              label: "Dodatkowe informacje",
-              content: (
-                <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row">
-                  {/* Item 1: Product Condition */}
-                  <Item>
-                    <ItemMedia variant="icon">
-                      <AlertTriangleIcon className="size-4 text-muted-foreground" />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>Stan produktu: Używany</ItemTitle>
-                      <ItemDescription className="line-clamp-none">
-                        Artykuł pochodzi z drugiego obiegu (second-hand). Może
-                        nosić ślady poprzedniego użytkowania, co jest zgodne z
-                        jego charakterem.
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-
-                  {/* Item 2: Legal/Authorization Disclaimer */}
-                  <Item>
-                    <ItemMedia variant="icon">
-                      {/* Added className for visual consistency */}
-                      <InfoIcon className="size-4 text-muted-foreground" />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>Niezależny sprzedawca</ItemTitle>
-                      <ItemDescription className="line-clamp-none">
-                        Nie jesteśmy autoryzowanym dystrybutorem ani
-                        przedstawicielem marki{" "}
-                        <strong>{piece.brand?.name || "tej marki"}</strong>.
-                        Działamy niezależnie od producenta – marka nie jest
-                        sponsorem ani autorem tej oferty.
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-                </ItemGroup>
               ),
             },
           ]}

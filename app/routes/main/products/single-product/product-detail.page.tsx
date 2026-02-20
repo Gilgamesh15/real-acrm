@@ -1,17 +1,41 @@
 import * as schema from "db/schema";
 import { and, asc, eq, exists, inArray } from "drizzle-orm";
-import { EyeIcon, ShoppingCartIcon, ZapIcon } from "lucide-react";
+import {
+  CreditCard,
+  Package,
+  PackageIcon,
+  RotateCcw,
+  ShieldCheck,
+  ShoppingCartIcon,
+  Truck,
+  ZapIcon,
+} from "lucide-react";
 import React from "react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import Image from "~/components/ui/image";
+import { DirectionAwareTabs } from "~/components/ui/direction-aware-tabs";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "~/components/ui/item";
 import { Container, Section } from "~/components/ui/layout";
 import { Separator } from "~/components/ui/separator";
 import { Spinner } from "~/components/ui/spinner";
 
 import { ImagesDrawerCarousel } from "~/components/features/images-dialog-carousel/images-dialog-carousel";
+import {
+  ProductCardContent,
+  ProductCardImage,
+  ProductCardInfo,
+  ProductCardMeasurements,
+  ProductCardMedia,
+  ProductCardRoot,
+} from "~/components/features/product-card/product-card-primitives";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { db } from "~/lib/db";
@@ -59,6 +83,15 @@ const RichText = React.lazy(() =>
     default: mod.RichText,
   }))
 );
+
+function pluralizeElementy(count: number): string {
+  if (count === 1) return "element";
+  const lastTwo = count % 100;
+  const lastOne = count % 10;
+  if (lastTwo >= 12 && lastTwo <= 14) return "elementów";
+  if (lastOne >= 2 && lastOne <= 4) return "elementy";
+  return "elementów";
+}
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { productSlug } = params;
@@ -169,7 +202,7 @@ export default function ProductDetailPage({
 
         <Container max="xs">
           <Section padding="xs" gap="xs" centered>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-2">
               {pricingData.hasDiscount && (
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground line-through">
@@ -182,6 +215,9 @@ export default function ProductDetailPage({
               )}
               <p className="text-3xl font-bold" aria-label="Cena produktu">
                 {formatCurrency(pricingData.finalPrice)}
+              </p>
+              <p className="text-xs text-muted-foreground text-center">
+                {"Cena zawiera VAT · Darmowa dostawa InPost"}
               </p>
             </div>
 
@@ -208,7 +244,15 @@ export default function ProductDetailPage({
           </Section>
         </Container>
 
-        <Section padding="xs" gap="none">
+        <div className="flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground uppercase tracking-wider">
+          <PackageIcon className="size-3.5" />
+          <span>
+            {"Zestaw — "}
+            {product.pieces.length} {pluralizeElementy(product.pieces.length)}
+          </span>
+        </div>
+
+        <Section padding="xs" className="pb-0" gap="none">
           <Separator />
           <h1 className="w-full text-center h-9 sm:h-10 md:h-11 lg:h-12 xl:h-13 2xl:h-14 flex items-center justify-center transition-all hover:bg-primary/10 lg:text-xl xl:text-2xl">
             {product.name}
@@ -216,65 +260,165 @@ export default function ProductDetailPage({
           <Separator />
         </Section>
 
-        <section className="flex flex-wrap gap-4 w-full justify-center container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          {product.pieces.map((piece) => {
-            const [primaryImage] = piece.images;
-
-            return (
-              <Card
-                key={piece.id}
-                className="py-2 gap-1.5 w-full lg:w-[calc(50%-8px)]"
-                onClick={() => {
-                  setSelectedPiece(piece);
-                  setIsDialogOpen(true);
-                }}
-              >
-                <CardHeader className="px-2 text-sm flex justify-between items-center">
-                  <CardTitle>{piece.name}</CardTitle>
-                  <div className="flex items-center gap-1">
-                    {piece.size && <Badge>{piece.size.name}</Badge>}
-                    {piece.brand && <Badge>{piece.brand.name}</Badge>}
-                  </div>
-                </CardHeader>
-                <CardContent className="px-2 flex flex-row gap-3">
-                  <div className="size-20 relative">
-                    <Image
-                      src={primaryImage?.url || ""}
-                      alt={primaryImage?.alt || ""}
-                      width={80}
-                      height={80}
-                      resize="fill"
-                      lazyload
-                      className="absolute h-full w-full"
+        <section className="">
+          <DirectionAwareTabs
+            tabs={[
+              {
+                id: 0,
+                label: "Opis",
+                content: product.description ? (
+                  <React.Suspense fallback={<Spinner />}>
+                    <RichText
+                      className="px-4 py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 max-w-7xl mx-auto"
+                      content={product.description}
                     />
+                  </React.Suspense>
+                ) : (
+                  <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
+                    <p className="text-muted-foreground">Brak opisu</p>
+                  </div>
+                ),
+              },
+              {
+                id: 1,
+                label: "Zawartość zestawu",
+                content: (
+                  <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 flex flex-col gap-2">
+                    {product.pieces.map((piece) => {
+                      const [primaryImage] = piece.images;
+                      return (
+                        <div
+                          key={piece.id}
+                          onClick={() => {
+                            setSelectedPiece(piece);
+                            setIsDialogOpen(true);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <ProductCardRoot size="sm">
+                            <ProductCardMedia size="md">
+                              <ProductCardImage
+                                size="md"
+                                url={primaryImage?.url || ""}
+                                alt={primaryImage?.alt || ""}
+                              />
+                            </ProductCardMedia>
+                            <ProductCardContent orientation="vertical">
+                              <ProductCardInfo
+                                name={piece.name}
+                                brand={piece.brand?.name}
+                                size={piece.size?.name}
+                                orientation="horizontal"
+                              />
+                              <ProductCardMeasurements
+                                measurements={piece.measurements}
+                              />
+                            </ProductCardContent>
+                          </ProductCardRoot>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ),
+              },
+              {
+                id: 2,
+                label: "Dostawa i płatność",
+                content: (
+                  <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row md:flex-wrap">
+                    <Item>
+                      <ItemMedia variant="icon">
+                        <Truck className="size-6 text-muted-foreground" />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle className="text-base font-medium">
+                          Kurier InPost
+                        </ItemTitle>
+                        <ItemDescription className="line-clamp-none">
+                          Darmowa dostawa kurierem InPost prosto pod Twoje
+                          drzwi. Wysyłamy w ciągu 24h od zaksięgowania
+                          płatności.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
 
-                    <EyeIcon className="absolute top-0 right-0 text-muted-foreground rounded-full p-1 size-6 bg-muted/50" />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 h-fit flex-1">
-                    {piece.measurements.map((measurement) => (
-                      <Badge
-                        variant="secondary"
-                        key={measurement.id}
-                        className="w-full justify-between rounded-none"
-                      >
-                        <span className="font-bold">{measurement.name}</span>
-                        <span>{measurement.value} mm</span>
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    <Item>
+                      <ItemMedia variant="icon">
+                        <Package className="size-6 text-muted-foreground" />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle className="text-base font-medium">
+                          Paczkomat InPost 24/7
+                        </ItemTitle>
+                        <ItemDescription className="line-clamp-none">
+                          Darmowa dostawa do wybranego paczkomatu InPost —
+                          odbierz, kiedy Ci wygodnie. Wysyłamy w ciągu 24h od
+                          zaksięgowania płatności.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+
+                    <Item>
+                      <ItemMedia variant="icon">
+                        <CreditCard className="size-6 text-muted-foreground" />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle className="text-base font-medium">
+                          Płatność
+                        </ItemTitle>
+                        <ItemDescription className="line-clamp-none">
+                          Płać wygodnie: karta, BLIK lub Apple Pay. Płatności
+                          obsługuje Stripe. Wszystkie ceny zawierają VAT.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+                  </ItemGroup>
+                ),
+              },
+              {
+                id: 3,
+                label: "Zwroty i reklamacje",
+                content: (
+                  <ItemGroup className="flex flex-col gap-4 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 md:flex-row md:flex-wrap">
+                    <Item>
+                      <ItemMedia variant="icon">
+                        <RotateCcw className="size-6 text-muted-foreground" />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle>Zwroty</ItemTitle>
+                        <ItemDescription className="line-clamp-none">
+                          Masz 14 dni na zwrot — bez podawania przyczyny.
+                          Wystarczy napisać na kontakt@acrm.pl lub wypełnić
+                          formularz na acrm.pl/zwroty. Koszt przesyłki zwrotnej
+                          po stronie kupującego.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+
+                    <Item>
+                      <ItemMedia variant="icon">
+                        <ShieldCheck className="size-6 text-muted-foreground" />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle>Reklamacje</ItemTitle>
+                        <ItemDescription className="line-clamp-none">
+                          Coś nie tak z zamówieniem? Napisz do nas na
+                          kontakt@acrm.pl lub zgłoś przez formularz na
+                          acrm.pl/zwroty — odpowiemy w ciągu 14 dni. Dbamy o
+                          to, żeby każdy zakup był zgodny z opisem.
+                        </ItemDescription>
+                        <ItemDescription className="line-clamp-none">
+                          Możesz też skorzystać z pozasądowego rozwiązywania
+                          sporów — szczegóły na polubowne.uokik.gov.pl.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+                  </ItemGroup>
+                ),
+              },
+            ]}
+          />
         </section>
-
-        <Container max="sm">
-          <Section>
-            <React.Suspense fallback={<Spinner />}>
-              <RichText content={product.description} />
-            </React.Suspense>
-          </Section>
-        </Container>
       </main>
 
       <ImagesDrawerCarousel

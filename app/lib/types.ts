@@ -106,17 +106,6 @@ export type Coordinate = {
   longitude: number;
 };
 
-export type PersonalDetails = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-};
-
-export type ReturnRequestDetails = {
-  personalDetails: PersonalDetails;
-};
-
 // Order Data Types
 
 export type Address = {
@@ -155,7 +144,6 @@ export type DeliveryMethod =
 export type OrderStatus = (typeof schema.orderStatusEnum.enumValues)[number];
 export type ProductStatus =
   (typeof schema.productStatusEnum.enumValues)[number];
-export type ReturnStatus = (typeof schema.returnStatusEnum.enumValues)[number];
 export type Role = (typeof schema.roleEnum.enumValues)[number];
 
 export type CloudinaryResult = {

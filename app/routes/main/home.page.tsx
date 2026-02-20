@@ -160,7 +160,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <HeroSection />
 
       <TopFeaturedSection
-        title="Nowe ubrania"
+        title="Polecane ubrania"
         href="/kategorie"
         promise={topPiecesPromise}
         className="pt-14 pb-8"
@@ -168,7 +168,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
       <CategoriesSection categoriesPromise={categoriesPromise} />
       <TopFeaturedSection
-        title="Nowe projekty"
+        title="Polecane projekty"
         href="/projekty"
         promise={topProductsPromise}
         className="pt-8 pb-16"
@@ -731,7 +731,7 @@ function FeaturedProductsSection() {
         id="featured-products-heading"
         className="text-3xl uppercase tracking-[0.2em] text-primary font-light text-center pb-4 font-secondary"
       >
-        Projekty
+        Nasze projekty
       </h2>
 
       <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mb-4" />

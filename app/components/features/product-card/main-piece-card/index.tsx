@@ -48,7 +48,7 @@ const MainPieceCard = ({
       to={href}
       onClick={onClick}
       className={cn(
-        "block max-w-[280px] bg-background pb-2 relative backdrop-blur-md",
+        "block max-w-[280px] bg-background pb-4 relative backdrop-blur-md",
         className
       )}
     >

@@ -72,7 +72,7 @@ function DirectionAwareTabs({
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
             className={cn(
-              "relative flex-1 h-8 text-center justify-center py-0.5 text-xs sm:text-sm font-medium transition focus-visible:outline-1 focus-visible:ring-1 focus-visible:outline-none flex items-center",
+              "relative flex-1 h-9 text-center justify-center py-0.5 text-xs sm:text-sm font-medium transition focus-visible:outline-1 focus-visible:ring-1 focus-visible:outline-none flex items-center",
               activeTab === tab.id
                 ? "text-primary"
                 : "hover:text-primary/80 text-muted-foreground"

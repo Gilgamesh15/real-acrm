@@ -1,246 +1,90 @@
-import * as schema from "db/schema";
-import { returnService } from "db/services/return.service";
-import { asc } from "drizzle-orm";
-import { CheckCircle } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, MailIcon } from "lucide-react";
 import { Link } from "react-router";
 
-import { Badge } from "~/components/ui/badge";
-import { buttonVariants } from "~/components/ui/button";
-import {
-  Item,
-  ItemContent,
-  ItemGroup,
-  ItemHeader,
-  ItemTitle,
-} from "~/components/ui/item";
-
-import { PersonalData } from "~/components/features/personal-data/personal-data";
-import {
-  ProductCardContent,
-  ProductCardImage,
-  ProductCardInfo,
-  ProductCardMedia,
-  ProductCardPrice,
-  ProductCardRoot,
-} from "~/components/features/product-card/product-card-primitives";
-import {
-  cn,
-  formatDate,
-  groupOrderItems,
-  priceDataToDisplayData,
-  returnDetailsFromReturn,
-} from "~/lib/utils";
+import { Button } from "~/components/ui/button";
 
 import type { Route } from "./+types/return-success.page";
 
 const PAGE_TITLE = "Zwrot zamówienia - sukces | ACRM";
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const { returnReqNumber } = params;
-
-  const returnRequest = await returnService.findByReturnNumber(
-    returnReqNumber,
-    {
-      with: {
-        items: {
-          with: {
-            orderItem: {
-              with: {
-                product: {
-                  with: {
-                    pieces: true,
-                    images: {
-                      limit: 1,
-                      orderBy: asc(schema.images.displayOrder),
-                    },
-                  },
-                },
-                piece: {
-                  with: {
-                    images: {
-                      limit: 1,
-                      orderBy: asc(schema.images.displayOrder),
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }
-  );
-
-  if (!returnRequest) {
-    throw new Response("Return request not found", { status: 404 });
-  }
-
-  return { returnRequest };
-}
-
 export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
-export default function ReturnSuccessPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { returnRequest } = loaderData;
-
-  const { products, pieces } = groupOrderItems(
-    returnRequest.items.map((item) => item.orderItem)
-  );
-
+export default function ReturnSuccessPage() {
   return (
-    <main>
-      {/* Success Header */}
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-success text-success-foreground dark:bg-success dark:text-success-foreground rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle className="w-8 h-8 text-success-foreground dark:text-success-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-            Dziękujemy za zgłoszenie zwrotu!
-          </h1>
-          <p className="text-lg text-muted-foreground mb-4">
-            Twoja prośba o zwrot została pomyślnie przesłana
-          </p>
-        </div>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium">Numer zwrotu</span>
-          </p>
-          <p className="text-lg font-semibold text-foreground">
-            #{returnRequest.returnNumber}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Zgłoszono dnia {formatDate(returnRequest.createdAt)}
-          </p>
-          <Badge
-            variant="default"
-            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-          >
-            Oczekuje na weryfikację
-          </Badge>
-        </div>
-      </div>
-
-      {/* Main Content Grid - Same layout as order success */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Sidebar - Contact Data and Summary */}
-        <div className="lg:col-span-2 space-y-6">
-          <PersonalData
-            personalData={
-              returnDetailsFromReturn(returnRequest).personalDetails
-            }
-          />
-
-          <Item variant="outline">
-            <ItemHeader>
-              <ItemTitle>Podsumowanie zwrotu</ItemTitle>
-            </ItemHeader>
-            <ItemContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Numer zwrotu
-                  </span>
-                  <span className="font-semibold">
-                    #{returnRequest.returnNumber}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Data zgłoszenia
-                  </span>
-                  <span className="font-medium">
-                    {formatDate(returnRequest.createdAt)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Przedmioty
-                  </span>
-                  <span className="font-medium">
-                    {returnRequest.items.length} przedmiotów
-                  </span>
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-32 w-full">
+        <div className="container">
+          <div>
+            <div className="mb-10 flex items-center justify-center md:justify-start">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-foreground/10">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-500 delay-300">
+                  <CheckIcon className="h-7 w-7" strokeWidth={2.5} />
                 </div>
               </div>
-            </ItemContent>
-          </Item>
+            </div>
 
-          {/* Return Actions */}
-          <Item variant="outline">
-            <ItemHeader>
-              <ItemTitle>Co dalej?</ItemTitle>
-            </ItemHeader>
-            <ItemContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Otrzymasz email z potwierdzeniem zgłoszenia zwrotu oraz
-                informacjami o dalszych krokach.
+            <h1 className="text-5xl font-semibold tracking-tight lg:text-8xl text-center md:text-left text-balance">
+              Zgłoszenie zwrotu zostało przyjęte
+            </h1>
+          </div>
+
+          <div className="mt-20 flex flex-col justify-between gap-10 lg:flex-row">
+            <div className="w-full max-w-md transition-all duration-700 delay-200 ease-out">
+              <p className="tracking-tight text-muted-foreground/50">
+                Otrzymaliśmy Twoje zgłoszenie zwrotu. Skontaktujemy się z Tobą w
+                ciągu 2 dni roboczych w celu uzgodnienia dalszych kroków.
               </p>
-            </ItemContent>
-            <ItemContent>
-              <Link
-                to="/kategorie"
-                className={cn(
-                  buttonVariants({ variant: "default", size: "sm" }),
-                  "w-full"
-                )}
-              >
-                Kontynuuj zakupy
-              </Link>
-            </ItemContent>
-          </Item>
-        </div>
+              <div className="mt-10 flex justify-between">
+                <a
+                  className="flex items-center gap-1 text-foreground/40 hover:text-foreground transition-colors"
+                  href="tel:+48453450597"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={24}
+                    height={24}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <rect width={14} height={20} x={5} y={2} rx={2} ry={2} />
+                    <path d="M12 18h.01" />
+                  </svg>{" "}
+                  +48 453 450 597
+                </a>
+                <a
+                  className="flex items-center gap-1 text-foreground/40 hover:text-foreground transition-colors"
+                  href="mailto:kontakt@acrm.pl"
+                >
+                  <MailIcon className="h-4 w-4" aria-hidden="true" />
+                  kontakt@acrm.pl
+                </a>
+              </div>
+            </div>
 
-        {/* Right Content - Return Items */}
-        <div className="lg:col-span-3">
-          <Item variant="outline">
-            <ItemHeader>
-              <ItemTitle className="text-base">
-                Zwracane przedmioty ({returnRequest.items.length})
-              </ItemTitle>
-            </ItemHeader>
-            <ItemContent>
-              <ItemGroup>
-                {products.map((product) => (
-                  <ProductCardRoot size="sm" key={product.id}>
-                    <ProductCardMedia size="md">
-                      <ProductCardImage
-                        size="md"
-                        url={product.images[0]?.url || ""}
-                        alt={product.images[0]?.alt || ""}
-                      />
-                    </ProductCardMedia>
-                    <ProductCardContent>
-                      <ProductCardInfo name={product.name} />
-                      <ProductCardPrice
-                        pricing={priceDataToDisplayData(product)}
-                      />
-                    </ProductCardContent>
-                  </ProductCardRoot>
-                ))}
-                {pieces.map((piece) => (
-                  <ProductCardRoot size="sm" key={piece.id}>
-                    <ProductCardMedia size="md">
-                      <ProductCardImage
-                        size="md"
-                        url={piece.images[0]?.url || ""}
-                        alt={piece.images[0]?.alt || ""}
-                      />
-                    </ProductCardMedia>
-                    <ProductCardContent>
-                      <ProductCardInfo name={piece.name} />
-                      <ProductCardPrice
-                        pricing={priceDataToDisplayData(piece)}
-                      />
-                    </ProductCardContent>
-                  </ProductCardRoot>
-                ))}
-              </ItemGroup>
-            </ItemContent>
-          </Item>
+            <div className="flex w-full flex-col items-start gap-8 lg:pl-30 transition-all duration-700 delay-400 ease-out">
+              <div className="flex flex-col gap-6 w-full">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button asChild variant="default">
+                    <Link to="/">
+                      <ArrowLeftIcon className="h-4 w-4" />
+                      Strona główna
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to="/kategorie">Kontynuuj zakupy</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

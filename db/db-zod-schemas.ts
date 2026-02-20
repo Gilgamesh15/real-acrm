@@ -16,10 +16,6 @@ import {
   piecesToTags,
   productStatusEnum,
   products,
-  returnItems,
-  returnStatusEnum,
-  returnTimelineEvents,
-  returns,
   roleEnum,
   sessions,
   sizes,
@@ -159,40 +155,6 @@ export const SProductInsert = createInsertSchema(products);
 export type ProductInsert = z.infer<typeof SProductInsert>;
 export const SProductUpdate = createUpdateSchema(products);
 export type ProductUpdate = z.infer<typeof SProductUpdate>;
-
-// Return Item
-export const SReturnItem = createSelectSchema(returnItems);
-export type ReturnItem = z.infer<typeof SReturnItem>;
-export const SReturnItemInsert = createInsertSchema(returnItems);
-export type ReturnItemInsert = z.infer<typeof SReturnItemInsert>;
-export const SReturnItemUpdate = createUpdateSchema(returnItems);
-export type ReturnItemUpdate = z.infer<typeof SReturnItemUpdate>;
-
-// Return Status
-export const SReturnStatus = createSelectSchema(returnStatusEnum);
-export type ReturnStatus = z.infer<typeof SReturnStatus>;
-
-// Return Timeline Event
-export const SReturnTimelineEvent = createSelectSchema(returnTimelineEvents);
-export type ReturnTimelineEvent = z.infer<typeof SReturnTimelineEvent>;
-export const SReturnTimelineEventInsert =
-  createInsertSchema(returnTimelineEvents);
-export type ReturnTimelineEventInsert = z.infer<
-  typeof SReturnTimelineEventInsert
->;
-export const SReturnTimelineEventUpdate =
-  createUpdateSchema(returnTimelineEvents);
-export type ReturnTimelineEventUpdate = z.infer<
-  typeof SReturnTimelineEventUpdate
->;
-
-// Return
-export const SReturn = createSelectSchema(returns);
-export type Return = z.infer<typeof SReturn>;
-export const SReturnInsert = createInsertSchema(returns);
-export type ReturnInsert = z.infer<typeof SReturnInsert>;
-export const SReturnUpdate = createUpdateSchema(returns);
-export type ReturnUpdate = z.infer<typeof SReturnUpdate>;
 
 // Role
 export const SRole = createSelectSchema(roleEnum);

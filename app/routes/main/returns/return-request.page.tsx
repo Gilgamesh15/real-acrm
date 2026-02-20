@@ -1,9 +1,22 @@
 import { useForm } from "@tanstack/react-form";
+import * as schema from "db/schema";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { InfoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useFetcher, useNavigate } from "react-router";
+import { redirect, useFetcher, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  ProductCardContent,
+  ProductCardImage,
+  ProductCardInfo,
+  ProductCardMedia,
+  ProductCardPrice,
+  ProductCardRoot,
+  ProductCardToggle,
+} from "~/components/features/product-card/product-card-primitives";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -12,18 +25,29 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "~/components/ui/field";
-import Image from "~/components/ui/image";
 import { Input } from "~/components/ui/input";
 import { StepIndicator } from "~/components/ui/step-indicator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
-import { cn, formatCurrency, priceFromGrosz } from "~/lib/utils";
+import { db } from "~/lib/db";
+import {
+  cn,
+  formatCurrency,
+  groupOrderItems,
+  orderStatusFromOrder,
+  priceDataToDisplayData,
+  priceFromGrosz,
+} from "~/lib/utils";
 
 import type { Route } from "./+types/return-request.page";
 
@@ -31,66 +55,170 @@ const PAGE_TITLE = "Zwrot zamówienia | ACRM";
 
 export const meta: Route.MetaFunction = () => [{ title: PAGE_TITLE }];
 
-const returnSchema = z.object({
-  orderVerification: z.object({
-    orderNumber: z.string().min(1, "Numer zamówienia jest wymagany"),
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const orderNumber = url.searchParams.get("orderNumber");
+  const email = url.searchParams.get("email");
+
+  if (!orderNumber || !email) {
+    return { order: null };
+  }
+
+  const order = await db.query.orders.findFirst({
+    where: and(
+      eq(schema.orders.orderNumber, orderNumber.toUpperCase()),
+      eq(schema.orders.email, email.toLowerCase())
+    ),
+    with: {
+      events: { orderBy: desc(schema.orderTimelineEvents.timestamp) },
+      items: {
+        with: {
+          product: {
+            with: {
+              images: { limit: 1, orderBy: asc(schema.images.displayOrder) },
+            },
+          },
+          piece: {
+            with: {
+              images: { limit: 1, orderBy: asc(schema.images.displayOrder) },
+              brand: true,
+              size: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw redirect("/zwroty");
+  }
+
+  const status = orderStatusFromOrder(order);
+  if (status === "pending" || status === "cancelled") {
+    throw redirect("/zwroty");
+  }
+
+  const hasEligibleItems = order.items.some(
+    (item) => item.piece.status === "sold"
+  );
+  if (!hasEligibleItems) {
+    throw redirect("/zwroty");
+  }
+
+  return {
+    order: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      deliveryName: order.deliveryName,
+      phoneNumber: order.phoneNumber,
+      email: order.email,
+      items: order.items.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        pieceId: item.pieceId,
+        product: item.product
+          ? {
+              id: item.product.id,
+              name: item.product.name,
+              images: item.product.images,
+            }
+          : null,
+        piece: {
+          id: item.piece.id,
+          name: item.piece.name,
+          status: item.piece.status,
+          images: item.piece.images,
+          brand: item.piece.brand,
+          size: item.piece.size,
+        },
+        unitPriceInGrosz: item.unitPriceInGrosz,
+        lineTotalInGrosz: item.lineTotalInGrosz,
+        discountAmountInGrosz: item.discountAmountInGrosz,
+        taxInGrosz: item.taxInGrosz,
+      })),
+    },
+  };
+}
+
+type OrderForReturn = {
+  id: string;
+  orderNumber: string;
+  deliveryName: string | null;
+  phoneNumber: string | null;
+  email: string;
+  items: Array<{
+    id: string;
+    productId: string | null;
+    pieceId: string;
+    product: {
+      id: string;
+      name: string;
+      images: Array<{ url: string; alt: string | null }>;
+    } | null;
+    piece: {
+      id: string;
+      name: string;
+      status: string;
+      images: Array<{ url: string; alt: string | null }>;
+      brand: { id: string; name: string } | null;
+      size: { id: string; name: string } | null;
+    };
+    unitPriceInGrosz: number;
+    lineTotalInGrosz: number;
+    discountAmountInGrosz: number;
+    taxInGrosz: number;
+  }>;
+};
+
+type SubmitFetcherData = {
+  success: boolean;
+  error?: string;
+};
+
+const returnFormSchema = z.object({
+  customerInfo: z.object({
+    name: z.string().min(1, "Imię i nazwisko jest wymagane"),
+    phoneNumber: z.string().min(1, "Numer telefonu jest wymagany"),
     email: z.string().email("Nieprawidłowy adres e-mail"),
   }),
   orderItemIds: z
     .array(z.string())
     .min(1, "Wybierz przynajmniej jeden przedmiot"),
-  email: z.string().email("Nieprawidłowy adres e-mail"),
 });
 
-type OrderForReturn = {
-  id: string;
-  orderNumber: string;
-  items: Array<{
-    id: string;
-    pieceId: string;
-    pieceName: string;
-    pieceImage: string | null;
-    unitPriceInGrosz: number;
-    lineTotalInGrosz: number;
-    discountAmountInGrosz: number;
-  }>;
-};
-
-type OrderFetcherData = {
-  success: boolean;
-  order?: OrderForReturn;
-  error?: string;
-};
-
-type SubmitFetcherData = {
-  success: boolean;
-  returnNumber?: string;
-  error?: string;
-};
-
-export default function ReturnRequestPage() {
+export default function ReturnRequestPage({
+  loaderData,
+}: Route.ComponentProps) {
   const navigate = useNavigate();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [order, setOrder] = useState<OrderForReturn | null>(null);
+  const order = loaderData.order as OrderForReturn | null;
+  const step: 1 | 2 = order ? 2 : 1;
 
-  const orderFetcher = useFetcher<OrderFetcherData>();
+  const [orderNumberInput, setOrderNumberInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+
   const submitFetcher = useFetcher<SubmitFetcherData>();
 
   const form = useForm({
     defaultValues: {
-      orderVerification: { orderNumber: "", email: "" },
+      customerInfo: {
+        name: order?.deliveryName ?? "",
+        phoneNumber: order?.phoneNumber ?? "",
+        email: order?.email ?? "",
+      },
       orderItemIds: [] as string[],
-      email: "",
     },
     validators: {
-      onSubmit: returnSchema,
+      onSubmit: returnFormSchema,
     },
     onSubmit: async ({ value }) => {
       if (!order) return;
 
       const formData = new FormData();
       formData.append("orderId", order.id);
-      formData.append("email", value.email);
+      formData.append("customerName", value.customerInfo.name);
+      formData.append("customerPhone", value.customerInfo.phoneNumber);
+      formData.append("customerEmail", value.customerInfo.email);
       value.orderItemIds.forEach((id) => formData.append("orderItemIds", id));
 
       submitFetcher.submit(formData, {
@@ -100,25 +228,10 @@ export default function ReturnRequestPage() {
     },
   });
 
-  // Handle order fetch response
   useEffect(() => {
-    if (orderFetcher.data?.success && orderFetcher.data.order) {
-      setOrder(orderFetcher.data.order);
-      setStep(2);
-    } else if (
-      orderFetcher.data &&
-      !orderFetcher.data.success &&
-      orderFetcher.data.error
-    ) {
-      toast.error(orderFetcher.data.error);
-    }
-  }, [orderFetcher.data]);
-
-  // Handle submit response
-  useEffect(() => {
-    if (submitFetcher.data?.success && submitFetcher.data.returnNumber) {
-      toast.success("Wniosek o zwrot został utworzony");
-      navigate(`/zwroty/sukces/${submitFetcher.data.returnNumber}`);
+    if (submitFetcher.data?.success) {
+      toast.success("Zgłoszenie zwrotu zostało przyjęte");
+      navigate("/zwroty/sukces");
     } else if (
       submitFetcher.data &&
       !submitFetcher.data.success &&
@@ -128,34 +241,25 @@ export default function ReturnRequestPage() {
     }
   }, [submitFetcher.data, navigate]);
 
-  const validateOrder = () => {
-    const { orderNumber, email } = form.state.values.orderVerification;
-    if (!orderNumber || !email) {
+  const isSubmitting = submitFetcher.state === "submitting";
+
+  const handleVerifyOrder = () => {
+    if (!orderNumberInput || !emailInput) {
       toast.error("Wypełnij wszystkie pola");
       return;
     }
-    orderFetcher.load(
-      `/api/return-order?orderNumber=${encodeURIComponent(orderNumber)}&email=${encodeURIComponent(email)}`
+    navigate(
+      `/zwroty?orderNumber=${encodeURIComponent(orderNumberInput)}&email=${encodeURIComponent(emailInput)}`
     );
   };
-
-  const goToStep3 = () => {
-    const selectedItems = form.state.values.orderItemIds;
-    if (selectedItems.length === 0) {
-      toast.error("Wybierz przynajmniej jeden przedmiot do zwrotu");
-      return;
-    }
-    setStep(3);
-  };
-
-  const isLoading =
-    orderFetcher.state === "loading" || submitFetcher.state === "submitting";
 
   const selectedTotal = order
     ? order.items
         .filter((item) => form.state.values.orderItemIds.includes(item.id))
         .reduce((sum, item) => sum + item.lineTotalInGrosz, 0)
     : 0;
+
+  const grouped = order ? groupOrderItems(order.items) : null;
 
   return (
     <main className={cn("flex flex-col h-full flex-1 px-4 md:px-8 py-6")}>
@@ -172,21 +276,14 @@ export default function ReturnRequestPage() {
             step={step}
             steps={[
               { label: "Weryfikacja zamówienia" },
-              { label: "Wybór przedmiotów" },
-              { label: "Potwierdzenie" },
+              { label: "Zgłoszenie zwrotu" },
             ]}
             className="mx-auto w-3/4"
           />
         </div>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-        className="flex flex-col gap-6 max-w-2xl mx-auto w-full"
-      >
+      <div className="flex flex-col gap-6 max-w-2xl mx-auto w-full">
         {step === 1 && (
           <Card>
             <CardHeader>
@@ -196,293 +293,435 @@ export default function ReturnRequestPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
-              <form.Field
-                name="orderVerification.orderNumber"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        Numer zamówienia
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        placeholder="ABC1234567"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(e.target.value.toUpperCase())
-                        }
-                        aria-invalid={isInvalid}
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+              <Field>
+                <FieldLabel htmlFor="orderNumber">Numer zamówienia</FieldLabel>
+                <Input
+                  id="orderNumber"
+                  placeholder="ABC1234567"
+                  value={orderNumberInput}
+                  onChange={(e) =>
+                    setOrderNumberInput(e.target.value.toUpperCase())
+                  }
+                />
+              </Field>
 
-              <form.Field
-                name="orderVerification.email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Adres e-mail</FieldLabel>
-                      <Input
-                        id={field.name}
-                        type="email"
-                        placeholder="jan.kowalski@example.com"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+              <Field>
+                <FieldLabel htmlFor="email">Adres e-mail</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="jan.kowalski@example.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                />
+              </Field>
 
               <Button
                 type="button"
-                onClick={validateOrder}
-                disabled={isLoading}
+                onClick={handleVerifyOrder}
                 className="w-full"
               >
-                {isLoading ? "Weryfikuję..." : "Weryfikuj zamówienie"}
+                Weryfikuj zamówienie
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {step === 2 && order && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Wybierz przedmioty do zwrotu</CardTitle>
-              <CardDescription>
-                Zaznacz, które przedmioty z zamówienia {order.orderNumber}{" "}
-                chcesz zwrócić
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <form.Field
-                name="orderItemIds"
-                mode="array"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-
-                  return (
-                    <>
-                      <FieldGroup data-slot="checkbox-group">
-                        {order.items.map((item) => {
-                          const isSelected = field.state.value.includes(
-                            item.id
-                          );
-
-                          const handleToggle = () => {
-                            if (isSelected) {
-                              const index = field.state.value.indexOf(item.id);
-                              if (index > -1) {
-                                field.removeValue(index);
-                              }
-                            } else {
-                              field.pushValue(item.id);
-                            }
-                          };
-
-                          return (
-                            <div
-                              key={item.id}
-                              className={cn(
-                                "flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors",
-                                isSelected && "border-primary bg-primary/5"
-                              )}
-                              onClick={handleToggle}
-                            >
-                              <Field
-                                orientation="horizontal"
-                                data-invalid={isInvalid}
-                              >
-                                <Checkbox
-                                  id={`item-${item.id}`}
-                                  name={field.name}
-                                  checked={isSelected}
-                                  aria-invalid={isInvalid}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onCheckedChange={handleToggle}
-                                />
-                              </Field>
-                              <Image
-                                src={item.pieceImage ?? "/placeholder.svg"}
-                                alt={item.pieceName}
-                                width={64}
-                                height={64}
-                                className="rounded"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium truncate">
-                                  {item.pieceName}
-                                </h4>
-                                {item.discountAmountInGrosz > 0 && (
-                                  <p className="text-sm text-muted-foreground line-through">
-                                    {formatCurrency(
-                                      priceFromGrosz(item.unitPriceInGrosz)
-                                    )}
-                                  </p>
-                                )}
-                              </div>
-                              <span className="font-medium">
-                                {formatCurrency(
-                                  priceFromGrosz(item.lineTotalInGrosz)
-                                )}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </FieldGroup>
-
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </>
-                  );
-                }}
-              />
-
-              {form.state.values.orderItemIds.length > 0 && (
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <span className="text-muted-foreground">Suma do zwrotu:</span>
-                  <span className="font-bold text-lg">
-                    {formatCurrency(priceFromGrosz(selectedTotal))}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setStep(1);
-                    setOrder(null);
-                    form.setFieldValue("orderItemIds", []);
-                  }}
-                >
-                  Powrót
-                </Button>
-                <Button
-                  type="button"
-                  onClick={goToStep3}
-                  disabled={form.state.values.orderItemIds.length === 0}
-                  className="flex-1"
-                >
-                  Dalej
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 3 && order && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Potwierdzenie zwrotu</CardTitle>
-              <CardDescription>
-                Podaj adres e-mail do potwierdzenia wniosku o zwrot
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-6">
-              <div className="space-y-2">
-                <h4 className="font-medium">
-                  Przedmioty do zwrotu ({form.state.values.orderItemIds.length})
-                </h4>
-                <div className="space-y-2">
-                  {order.items
-                    .filter((item) =>
-                      form.state.values.orderItemIds.includes(item.id)
-                    )
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 text-sm"
-                      >
-                        <Image
-                          src={item.pieceImage ?? "/placeholder.svg"}
-                          alt={item.pieceName}
-                          width={32}
-                          height={32}
-                          className="rounded"
+        {step === 2 && order && grouped && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+            className="flex flex-col gap-6"
+          >
+            {/* Customer Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Dane kontaktowe</CardTitle>
+                <CardDescription>
+                  Zweryfikuj swoje dane kontaktowe
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <form.Field
+                  name="customerInfo.name"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Imię i nazwisko
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
                         />
-                        <span className="flex-1 truncate">
-                          {item.pieceName}
-                        </span>
-                        <span className="font-medium">
-                          {formatCurrency(
-                            priceFromGrosz(item.lineTotalInGrosz)
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-muted-foreground">Suma:</span>
-                  <span className="font-bold">
-                    {formatCurrency(priceFromGrosz(selectedTotal))}
-                  </span>
-                </div>
-              </div>
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
 
-              <form.Field
-                name="email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        E-mail do potwierdzenia
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        type="email"
-                        placeholder="jan.kowalski@example.com"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+                <form.Field
+                  name="customerInfo.phoneNumber"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Numer telefonu
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                        />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
 
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  disabled={isLoading}
-                >
-                  Powrót
-                </Button>
-                <Button type="submit" disabled={isLoading} className="flex-1">
-                  {isLoading ? "Wysyłanie..." : "Wyślij wniosek o zwrot"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                <form.Field
+                  name="customerInfo.email"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Adres e-mail
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          type="email"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                        />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Item Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Wybierz przedmioty do zwrotu</CardTitle>
+                <CardDescription>
+                  Zaznacz, które przedmioty z zamówienia {order.orderNumber}{" "}
+                  chcesz zwrócić
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <form.Field
+                  name="orderItemIds"
+                  mode="array"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+
+                    return (
+                      <>
+                        <FieldGroup data-slot="checkbox-group">
+                          {grouped.products.map((product) => {
+                            const orderItem = order.items.find(
+                              (i) => i.product?.id === product.id
+                            );
+                            if (!orderItem) return null;
+
+                            const pricing = priceDataToDisplayData(product);
+                            const pieceStatus = orderItem.piece.status;
+                            const isDisabled =
+                              pieceStatus === "return_requested" ||
+                              pieceStatus === "returned";
+                            const isSelected = field.state.value.includes(
+                              orderItem.id
+                            );
+
+                            const tooltipMessage =
+                              pieceStatus === "return_requested"
+                                ? "Zwrot tego przedmiotu został już zgłoszony"
+                                : pieceStatus === "returned"
+                                  ? "Ten przedmiot został już zwrócony"
+                                  : "";
+
+                            const handleToggle = () => {
+                              if (isDisabled) return;
+                              if (isSelected) {
+                                const index = field.state.value.indexOf(
+                                  orderItem.id
+                                );
+                                if (index > -1) field.removeValue(index);
+                              } else {
+                                field.pushValue(orderItem.id);
+                              }
+                            };
+
+                            const card = (
+                              <ProductCardRoot size="sm" key={product.id}>
+                                {isDisabled ? (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center">
+                                        <ProductCardToggle
+                                          checked={false}
+                                          onCheckedChange={() => {}}
+                                          ariaInvalid={isInvalid}
+                                        />
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {tooltipMessage}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ) : (
+                                  <ProductCardToggle
+                                    checked={isSelected}
+                                    onCheckedChange={handleToggle}
+                                    ariaInvalid={isInvalid}
+                                  />
+                                )}
+                                <ProductCardMedia size="md">
+                                  <ProductCardImage
+                                    size="md"
+                                    url={
+                                      product.images?.[0]?.url ||
+                                      orderItem.piece.images[0]?.url ||
+                                      ""
+                                    }
+                                    alt={
+                                      product.images?.[0]?.alt ||
+                                      orderItem.piece.images[0]?.alt ||
+                                      ""
+                                    }
+                                  />
+                                </ProductCardMedia>
+                                <ProductCardContent>
+                                  <ProductCardInfo
+                                    name={product.name}
+                                    brand={orderItem.piece.brand?.name}
+                                    size={orderItem.piece.size?.name}
+                                  />
+                                  <ProductCardPrice pricing={pricing} />
+                                </ProductCardContent>
+                              </ProductCardRoot>
+                            );
+
+                            return (
+                              <div
+                                key={product.id}
+                                className={cn(
+                                  "cursor-pointer transition-colors",
+                                  isDisabled && "opacity-50 cursor-not-allowed",
+                                  isSelected && "*:data-size:border-primary"
+                                )}
+                                onClick={handleToggle}
+                              >
+                                {card}
+                              </div>
+                            );
+                          })}
+
+                          {grouped.pieces.map((piece) => {
+                            const orderItem = order.items.find(
+                              (i) => i.pieceId === piece.id
+                            );
+                            if (!orderItem) return null;
+
+                            const pricing = priceDataToDisplayData(piece);
+                            const pieceStatus = orderItem.piece.status;
+                            const isDisabled =
+                              pieceStatus === "return_requested" ||
+                              pieceStatus === "returned";
+                            const isSelected = field.state.value.includes(
+                              orderItem.id
+                            );
+
+                            const tooltipMessage =
+                              pieceStatus === "return_requested"
+                                ? "Zwrot tego przedmiotu został już zgłoszony"
+                                : pieceStatus === "returned"
+                                  ? "Ten przedmiot został już zwrócony"
+                                  : "";
+
+                            const handleToggle = () => {
+                              if (isDisabled) return;
+                              if (isSelected) {
+                                const index = field.state.value.indexOf(
+                                  orderItem.id
+                                );
+                                if (index > -1) field.removeValue(index);
+                              } else {
+                                field.pushValue(orderItem.id);
+                              }
+                            };
+
+                            const card = (
+                              <ProductCardRoot size="sm" key={piece.id}>
+                                {isDisabled ? (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center">
+                                        <ProductCardToggle
+                                          checked={false}
+                                          onCheckedChange={() => {}}
+                                          ariaInvalid={isInvalid}
+                                        />
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {tooltipMessage}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ) : (
+                                  <ProductCardToggle
+                                    checked={isSelected}
+                                    onCheckedChange={handleToggle}
+                                    ariaInvalid={isInvalid}
+                                  />
+                                )}
+                                <ProductCardMedia size="md">
+                                  <ProductCardImage
+                                    size="md"
+                                    url={piece.images?.[0]?.url || ""}
+                                    alt={piece.images?.[0]?.alt || ""}
+                                  />
+                                </ProductCardMedia>
+                                <ProductCardContent>
+                                  <ProductCardInfo
+                                    name={piece.name}
+                                    brand={orderItem.piece.brand?.name}
+                                    size={orderItem.piece.size?.name}
+                                  />
+                                  <ProductCardPrice pricing={pricing} />
+                                </ProductCardContent>
+                              </ProductCardRoot>
+                            );
+
+                            return (
+                              <div
+                                key={piece.id}
+                                className={cn(
+                                  "cursor-pointer transition-colors",
+                                  isDisabled && "opacity-50 cursor-not-allowed",
+                                  isSelected && "*:data-size:border-primary"
+                                )}
+                                onClick={handleToggle}
+                              >
+                                {card}
+                              </div>
+                            );
+                          })}
+                        </FieldGroup>
+
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </>
+                    );
+                  }}
+                />
+
+                {form.state.values.orderItemIds.length > 0 && (
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <span className="text-muted-foreground">
+                      Wybrano przedmiotów:{" "}
+                      {form.state.values.orderItemIds.length}
+                    </span>
+                    <span className="font-bold text-lg">
+                      {formatCurrency(priceFromGrosz(selectedTotal))}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex gap-4 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate("/zwroty")}
+                  >
+                    Powrót
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      form.state.values.orderItemIds.length === 0 ||
+                      isSubmitting
+                    }
+                    className="flex-1"
+                  >
+                    {isSubmitting
+                      ? "Wysyłanie..."
+                      : "Wyślij zgłoszenie zwrotu"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </form>
         )}
-      </form>
+
+        {/* Return Policy Section - always visible */}
+        <Alert>
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle>Polityka zwrotów</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc pl-4 space-y-1 mt-2 text-sm text-muted-foreground">
+              <li>
+                Masz prawo odstąpić od umowy w ciągu 14 dni kalendarzowych od
+                daty otrzymania towaru, bez podawania przyczyny.
+              </li>
+              <li>
+                Aby złożyć zwrot, wypełnij powyższy formularz lub wyślij
+                wiadomość na adres{" "}
+                <a
+                  href="mailto:kontakt@acrm.pl"
+                  className="underline font-medium text-foreground"
+                >
+                  kontakt@acrm.pl
+                </a>
+                .
+              </li>
+              <li>
+                Zwrot płatności nastąpi w ciągu 14 dni od otrzymania zwróconego
+                towaru za pośrednictwem oryginalnej metody płatności.
+              </li>
+              <li>Koszty zwrotu towaru ponosi konsument.</li>
+              <li>
+                Adres do zwrotu: ul. Nad Sudołem 24/22, 31-228 Kraków.
+              </li>
+              <li>
+                Pełna treść regulacji dostępna jest na stronie{" "}
+                <a
+                  href="/odstapienie-od-umowy"
+                  className="underline font-medium text-foreground"
+                >
+                  Prawo odstąpienia od umowy
+                </a>
+                .
+              </li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+      </div>
     </main>
   );
 }

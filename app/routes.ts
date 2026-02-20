@@ -37,7 +37,7 @@ export default [
   route("/api/cancel-order", "./api/cancel-order.ts"),
   route("/api/pending-order", "./api/pending-order.ts"),
   route("/api/return-order", "./api/return-order.ts"),
-  route("/api/create-return", "./api/create-return.ts"),
+  route("/api/create-return", "./api/create-return.tsx"),
   route(
     "/api/google-consent-traceability",
     "./api/google-consent-traceability.ts"
@@ -97,10 +97,7 @@ export default [
     // returns
     ...prefix("/zwroty", [
       index("./routes/main/returns/return-request.page.tsx"),
-      route(
-        "sukces/:returnReqNumber",
-        "./routes/main/returns/return-success.page.tsx"
-      ),
+      route("sukces", "./routes/main/returns/return-success.page.tsx"),
     ]),
 
     // order summary
@@ -199,15 +196,6 @@ export default [
           "./routes/admin/orders/admin-orders-detail.page.tsx"
         ),
       ]),
-      // Returns
-      ...prefix("/returns", [
-        index("./routes/admin/returns/admin-returns-list.page.tsx"),
-        route(
-          "/:returnId",
-          "./routes/admin/returns/admin-returns-detail.page.tsx"
-        ),
-      ]),
-
       // Discounts
       ...prefix("/discounts", [
         index("./routes/admin/discounts/admin-discounts-list.page.tsx"),
