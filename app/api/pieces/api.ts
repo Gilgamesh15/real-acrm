@@ -77,20 +77,19 @@ export async function loader({ context }: LoaderFunctionArgs) {
         eq(schema.pieces.discountId, schema.discounts.id)
       )
       .where(
-        or(
-          // it is featured
-          gte(schema.pieces.homeFeaturedOrder, 0),
-          // it is published
-          eq(schema.pieces.status, "published"),
-          // or in checkout and user is the one who reserved it
-          ...(userId
-            ? [
-                and(
-                  eq(schema.pieces.status, "in_checkout"),
-                  eq(schema.pieces.reservedByUserId, userId)
-                ),
-              ]
-            : [])
+        and(
+          or(
+            eq(schema.pieces.status, "published"),
+            ...(userId
+              ? [
+                  and(
+                    eq(schema.pieces.status, "in_checkout"),
+                    eq(schema.pieces.reservedByUserId, userId)
+                  ),
+                ]
+              : [])
+          ),
+          gte(schema.pieces.homeFeaturedOrder, 0)
         )
       )
       .orderBy(desc(schema.pieces.homeFeaturedOrder))
