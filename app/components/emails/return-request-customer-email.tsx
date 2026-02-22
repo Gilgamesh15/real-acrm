@@ -3,6 +3,8 @@ import { Fragment } from "react";
 
 import { formatCurrency, priceFromGrosz } from "~/lib/utils";
 
+import { COMPANY_INFO } from "~/lib/company-info";
+
 import { EmailBase, colors, fonts } from "./email-base";
 
 const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
@@ -159,7 +161,7 @@ const ReturnRequestCustomerEmail = ({
           >
             {CONTACT_EMAIL}
           </Link>{" "}
-          lub telefonicznie: +48 453 450 597
+          lub telefonicznie: {COMPANY_INFO.phone}
         </Text>
       </Section>
     </EmailBase>

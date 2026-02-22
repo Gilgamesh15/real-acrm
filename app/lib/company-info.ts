@@ -1,0 +1,16 @@
+export const COMPANY_INFO = {
+  tradeName: "ACRM Fashion Projects",
+  legalName: "ACRM SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ",
+  address: "ul. Nad Sudołem 24/22",
+  postalCode: "31-228",
+  city: "Kraków",
+  region: "Małopolskie",
+  country: "Polska",
+  nip: "9452316835",
+  krs: "0001193211",
+  regon: "542680140",
+  email: "kontakt@acrm.pl",
+  phone: "+48 453-450-597",
+  phoneRaw: "+48453450597",
+  businessHours: "pon.–pt. 9:00–17:00",
+} as const;

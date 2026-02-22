@@ -5,6 +5,7 @@ import type {
   RichText,
 } from "~/lib/types";
 
+import { COMPANY_INFO } from "./company-info";
 import {
   calculatePiecePriceDisplayData,
   calculateProductPriceDisplayData,
@@ -72,19 +73,19 @@ function generateOrganizationStructuredData() {
     address: {
       "@type": "PostalAddress",
       addressCountry: "PL",
-      addressLocality: "Kraków",
-      postalCode: "31-228",
-      streetAddress: "ul. Nad Sudołem 24/22",
+      addressLocality: COMPANY_INFO.city,
+      postalCode: COMPANY_INFO.postalCode,
+      streetAddress: COMPANY_INFO.address,
     },
-    alternateName: "ACRM Fashion Projects",
+    alternateName: COMPANY_INFO.tradeName,
     contactPoint: {
       "@type": "ContactPoint",
-      email: "kontakt@acrm.pl",
-      telephone: "+48-453-450-597",
+      email: COMPANY_INFO.email,
+      telephone: COMPANY_INFO.phone,
     },
     description:
       "ACRM oferuje markową odzież z second-handu w przystępnych cenach. Dickies, Nike, Carhartt i więcej. Darmowa dostawa, realizacja w 24h, zwroty do 14 dni.",
-    email: "kontakt@acrm.pl",
+    email: COMPANY_INFO.email,
     foundingDate: "2025-09-09",
     hasMerchantReturnPolicy: {
       "@type": "MerchantReturnPolicy",
@@ -238,16 +239,16 @@ function generateOrganizationStructuredData() {
         ],
       },
     ],
-    legalName: "ACRM SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ",
+    legalName: COMPANY_INFO.legalName,
     logo: LogoPng,
-    name: "ACRM Fashion Projects",
+    name: COMPANY_INFO.tradeName,
     numberOfEmployees: {
       "@type": "QuantitativeValue",
       value: 0,
     },
     sameAs: [INSTAGRAM_URL, TIKTOK_URL, YOUTUBE_URL],
-    taxID: "9452316835", // NIP
-    vatID: "PL9452316835", // VAT format: country code + NIP
+    taxID: COMPANY_INFO.nip,
+    vatID: `PL${COMPANY_INFO.nip}`,
   };
 }
 
@@ -480,6 +481,14 @@ function generateProductStructuredData(
           }
         : {}),
     },
+    ...(product.pieces?.[0]?.brand
+      ? {
+          brand: {
+            "@type": "Brand",
+            name: product.pieces[0].brand.name,
+          },
+        }
+      : {}),
     audience: {
       "@type": "PeopleAudience",
       suggestedGender: GENDER_MAP[product.pieces?.[0]?.gender || "unisex"],

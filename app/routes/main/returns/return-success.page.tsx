@@ -2,6 +2,7 @@ import { ArrowLeftIcon, CheckIcon, MailIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { Button } from "~/components/ui/button";
+import { COMPANY_INFO } from "~/lib/company-info";
 
 import type { Route } from "./+types/return-success.page";
 
@@ -37,7 +38,7 @@ export default function ReturnSuccessPage() {
               <div className="mt-10 flex justify-between">
                 <a
                   className="flex items-center gap-1 text-foreground/40 hover:text-foreground transition-colors"
-                  href="tel:+48453450597"
+                  href={`tel:${COMPANY_INFO.phoneRaw}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -55,14 +56,14 @@ export default function ReturnSuccessPage() {
                     <rect width={14} height={20} x={5} y={2} rx={2} ry={2} />
                     <path d="M12 18h.01" />
                   </svg>{" "}
-                  +48 453 450 597
+                  {COMPANY_INFO.phone}
                 </a>
                 <a
                   className="flex items-center gap-1 text-foreground/40 hover:text-foreground transition-colors"
-                  href="mailto:kontakt@acrm.pl"
+                  href={`mailto:${COMPANY_INFO.email}`}
                 >
                   <MailIcon className="h-4 w-4" aria-hidden="true" />
-                  kontakt@acrm.pl
+                  {COMPANY_INFO.email}
                 </a>
               </div>
             </div>

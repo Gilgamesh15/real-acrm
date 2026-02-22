@@ -86,13 +86,28 @@ const FAQ_ITEMS = [
   {
     question: "Jak wygląda proces zwrotu pieniędzy?",
     answer: (
-      <p>
-        Zwrot środków następuje w ciągu{" "}
-        <span className="font-bold text-primary">14 dni</span> od otrzymania
-        oświadczenia o odstąpieniu, tą samą metodą płatności, której użyto przy
-        zakupie. Możemy wstrzymać zwrot do momentu otrzymania towaru lub
-        potwierdzenia jego nadania.
-      </p>
+      <div>
+        <p className="mb-3">
+          Proces zwrotu pieniędzy przebiega następująco:
+        </p>
+        <ol className="list-decimal pl-5 space-y-2">
+          <li>
+            <span className="font-bold text-primary">Złożenie oświadczenia o odstąpieniu</span>{" "}
+            — przez formularz na acrm.pl/zwroty, e-mailem lub pisemnie.
+          </li>
+          <li>
+            <span className="font-bold text-primary">Odesłanie towaru</span>{" "}
+            — niezwłocznie, nie później niż 14 dni kalendarzowych od odstąpienia.
+            Koszt przesyłki zwrotnej po stronie kupującego.
+          </li>
+          <li>
+            <span className="font-bold text-primary">Zwrot środków</span>{" "}
+            — niezwłocznie, nie później niż 14 dni kalendarzowych od otrzymania
+            oświadczenia o odstąpieniu, tą samą metodą płatności. Możemy wstrzymać
+            zwrot do momentu otrzymania towaru lub potwierdzenia jego nadania.
+          </li>
+        </ol>
+      </div>
     ),
   },
   {

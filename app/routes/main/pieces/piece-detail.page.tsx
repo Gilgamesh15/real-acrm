@@ -526,7 +526,9 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                         Masz 14 dni na zwrot — bez podawania przyczyny.
                         Wystarczy napisać na kontakt@acrm.pl lub wypełnić
                         formularz na acrm.pl/zwroty. Koszt przesyłki zwrotnej
-                        po stronie kupującego.
+                        po stronie kupującego. Zwrot środków następuje nie później
+                        niż 14 dni kalendarzowych od otrzymania oświadczenia
+                        o odstąpieniu.
                       </ItemDescription>
                     </ItemContent>
                   </Item>

@@ -701,8 +701,10 @@ export default function ReturnRequestPage({
                 .
               </li>
               <li>
-                Zwrot płatności nastąpi w ciągu 14 dni od otrzymania zwróconego
-                towaru za pośrednictwem oryginalnej metody płatności.
+                Zwrot płatności nastąpi niezwłocznie, nie później niż 14 dni
+                kalendarzowych od otrzymania oświadczenia o odstąpieniu,
+                za pośrednictwem oryginalnej metody płatności. Możemy wstrzymać
+                zwrot do momentu otrzymania towaru lub potwierdzenia jego nadania.
               </li>
               <li>Koszty zwrotu towaru ponosi konsument.</li>
               <li>

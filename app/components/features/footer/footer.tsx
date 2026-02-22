@@ -10,6 +10,7 @@ import {
 import { buttonVariants } from "~/components/ui/button";
 import Image from "~/components/ui/image";
 
+import { COMPANY_INFO } from "~/lib/company-info";
 import type { DBQueryResult } from "~/lib/types";
 import { getSlugPath } from "~/lib/utils";
 
@@ -79,19 +80,6 @@ const FOOTER_LINKS = [
   },
 ];
 
-// DANE FIRMY - UZUPEŁNIJ PONIŻSZE INFORMACJE
-const COMPANY_INFO = {
-  tradeName: "ACRM Fashion Projects",
-  legalName: "ACRM SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ",
-  address: "ul. Nad Sudołem 24/22", // np. "ul. Przykładowa 123"
-  postalCode: "31-228", // np. "00-001"
-  city: "Kraków", // np. "Warszawa"
-  nip: "9452316835",
-  krs: "0001193211", // np. "0000123456"
-  regon: "542680140", // np. "12345678901234"
-  email: "kontakt@acrm.pl", // lub inny email kontaktowy
-  phone: "+48 453-450-597", // np. "+48 123 456 789"
-};
 
 const PAYMENT_METHODS = [
   {
@@ -283,9 +271,9 @@ function Footer({
             >
               <span itemProp="streetAddress">{COMPANY_INFO.address}</span>,{" "}
               <span itemProp="addressLocality">{COMPANY_INFO.city}</span>,{" "}
-              <span itemProp="addressRegion">Małopolskie</span>,{" "}
+              <span itemProp="addressRegion">{COMPANY_INFO.region}</span>,{" "}
               <span itemProp="postalCode">{COMPANY_INFO.postalCode}</span>,{" "}
-              <span itemProp="addressCountry">Polska</span>
+              <span itemProp="addressCountry">{COMPANY_INFO.country}</span>
             </span>
             <span className="mx-2 opacity-40">|</span>
             <span>
@@ -306,7 +294,7 @@ function Footer({
             </a>
             <span className="mx-2 opacity-40">|</span>
             <a
-              href={`tel:${COMPANY_INFO.phone.replace(/\s/g, "")}`}
+              href={`tel:${COMPANY_INFO.phoneRaw}`}
               itemProp="telephone"
               className="hover:text-muted-foreground transition-colors"
             >

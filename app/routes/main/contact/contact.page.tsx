@@ -12,6 +12,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 
 import { ContactUsEmail } from "~/components/emails/contact-us-email";
+import { COMPANY_INFO } from "~/lib/company-info";
 import { resend } from "~/lib/resend";
 import {
   convertFormDataToObjectUnsafe,
@@ -116,7 +117,7 @@ export default function ContactPage() {
               <div className="mt-10 flex justify-between">
                 <a
                   className="flex items-center gap-1 text-foreground/40 hover:text-foreground"
-                  href="tel:+48453450597"
+                  href={`tel:${COMPANY_INFO.phoneRaw}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -134,11 +135,11 @@ export default function ContactPage() {
                     <rect width={14} height={20} x={5} y={2} rx={2} ry={2} />
                     <path d="M12 18h.01" />
                   </svg>{" "}
-                  +48 453 450 597
+                  {COMPANY_INFO.phone}
                 </a>
                 <a
                   className="flex items-center gap-1 text-foreground/40 hover:text-foreground"
-                  href="mailto:kontakt@acrm.pl"
+                  href={`mailto:${COMPANY_INFO.email}`}
                 >
                   {" "}
                   <svg
@@ -157,8 +158,95 @@ export default function ContactPage() {
                     <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
                     <rect x={2} y={4} width={20} height={16} rx={2} />
                   </svg>{" "}
-                  kontakt@acrm.pl
+                  {COMPANY_INFO.email}
                 </a>
+              </div>
+
+              <div className="mt-10 flex flex-col gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={16}
+                    height={16}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                    <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+                    <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+                    <path d="M10 6h4" />
+                    <path d="M10 10h4" />
+                    <path d="M10 14h4" />
+                    <path d="M10 18h4" />
+                  </svg>
+                  <span>{COMPANY_INFO.legalName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={16}
+                    height={16}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                    <circle cx={12} cy={10} r={3} />
+                  </svg>
+                  <span>
+                    {COMPANY_INFO.address}, {COMPANY_INFO.postalCode}{" "}
+                    {COMPANY_INFO.city}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={16}
+                    height={16}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    <rect width={20} height={14} x={2} y={6} rx={2} />
+                  </svg>
+                  <span>NIP: {COMPANY_INFO.nip}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={16}
+                    height={16}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <circle cx={12} cy={12} r={10} />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span>Obsługa klienta: {COMPANY_INFO.businessHours}</span>
+                </div>
               </div>
             </div>
             <form
