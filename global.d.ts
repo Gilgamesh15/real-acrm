@@ -22,6 +22,7 @@ declare global {
     // client prod only
     readonly VITE_GOOGLE_VERIFICATION: string | undefined;
     readonly VITE_GOOGLE_ANALYTICS_ID: string | undefined;
+    readonly VITE_GOOGLE_ADS_ID: string | undefined;
   }
 }
 declare global {
@@ -46,6 +47,7 @@ declare global {
       // client prod only
       readonly VITE_GOOGLE_VERIFICATION: string | undefined;
       readonly VITE_GOOGLE_ANALYTICS_ID: string | undefined;
+      readonly VITE_GOOGLE_ADS_ID: string | undefined;
       // server
       readonly BETTER_AUTH_SECRET: string;
       readonly BETTER_STACK_ENDPOINT: string;

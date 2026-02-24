@@ -1,7 +1,7 @@
 import * as schema from "db/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, data } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { OrderData } from "~/components/features/order-data/order-data";
 import { PriceSummary } from "~/components/features/price-summary/price-summary";
 import type { PriceSummaryProps } from "~/components/features/price-summary/price-summary";
+import { useGtagReady } from "~/hooks/use-gtag-ready";
 import {
   ProductCardContent,
   ProductCardImage,
@@ -116,16 +117,69 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
     ),
   };
 
+  // Track if purchase event has been fired for this order
+  const hasFiredPurchaseEvent = useRef(false);
+  const isGtagReady = useGtagReady();
+
   useEffect(() => {
-    window.gtag?.("event", "purchase", {
-      transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
-      currency: "PLN",
-      tax: priceFromGrosz(order.taxInGrosz),
-      shipping: 0,
-      value: priceFromGrosz(order.totalInGrosz),
-      items: order.items.map((item) => orderItemsToGoogleAnalyticsItems(item)),
-    });
-  }, [order]);
+    // Guard 1: Prevent duplicate events for the same order
+    if (hasFiredPurchaseEvent.current) {
+      return;
+    }
+
+    // Guard 2: Wait for gtag AND consent to be fully initialized
+    if (!isGtagReady) {
+      if (import.meta.env.DEV) {
+        console.log(
+          "[Purchase Event] Waiting for gtag and consent initialization..."
+        );
+      }
+      return;
+    }
+
+    // Guard 3: Verify gtag exists (safety check)
+    if (!window.gtag) {
+      if (import.meta.env.DEV) {
+        console.warn("[Purchase Event] gtag not available");
+      }
+      return;
+    }
+
+    // Guard 4: Verify order has valid data
+    if (!order.items.length || order.totalInGrosz <= 0) {
+      if (import.meta.env.DEV) {
+        console.warn("[Purchase Event] Invalid order data");
+      }
+      return;
+    }
+
+    // All guards passed - fire the purchase event
+    try {
+      const purchaseData = {
+        transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
+        currency: "PLN",
+        tax: priceFromGrosz(order.taxInGrosz),
+        shipping: 0,
+        value: priceFromGrosz(order.totalInGrosz),
+        items: order.items.map((item) =>
+          orderItemsToGoogleAnalyticsItems(item)
+        ),
+      };
+
+      window.gtag("event", "purchase", purchaseData);
+
+      // Mark as fired to prevent duplicates
+      hasFiredPurchaseEvent.current = true;
+
+      if (import.meta.env.DEV) {
+        console.log("[Purchase Event] Fired successfully:", purchaseData);
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("[Purchase Event] Error firing event:", error);
+      }
+    }
+  }, [order.orderNumber, isGtagReady, order]);
 
   const orderDetails = React.useMemo(() => {
     try {

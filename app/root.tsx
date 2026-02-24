@@ -128,7 +128,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                gtag('js', new Date());
 
                gtag('config', '${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}');
-               gtag('config', '${import.meta.env.VITE_GOOGLE_ADS_ID}');
+               ${import.meta.env.VITE_GOOGLE_ADS_ID ? `gtag('config', '${import.meta.env.VITE_GOOGLE_ADS_ID}');` : ''}
              `,
           }}
         />
