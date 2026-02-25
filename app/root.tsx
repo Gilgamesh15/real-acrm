@@ -112,14 +112,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}`}
           />
         )}
-        {import.meta.env.VITE_GOOGLE_ADS_ID && (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GOOGLE_ADS_ID}`}
-            />
-          </>
-        )}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -128,7 +120,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                gtag('js', new Date());
 
                gtag('config', '${import.meta.env.VITE_GOOGLE_ANALYTICS_ID}');
-               ${import.meta.env.VITE_GOOGLE_ADS_ID ? `gtag('config', '${import.meta.env.VITE_GOOGLE_ADS_ID}');` : ''}
+               gtag('config', '${import.meta.env.VITE_GOOGLE_ADS_ID}');
              `,
           }}
         />
