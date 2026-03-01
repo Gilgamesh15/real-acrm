@@ -1,9 +1,4 @@
-import {
-  EyeIcon,
-  PackageIcon,
-  ShoppingCartIcon,
-  SparklesIcon,
-} from "lucide-react";
+import { EyeIcon, ShoppingCartIcon, SparklesIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";

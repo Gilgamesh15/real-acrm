@@ -51,12 +51,19 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
   const userId = session?.user.id;
 
   const url = new URL(request.url);
-  const limit = piecesContract.get.all.query.shape.limit.parse(
-    url.searchParams.get("limit") ?? undefined
-  );
-  const offset = piecesContract.get.all.query.shape.offset.parse(
-    url.searchParams.get("offset") ?? undefined
-  );
+
+  const { success, data: args } = piecesContract.get.all.query.safeParse({
+    limit: url.searchParams.get("limit") ?? undefined,
+    offset: url.searchParams.get("offset") ?? undefined,
+  });
+
+  if (!success) {
+    return data(superjson.serialize({ error: "Invalid query parameters" }), {
+      status: 400,
+    });
+  }
+
+  const { limit, offset } = args;
 
   const start = performance.now();
   logger.debug("Loading pieces loader", {
