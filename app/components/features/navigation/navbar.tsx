@@ -11,10 +11,13 @@ import {
   TruckIcon,
 } from "lucide-react";
 import React from "react";
-import { useNavigate } from "react-router";
+import { Await, Link, useNavigate } from "react-router";
+
+import { buttonVariants } from "~/components/ui/button";
 
 import { authClient } from "~/lib/auth-client";
 import type { DBQueryResult, Session } from "~/lib/types";
+import { cn } from "~/lib/utils";
 
 import { Logo } from "../logo/logo";
 import { AuthDropdown } from "./auth-dropdown";
@@ -25,6 +28,7 @@ import { NavSearch } from "./nav-search";
 
 const NAVBAR_HEIGHT = 54;
 const BOTTOM_NAVBAR_HEIGHT = 32;
+const TAGS_BAR_HEIGHT = 40;
 
 export interface NavItem {
   label: string;
@@ -105,7 +109,7 @@ const Navbar = ({
     <>
       <div
         style={{
-          height: NAVBAR_HEIGHT + BOTTOM_NAVBAR_HEIGHT,
+          height: NAVBAR_HEIGHT + BOTTOM_NAVBAR_HEIGHT + TAGS_BAR_HEIGHT,
         }}
       />
       <div className="fixed top-0 left-0 w-screen z-50 divide-y">
@@ -157,6 +161,52 @@ const Navbar = ({
               </div>
             </div>
           </nav>
+        </div>
+        <div
+          style={{ height: TAGS_BAR_HEIGHT }}
+          className="shadow-xs shadow-foreground/50 bg-background/90 backdrop-blur-xs"
+        >
+          <React.Suspense
+            fallback={
+              <div
+                className="flex items-center gap-2 px-4 overflow-hidden"
+                style={{ height: TAGS_BAR_HEIGHT }}
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-6 w-16 rounded-full bg-muted animate-pulse shrink-0"
+                  />
+                ))}
+              </div>
+            }
+          >
+            <Await resolve={tagsPromise}>
+              {(tags) => (
+                <div
+                  className="flex items-center gap-2 px-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                  style={{ height: TAGS_BAR_HEIGHT }}
+                >
+                  {tags.map((tag) => (
+                    <Link
+                      key={tag.id}
+                      to={`/kategorie?tags=${tag.slug}`}
+                      className={cn(
+                        buttonVariants({
+                          variant: "ghost",
+                          size: "sm",
+                          className:
+                            "text-muted-foreground font-primary tracking-wider ",
+                        })
+                      )}
+                    >
+                      {tag.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Await>
+          </React.Suspense>
         </div>
       </div>
       {children}

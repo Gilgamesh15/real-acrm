@@ -25,11 +25,21 @@ type FeaturedProduct = DBQueryResult<
   }
 >;
 
-export function useFeaturedProducts() {
+export function useFeaturedProducts(params?: {
+  limit?: number;
+  offset?: number;
+}) {
+  const searchParams = new URLSearchParams();
+  if (params?.limit != null) searchParams.set("limit", String(params.limit));
+  if (params?.offset != null) searchParams.set("offset", String(params.offset));
+  const qs = searchParams.toString();
+
   return useQuery({
-    queryKey: ["featured-products"],
+    queryKey: ["featured-products", params?.limit, params?.offset],
     queryFn: async () => {
-      const response = await fetch("/api/featured-products");
+      const response = await fetch(
+        `/api/featured-products${qs ? `?${qs}` : ""}`
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -36,7 +36,10 @@ export const featuredProductsContract = {
     all: c.query({
       method: "GET",
       path: "/featured-products",
-      query: z.object({}),
+      query: z.object({
+        limit: z.coerce.number().int().min(1).max(50).optional().default(15),
+        offset: z.coerce.number().int().min(0).optional().default(0),
+      }),
       responses: {
         200: z.object({
           products: z.array(
@@ -61,10 +64,25 @@ export const featuredProductsContract = {
   },
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context, request }: LoaderFunctionArgs) {
   const { logger } = context;
   const { session } = context;
   const userId = session?.user.id;
+
+  const url = new URL(request.url);
+  const { success, data: args } =
+    featuredProductsContract.get.all.query.safeParse({
+      limit: url.searchParams.get("limit") ?? undefined,
+      offset: url.searchParams.get("offset") ?? undefined,
+    });
+
+  if (!success) {
+    return data(superjson.serialize({ error: "Invalid query parameters" }), {
+      status: 400,
+    });
+  }
+
+  const { limit, offset } = args;
 
   try {
     // eslint-disable-next-line tsPlugin/no-unused-vars
@@ -76,22 +94,11 @@ export async function loader({ context }: LoaderFunctionArgs) {
       .select({
         products: productCols,
         discounts: schema.discounts,
-        images: schema.images,
       })
       .from(schema.products)
       .leftJoin(
         schema.discounts,
         eq(schema.products.discountId, schema.discounts.id)
-      )
-      .leftJoinLateral(
-        db
-          .select()
-          .from(schema.images)
-          .where(eq(schema.images.productId, schema.products.id))
-          .limit(1)
-          .orderBy(asc(schema.images.displayOrder))
-          .as("images"),
-        sql`true`
       )
       .where(
         and(
@@ -117,7 +124,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
         )
       )
       .orderBy(desc(schema.products.featuredOrder))
-      .limit(15);
+      .offset(offset)
+      .limit(limit);
 
     if (productsRes.length === 0) {
       return data(
@@ -126,86 +134,73 @@ export async function loader({ context }: LoaderFunctionArgs) {
         >),
         {
           status: 200,
-          headers: {
-            "Cache-Control": "public, max-age=300",
-          },
+          headers: { "Cache-Control": "public, max-age=300" },
         }
       );
     }
 
-    const piecesRes = await db
-      .select()
-      .from(schema.pieces)
-      .where(
-        and(
-          or(
-            eq(schema.pieces.status, "published"),
-            lte(schema.pieces.reservedUntil, new Date()),
-            ...(userId ? [eq(schema.pieces.reservedByUserId, userId)] : [])
-          ),
-          inArray(
-            schema.pieces.productId,
-            productsRes.map((i) => i.products.id)
+    const productIds = productsRes.map((i) => i.products.id);
+
+    const [productImagesRes, piecesRes] = await Promise.all([
+      db
+        .select()
+        .from(schema.images)
+        .where(inArray(schema.images.productId, productIds))
+        .orderBy(asc(schema.images.displayOrder)),
+
+      db
+        .select()
+        .from(schema.pieces)
+        .where(
+          and(
+            or(
+              eq(schema.pieces.status, "published"),
+              lte(schema.pieces.reservedUntil, new Date()),
+              ...(userId ? [eq(schema.pieces.reservedByUserId, userId)] : [])
+            ),
+            inArray(schema.pieces.productId, productIds)
           )
         )
-      )
-      .leftJoinLateral(
-        db
-          .select()
-          .from(schema.images)
-          .where(eq(schema.images.pieceId, schema.pieces.id))
-          .limit(1)
-          .orderBy(asc(schema.images.displayOrder))
-          .as("images"),
-        sql`true`
-      )
-      .leftJoin(
-        schema.discounts,
-        eq(schema.discounts.id, schema.pieces.discountId)
-      )
-      .leftJoin(schema.brands, eq(schema.brands.id, schema.pieces.brandId))
-      .leftJoin(schema.sizes, eq(schema.sizes.id, schema.pieces.sizeId))
-      .leftJoin(
-        schema.categories,
-        eq(schema.categories.id, schema.pieces.categoryId)
-      );
+        .leftJoinLateral(
+          db
+            .select()
+            .from(schema.images)
+            .where(eq(schema.images.pieceId, schema.pieces.id))
+            .limit(1)
+            .orderBy(asc(schema.images.displayOrder))
+            .as("images"),
+          sql`true`
+        )
+        .leftJoin(
+          schema.discounts,
+          eq(schema.discounts.id, schema.pieces.discountId)
+        )
+        .leftJoin(schema.brands, eq(schema.brands.id, schema.pieces.brandId))
+        .leftJoin(schema.sizes, eq(schema.sizes.id, schema.pieces.sizeId))
+        .leftJoin(
+          schema.categories,
+          eq(schema.categories.id, schema.pieces.categoryId)
+        ),
+    ]);
 
     const products = productsRes.map((item) => {
-      const images = productsRes
-        .filter((i) => i.images?.productId === item.products.id)
-        .map((i) => i.images)
-        .filter((i) => i !== null);
-
+      const images = productImagesRes.filter(
+        (img) => img.productId === item.products.id
+      );
       const discount = item.discounts ?? null;
-
       const pieces = piecesRes
         .filter((i) => i.pieces.productId === item.products.id)
-        .map((i) => {
-          const brand =
-            piecesRes.find((j) => j.brands?.id === i.pieces.brandId)?.brands ??
-            null;
-          const size =
-            piecesRes.find((j) => j.sizes?.id === i.pieces.sizeId)?.sizes ??
-            null;
-          const images = piecesRes
+        .map((i) => ({
+          ...i.pieces,
+          brand: i.brands ?? null,
+          size: i.sizes ?? null,
+          images: piecesRes
             .filter((j) => j.images?.pieceId === i.pieces.id)
             .map((j) => j.images)
-            .filter((j) => j !== null);
-          const category =
-            piecesRes.find((j) => j.categories?.id === i.pieces.categoryId)
-              ?.categories ?? null;
-          const discount =
-            piecesRes.find((j) => j.discounts?.id === i.pieces.discountId)
-              ?.discounts ?? null;
-          return {
-            ...i.pieces,
-            brand,
-            size,
-            images,
-            category,
-            discount,
-          };
-        });
+            .filter((j) => j !== null),
+          category: i.categories ?? null,
+          discount: i.discounts ?? null,
+        }));
 
       return {
         ...item.products,
@@ -221,18 +216,14 @@ export async function loader({ context }: LoaderFunctionArgs) {
       >),
       {
         status: 200,
-        headers: {
-          "Cache-Control": "public, max-age=300",
-        },
+        headers: { "Cache-Control": "public, max-age=300" },
       }
     );
   } catch (error) {
     logger.error("Failed to fetch featured products", { error });
     return data(
       superjson.serialize({ error: "Failed to fetch featured products" }),
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }

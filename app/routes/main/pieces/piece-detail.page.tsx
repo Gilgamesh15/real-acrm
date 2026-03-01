@@ -3,6 +3,7 @@ import { filterService } from "db/services/filter.service";
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { exists } from "drizzle-orm";
 import {
+  EyeIcon,
   InfoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -47,6 +48,7 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { RichText } from "~/components/shared/rich-text/rich-text";
+import { usePieceViewer } from "~/hooks/use-piece-viewer";
 import { db } from "~/lib/db";
 import { generatePieceStructuredData } from "~/lib/seo";
 import {
@@ -54,6 +56,7 @@ import {
   cn,
   formatCurrency,
   formatDiscountLabel,
+  formatViewerCount,
   pieceToGoogleAnalyticsItem,
 } from "~/lib/utils";
 
@@ -174,6 +177,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
 
 export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
   const { piece, similarPiecesPromise } = loaderData;
+  const { viewerCount } = usePieceViewer(piece.id);
 
   const loopedImages = React.useMemo(() => {
     if (piece.images.length <= 1) return piece.images;
@@ -372,6 +376,12 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {"Cena zawiera VAT · Darmowa dostawa InPost"}
                 </p>
+                {viewerCount > 1 && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                    <EyeIcon className="size-3.5" />
+                    {formatViewerCount(viewerCount)} teraz ten produkt
+                  </p>
+                )}
               </div>
             </div>
 

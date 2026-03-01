@@ -823,3 +823,13 @@ export const consentRecords = pgTable(
 );
 
 export type DBConsentRecord = typeof consentRecords.$inferSelect;
+
+export const newsletterSubscribers = pgTable(
+  "newsletter_subscribers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex().on(table.email)]
+);

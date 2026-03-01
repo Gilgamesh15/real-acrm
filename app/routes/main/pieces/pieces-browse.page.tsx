@@ -38,6 +38,7 @@ import {
 } from "~/components/features/param-filters/filter-values";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
+import { useViewerCounts } from "~/hooks/use-viewer-counts";
 import { generateBreadcrumbListStructuredData } from "~/lib/seo";
 import type { CatalogSortBy, CatalogSortOrder } from "~/lib/types";
 import {
@@ -395,6 +396,7 @@ function PiecesList({
   categorySlug: string;
 } & Awaited<Route.ComponentProps["loaderData"]["piecesPromise"]>) {
   const { isInCart, addPiece, removePiece } = useCart();
+  const viewerCounts = useViewerCounts(pieces.map((p) => p.id));
 
   React.useEffect(() => {
     window.gtag?.("event", "view_item_list", {
@@ -421,6 +423,7 @@ function PiecesList({
             piece={piece}
             href={`/ubrania/${piece.slug}`}
             isInCart={isInCart(piece.id)}
+            viewerCount={viewerCounts?.[piece.id]}
             onClick={() => {
               window.gtag?.("event", "select_item", {
                 item_list_id: `category_${categorySlug}`,

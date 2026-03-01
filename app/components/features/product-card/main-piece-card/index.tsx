@@ -1,9 +1,15 @@
-import { ShoppingCartIcon } from "lucide-react";
+import {
+  EyeIcon,
+  PackageIcon,
+  ShoppingCartIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import Image from "~/components/ui/image";
+import { Separator } from "~/components/ui/separator";
 
 import type { DBQueryResult } from "~/lib/types";
 import {
@@ -11,12 +17,16 @@ import {
   cn,
   formatCurrency,
   formatDiscountLabel,
+  formatViewerCount,
 } from "~/lib/utils";
 
 export interface MainPieceCardProps {
   piece: DBQueryResult<
     "pieces",
     {
+      columns: {
+        description: false;
+      };
       with: {
         images: true;
         brand: true;
@@ -30,6 +40,15 @@ export interface MainPieceCardProps {
   onToggleCart?: () => void;
   onClick?: () => void;
   className?: string;
+  viewerCount?: number;
+}
+
+const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+
+function isNewPiece(createdAt: Date | string): boolean {
+  const created =
+    typeof createdAt === "string" ? new Date(createdAt) : createdAt;
+  return Date.now() - created.getTime() < FOURTEEN_DAYS_MS;
 }
 
 const MainPieceCard = ({
@@ -39,66 +58,105 @@ const MainPieceCard = ({
   onToggleCart,
   onClick,
   className,
+  viewerCount,
 }: MainPieceCardProps) => {
   const [primaryImage] = piece.images;
   const pricing = calculatePiecePriceDisplayData(piece);
+  const isNew = isNewPiece(piece.createdAt);
 
   return (
     <Link
       to={href}
       onClick={onClick}
       className={cn(
-        "block max-w-[280px] bg-background pb-4 relative backdrop-blur-md",
+        "group flex w-full max-w-[400px] flex-col overflow-hidden bg-background border",
         className
       )}
     >
-      <Image
-        src={primaryImage?.url || "/placeholder.png"}
-        alt={primaryImage?.alt || "Piece image"}
-        aspectRatio={7 / 8}
-        quality="auto:good"
-        resize="limitPad"
-        width={280}
-      />
-      <div className="w-full h-px bg-linear-to-r from-transparent via-foreground/50 to-transparent rounded-full my-6 relative">
-        <Button
-          variant={isInCart ? "default" : "secondary"}
-          className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleCart?.();
-          }}
-          aria-label={isInCart ? "Remove from cart" : "Add to cart"}
-        >
-          <ShoppingCartIcon />
-        </Button>
-      </div>
-      <div className="px-1 flex flex-col items-center gap-0.5 tracking-wider min-h-[96px]">
-        <h3 className="text-lg font-secondary font-medium text-center">
-          {piece.name}
-        </h3>
-        <p className="text-xs font-secondary text-muted-foreground font-normal">
-          {piece.brand?.name}
-        </p>
-        <p
-          className={cn(
-            "text-base",
-            pricing.hasDiscount ? "text-success-foreground" : "text-foreground"
-          )}
-        >
-          {formatCurrency(pricing.finalPrice)}
-        </p>
-        {pricing.hasDiscount && (
-          <div className="flex items-baseline gap-1.5">
-            <p className="text-xs text-foreground/50 font-normal line-through">
-              {formatCurrency(pricing.originalPrice)}
-            </p>
-            <Badge variant="outline" className="text-xs">
-              {formatDiscountLabel(pricing.discount)}
-            </Badge>
-          </div>
+      <div className="relative aspect-4/5 w-full overflow-hidden">
+        <Image
+          src={primaryImage?.url || ""}
+          alt={primaryImage?.alt || ""}
+          width={400}
+          aspectRatio={4 / 5}
+          resize="fill"
+          className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        />
+        {isNew && (
+          <span className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500/90 text-white text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm">
+            <SparklesIcon className="size-3" />
+            Nowe
+          </span>
         )}
+        {viewerCount != null && viewerCount > 0 && (
+          <span className="absolute top-2 right-2 flex items-center gap-1 bg-amber-500/90 text-white text-[10px] font-semibold px-2 py-1 rounded-sm">
+            <EyeIcon className="size-3" />
+            {formatViewerCount(viewerCount)}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-3 p-4 min-h-[184px] justify-between flex-1">
+        <div className="flex items-start flex-1 justify-between">
+          <div>
+            <p className="text-xs text-nowrap whitespace-nowrap uppercase tracking-[0.3em] text-muted-foreground">
+              {piece.brand?.name || "N/A"}
+            </p>
+            <h3 className="mt-1 text-sm font-light tracking-wide text-foreground">
+              {piece.name}
+            </h3>
+          </div>
+          {piece.size?.name && (
+            <span className="text-xs text-nowrap whitespace-nowrap uppercase tracking-[0.2em] text-muted-foreground">
+              {piece.size?.name || "N/A"}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-3 h-fit">
+          <Separator />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-baseline gap-2">
+                {pricing.hasDiscount ? (
+                  <>
+                    <span className="text-base text-success-foreground">
+                      {formatCurrency(pricing.finalPrice)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground line-through">
+                      {formatCurrency(pricing.originalPrice)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-base text-foreground">
+                    {formatCurrency(pricing.finalPrice)}
+                  </span>
+                )}
+              </div>
+              {pricing.hasDiscount && (
+                <Badge
+                  variant="outline"
+                  className="text-[9px] text-muted-foreground"
+                >
+                  {formatDiscountLabel(pricing.discount)}
+                </Badge>
+              )}
+            </div>
+            <span className="text-sm text-muted-foreground tracking-wider">
+              Darmowa dostawa
+            </span>
+          </div>
+          <Button
+            variant={isInCart ? "default" : "secondary"}
+            size="sm"
+            className="w-full"
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleCart?.();
+            }}
+          >
+            <ShoppingCartIcon className="size-3.5" />
+            {isInCart ? "W koszyku" : "Dodaj do koszyka"}
+          </Button>
+        </div>
       </div>
     </Link>
   );

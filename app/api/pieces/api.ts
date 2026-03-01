@@ -23,7 +23,10 @@ export const piecesContract = {
     all: c.query({
       method: "GET",
       path: "/pieces",
-      query: z.object({}),
+      query: z.object({
+        limit: z.coerce.number().int().min(1).max(50).optional().default(16),
+        offset: z.coerce.number().int().min(0).optional().default(0),
+      }),
       responses: {
         200: z.object({
           pieces: z.array(
@@ -42,10 +45,18 @@ export const piecesContract = {
   },
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context, request }: LoaderFunctionArgs) {
   const { logger } = context;
   const { session } = context;
   const userId = session?.user.id;
+
+  const url = new URL(request.url);
+  const limit = piecesContract.get.all.query.shape.limit.parse(
+    url.searchParams.get("limit") ?? undefined
+  );
+  const offset = piecesContract.get.all.query.shape.offset.parse(
+    url.searchParams.get("offset") ?? undefined
+  );
 
   const start = performance.now();
   logger.debug("Loading pieces loader", {
@@ -93,7 +104,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
         )
       )
       .orderBy(desc(schema.pieces.homeFeaturedOrder))
-      .limit(16);
+      .offset(offset)
+      .limit(limit);
 
     const pieces = piecesRes.map((item) => {
       const images = piecesRes

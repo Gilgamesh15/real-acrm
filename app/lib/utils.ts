@@ -39,6 +39,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatViewerCount(count: number): string {
+  if (count === 1) return "1 osoba ogląda";
+  if (
+    count % 10 >= 2 &&
+    count % 10 <= 4 &&
+    (count % 100 < 10 || count % 100 >= 20)
+  )
+    return `${count} osoby oglądają`;
+  return `${count} osób ogląda`;
+}
+
 export const convertObjectToFormDataUnsafe = <Schema extends z4.$ZodType>(
   schema: Schema,
   object: z4.output<Schema>

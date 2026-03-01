@@ -9,6 +9,8 @@ export default [
     route("/pieces", "./api/pieces/api.ts"),
     route("/categories", "./api/categories/api.ts"),
     route("/tags", "./api/tags/index.ts"),
+    route("/newsletter", "./api/newsletter/api.ts"),
+    route("/viewers", "./api/viewers/api.ts"),
 
     // Brands
     ...prefix("/brands", [

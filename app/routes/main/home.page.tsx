@@ -1,20 +1,28 @@
+import Autoplay from "embla-carousel-autoplay";
+import useEmblaCarousel from "embla-carousel-react";
 import {
   AlertCircleIcon,
-  ChevronLeft,
-  ChevronRight,
+  ArrowRight,
+  CheckCircle2,
+  ChevronsLeft,
   ChevronsRight,
+  Clock,
+  EyeIcon,
+  Loader2,
+  MailIcon,
+  PackageCheck,
+  RotateCcw,
+  ShoppingCart,
 } from "lucide-react";
 import React from "react";
 import { Await, Link, useAsyncError } from "react-router";
 import type { AwaitProps } from "react-router";
 
-import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "~/components/ui/carousel";
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "~/components/ui/button-group";
 import {
   Error,
   ErrorContent,
@@ -23,102 +31,64 @@ import {
   ErrorTitle,
 } from "~/components/ui/error";
 import Image from "~/components/ui/image";
-import { Separator } from "~/components/ui/separator";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "~/components/ui/item";
 import { Skeleton } from "~/components/ui/skeleton";
 
 import { api } from "~/api/api.server";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
-import { MainProductCard } from "~/components/features/product-card/main-product-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
-import { useFeaturedProducts } from "~/hooks/use-featured-products";
-import { useHomeTags } from "~/hooks/use-home-tags";
-import type { DBQueryResult, PriceDisplayData } from "~/lib/types";
+import { useViewerCounts } from "~/hooks/use-viewer-counts";
+import type { DBQueryResult } from "~/lib/types";
 import {
   calculatePiecePriceDisplayData,
   calculateProductPriceDisplayData,
   cn,
   formatCurrency,
-  formatDiscountLabel,
   getSlugPath,
-  pieceToGoogleAnalyticsItem,
-  productToGoogleAnalyticsItem,
 } from "~/lib/utils";
 
 import type { Route } from "./+types/home.page";
 
 const PAGE_TITLE = "ACRM | Markowe ubrania z second-handu w dobrych cenach";
 
-const WOMEN_HERO_SRC_SET = [
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_384/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_512/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_640/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_768/women-hero_mykywe_icxbew?_a=DAJHqpDbZAAB",
-];
-const MEN_HERO_SRC_SET = [
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_320/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_384/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_512/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_640/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/c_fill/q_auto:best/f_auto/dpr_auto/c_scale,w_768/men-hero_d1pnxe_pe5eso?_a=DAJHqpDbZAAB",
-];
+//const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL!;
+//const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL!;
+//const YOUTUBE_URL = import.meta.env.VITE_YOUTUBE_URL!;
 
-// sizes html property in tailwind breakpoints
-const SIZES = `
-  (min-width: 1536px) 50vw,
-  (min-width: 1280px) 50vw,
-  (min-width: 1024px) 50vw,
-  (min-width: 768px) 50vw,
-  100vw
-`;
-
-export async function loader({ context }: Route.LoaderArgs) {
-  const { logger } = context;
-
-  const start = performance.now();
-  logger.debug("Loading home page loader", {
-    start,
-  });
+export async function loader() {
   const categoriesPromise = api.categories.get
-    .all({
-      query: {},
-    })
+    .all({ query: {} })
     .then((res) => res.body.categories);
 
-  const topProductsPromise = api.products.get.all({ query: {} }).then((res) =>
-    res.body.products.map((item) => ({
-      id: item.id,
-      images: item.images,
-      name: item.name,
-      pricing: calculateProductPriceDisplayData(item),
-      href: `/projekty/${item.slug}`,
-    }))
-  );
+  const newPiecesPromise = api.pieces.get
+    .all({ query: { limit: 6 } })
+    .then((res) => res.body.pieces);
 
-  const topPiecesPromise = api.pieces.get
-    .all({
-      query: {},
-    })
-    .then((res) =>
-      res.body.pieces.map((item) => ({
-        id: item.id,
-        images: item.images,
-        name: item.name,
-        pricing: calculatePiecePriceDisplayData(item),
-        href: `/ubrania/${item.slug}`,
-      }))
-    );
+  const featuredPiecesPromise = api.pieces.get
+    .all({ query: { limit: 6, offset: 6 } })
+    .then((res) => res.body.pieces);
 
-  logger.debug("Home page loader completed", {
-    end: performance.now(),
-    duration: performance.now() - start,
-  });
+  const bundle1Promise = api.featuredProducts.get
+    .all({ query: { limit: 1, offset: 0 } })
+    .then((res) => res.body.products?.[0]);
+
+  const bundle2Promise = api.featuredProducts.get
+    .all({ query: { limit: 1, offset: 1 } })
+    .then((res) => res.body.products?.[0]);
 
   return {
     categoriesPromise,
-    topPiecesPromise,
-    topProductsPromise,
+    newPiecesPromise,
+    featuredPiecesPromise,
+    bundle1Promise,
+    bundle2Promise,
   };
 }
 
@@ -152,221 +122,220 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { categoriesPromise, topPiecesPromise, topProductsPromise } =
-    loaderData;
+  const {
+    categoriesPromise,
+    newPiecesPromise,
+    featuredPiecesPromise,
+    bundle1Promise,
+    bundle2Promise,
+  } = loaderData;
 
   return (
     <main>
       <HeroSection />
 
-      <TopFeaturedSection
-        title="Polecane ubrania"
-        href="/kategorie"
-        promise={topPiecesPromise}
-        className="pt-14 pb-8"
+      <TrustStrip />
+
+      <PieceGridSection
+        title="Nowości"
+        subtitle="Właśnie dodane"
+        href="/kategorie?sort=newest"
+        promise={newPiecesPromise}
       />
 
       <CategoriesSection categoriesPromise={categoriesPromise} />
-      <TopFeaturedSection
-        title="Polecane projekty"
-        href="/projekty"
-        promise={topProductsPromise}
-        className="pt-8 pb-16"
+
+      <BundleSection index={0} promise={bundle1Promise} />
+
+      <PieceGridSection
+        title="Polecane"
+        subtitle="Nasze typy"
+        href="/kategorie"
+        promise={featuredPiecesPromise}
       />
 
-      <TagsSection />
+      <BundleSection index={1} promise={bundle2Promise} />
 
-      {/* Featured products */}
-      <FeaturedProductsSection />
+      <NewsletterSection />
+
+      {/*
+      <SocialMediaSection />
+      */}
     </main>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Hero Section
+// ---------------------------------------------------------------------------
 function HeroSection() {
   return (
-    <section className="flex flex-col" aria-label="Kolekcje główne">
-      <h1 className="sr-only">
-        Sklep z odzieżą używaną - Kolekcje męskie i damskie
-      </h1>
+    <section className="relative w-full h-[85svh] min-h-[520px] overflow-hidden">
+      {/**GIF */}
 
-      <div className="flex h-[45svh] md:h-[55svh] xl:h-[70svh]">
-        <article className="group relative h-full flex-1 overflow-hidden">
-          <Link to="/kategorie?gender=male" className="absolute inset-0">
-            <span className="sr-only">Zobacz kolekcję męską</span>
-            <Image
-              src={MEN_HERO_SRC_SET[0]}
-              srcSet={`
-                ${MEN_HERO_SRC_SET[0]} 320w,
-                ${MEN_HERO_SRC_SET[1]} 384w,
-                ${MEN_HERO_SRC_SET[2]} 512w,
-                ${MEN_HERO_SRC_SET[3]} 640w,
-                ${MEN_HERO_SRC_SET[4]} 768w
-              `}
-              sizes={SIZES}
-              alt="Men's Collection"
-              fetchPriority="high"
-              quality="auto:best"
-              resize="fill"
-              className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
-            />
+      <video
+        src="/Trim video project.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="object-cover size-full z-0 absolute inset-0"
+      />
 
-            <div className="absolute inset-0 bg-background/30 transition-colors group-hover:bg-background/20" />
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent" />
 
-            <div className="absolute left-1/2 top-10/16 -translate-x-1/2 -translate-y-1/2 text-center">
-              <div className="flex flex-col items-center justify-center gap-5">
-                <div>
-                  <p className="text-5xl font-bold font-secondary text-primary md:text-7xl lg:text-8xl">
-                    MEN
-                  </p>
-                </div>
-                <Button className="rounded-full">Zobacz więcej</Button>
-              </div>
-            </div>
-          </Link>
-        </article>
+      <div className="relative z-10 flex flex-col justify-end h-full max-w-7xl mx-auto px-6 lg:px-8 pb-16 md:pb-24">
+        <div className="flex flex-col gap-6 max-w-xl">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl text-foreground tracking-wide leading-[1.1] text-balance">
+            Markowy second-hand, ręcznie wybrany.
+          </h1>
 
-        <Separator orientation="vertical" />
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md">
+            Nike, Carhartt, Dickies i inne — każda sztuka sprawdzona i dobrana z
+            głową.
+          </p>
 
-        {/* Women's Section - Right */}
-        <article className="group relative h-full flex-1 overflow-hidden">
-          <Link to="/kategorie?gender=female" className="absolute inset-0">
-            <span className="sr-only">Zobacz kolekcję damską</span>
-            <Image
-              src={WOMEN_HERO_SRC_SET[0]}
-              srcSet={`
-                ${WOMEN_HERO_SRC_SET[0]} 320w,
-                ${WOMEN_HERO_SRC_SET[1]} 384w,
-                ${WOMEN_HERO_SRC_SET[2]} 512w,
-                ${WOMEN_HERO_SRC_SET[3]} 640w,
-                ${WOMEN_HERO_SRC_SET[4]} 768w
-              `}
-              sizes={SIZES}
-              fetchPriority="high"
-              alt="Women's Collection"
-              quality="auto:best"
-              resize="fill"
-              className="h-full w-full object-cover brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:brightness-100"
-            />
+          <div className="flex flex-wrap gap-4 pt-2">
+            <Link
+              to="/projekty"
+              className={cn(
+                buttonVariants({
+                  variant: "secondary",
+                  size: "lg",
+                })
+              )}
+            >
+              Odkryj zestawy
+              <ArrowRight />
+            </Link>
 
-            <div className="absolute inset-0 bg-background/30 transition-colors group-hover:bg-background/20" />
-
-            <div className="absolute left-1/2 top-10/16 -translate-x-1/2 -translate-y-1/2 text-center">
-              <div className="flex flex-col items-center justify-center gap-5">
-                <div>
-                  <p className="text-5xl font-bold font-secondary text-primary md:text-7xl lg:text-8xl">
-                    WOMEN
-                  </p>
-                </div>
-                <Button className="rounded-full">Odkryj kolekcję</Button>
-              </div>
-            </div>
-          </Link>
-        </article>
+            <Link
+              className={cn(
+                buttonVariants({
+                  variant: "outline",
+                  size: "lg",
+                })
+              )}
+              to="/kategorie"
+            >
+              Wszystkie ubrania
+              <ArrowRight />
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Vertical center divider */}
-      <div className="flex">
-        <Link
-          to="/projekty"
-          className={cn(
-            buttonVariants({
-              variant: "default",
-            }),
-            "flex-1 h-16 text-lg  bg-emerald-400/80 text-primary hover:bg-emerald-400"
-          )}
-        >
-          <ChevronLeft className="size-5" />
-          Projekty
-        </Link>
-        <Link
-          to="/kategorie"
-          className={cn(
-            buttonVariants({
-              variant: "default",
-            }),
-            "flex-1 h-16 text-lg bg-purple-600/80 text-primary hover:bg-purple-700"
-          )}
-        >
-          Ubrania
-          <ChevronRight className="size-5" />
-        </Link>
+      <p className="sr-only">
+        ACRM - Sklep z odzieżą second-hand - Markowe ubrania w dobrych cenach
+      </p>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Trust Strip
+// ---------------------------------------------------------------------------
+const TRUST_ITEMS = [
+  { icon: RotateCcw, label: "Zwroty bez podania przyczyny do 14 dni" },
+  { icon: PackageCheck, label: "Każda sztuka sprawdzona ręcznie" },
+  { icon: Clock, label: "Wysyłka w 24h" },
+  { icon: CheckCircle2, label: "Tylko oryginały" },
+];
+
+function TrustStrip() {
+  return (
+    <section
+      aria-label="Gwarancje zakupowe"
+      className="border-y border-border/50 bg-secondary/30"
+    >
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <ul className="flex flex-wrap justify-center gap-x-8 gap-y-3">
+          {TRUST_ITEMS.map((item) => (
+            <li
+              key={item.label}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
+              <item.icon className="size-4 text-accent shrink-0" />
+              <span className="text-xs font-sans tracking-wider">
+                {item.label}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
 }
 
-function TopFeaturedSection({
+// ---------------------------------------------------------------------------
+// Piece Grid Section (reusable for "Nowości" and "Polecane")
+// ---------------------------------------------------------------------------
+type PieceGridPiece = DBQueryResult<
+  "pieces",
+  {
+    columns: { description: false };
+    with: {
+      images: true;
+      brand: true;
+      size: true;
+      discount: true;
+      category: true;
+    };
+  }
+>;
+
+function PieceGridSection({
+  title,
+  subtitle,
   href,
   promise,
-  title,
-  className,
 }: {
   title: string;
+  subtitle: string;
   href: string;
-  promise: Promise<
-    Array<{
-      id: string;
-      images: {
-        url: string;
-        alt: string;
-      }[];
-      name: string;
-      pricing: PriceDisplayData;
-      href: string;
-    }>
-  >;
-  className?: string;
+  promise: Promise<PieceGridPiece[]>;
 }) {
+  const headingId = `piece-grid-${title.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
     <section
-      className={cn("space-y-4 py-24", className)}
-      aria-labelledby="featured"
+      className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-24"
+      aria-labelledby={headingId}
     >
-      <div className="flex flex-col gap-4 mr-auto justify-start">
-        <div className="flex flex-col justify-start">
-          <h2
-            id="featured"
-            className="text-3xl uppercase tracking-[0.2em] text-primary font-light px-4 sm:px-6 lg:px-8 font-secondary text-left"
-          >
-            {title}
-          </h2>
-
-          <Link
-            to={href}
-            className={cn(
-              buttonVariants({
-                variant: "link",
-                size: "lg",
-              }),
-              "size-fit m-0 p-0  gap-1 text-sm font-secondary tracking-wide font-light mr-auto self-end sm:ml-2 lg:ml-4"
-            )}
-          >
-            Zobacz więcej
-            <ChevronsRight />
-          </Link>
-        </div>
-        <div className="h-px from-primary/50 to-transparent w-full mb-2 bg-linear-to-r" />
-
-        <React.Suspense
-          fallback={
-            <Carousel
-              opts={{
-                dragFree: true,
-              }}
+      <div className="flex flex-col gap-3 mb-12">
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] text-muted-foreground font-secondary tracking-[0.2em] uppercase">
+              {subtitle}
+            </span>
+            <h2
+              id={headingId}
+              className="text-3xl md:text-4xl lg:text-5xl font-secondary text-foreground tracking-wide"
             >
-              <CarouselContent className="-ml-0">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <CarouselItem
-                    key={`chunk-${index}`}
-                    className="basis-48 pl-8 grid grid-rows-2 grid-cols-1 gap-8"
-                  >
-                    <Skeleton className="h-[303.83px] w-[160px]" />
-                    <Skeleton className="h-[303.83px] w-[160px]" />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-          }
+              {title}
+            </h2>
+          </div>
+          <Button
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground font-sans text-xs tracking-wider uppercase gap-2"
+            asChild
+          >
+            <Link to={href}>
+              Zobacz wszystko
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
+        <div className="h-px bg-linear-to-r from-accent/50 via-border to-transparent" />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <React.Suspense
+          fallback={Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-4/5 w-full" />
+          ))}
         >
           <AsyncError
             resolve={promise}
@@ -384,91 +353,57 @@ function TopFeaturedSection({
               </Error>
             }
           >
-            {(items) => {
-              // Chunk items into pairs
-              const chunkedItems = [];
-              for (let i = 0; i < items.length; i += 2) {
-                chunkedItems.push(items.slice(i, i + 2));
-              }
-
-              return (
-                <Carousel
-                  opts={{
-                    dragFree: true,
-                  }}
-                >
-                  <CarouselContent className="-ml-0">
-                    {chunkedItems.map((chunk, chunkIndex) => (
-                      <CarouselItem
-                        key={`chunk-${chunkIndex}`}
-                        className="basis-48 pl-8 grid grid-rows-2 grid-cols-1 gap-8"
-                      >
-                        {chunk.map((item) => {
-                          const [primaryImage] = item.images;
-
-                          return (
-                            <article
-                              key={item.id}
-                              className={cn(
-                                "group cursor-pointer w-full h-full !p-0",
-                                className
-                              )}
-                            >
-                              <Link to={item.href || "#"} className="block">
-                                <div className="mb-3 overflow-hidden relative aspect-3/4">
-                                  <Image
-                                    width={160}
-                                    aspectRatio={3 / 4}
-                                    src={primaryImage?.url || ""}
-                                    alt={primaryImage?.alt || ""}
-                                    resize="autoPad"
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                  />
-                                </div>
-
-                                <div className="flex flex-col">
-                                  <h3 className="text-sm text-foreground leading-snug line-clamp-2 mb-0.5">
-                                    {item.name}
-                                  </h3>
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-sm font-bold text-foreground">
-                                      {formatCurrency(item.pricing.finalPrice)}
-                                    </span>
-                                    {item.pricing.hasDiscount && (
-                                      <Badge variant="success">
-                                        {formatDiscountLabel(
-                                          item.pricing.discount
-                                        )}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {item.pricing.hasDiscount && (
-                                    <span className="text-xs text-muted-foreground line-through">
-                                      {formatCurrency(
-                                        item.pricing.originalPrice
-                                      )}
-                                    </span>
-                                  )}
-                                </div>
-                              </Link>
-                            </article>
-                          );
-                        })}
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                </Carousel>
-              );
-            }}
+            {(pieces) => <PieceGridWithViewers pieces={pieces} />}
           </AsyncError>
         </React.Suspense>
+      </div>
 
-        <div className="h-px from-primary/50 to-transparent w-full bg-linear-to-r" />
+      <div className="flex justify-center mt-12">
+        <Button
+          variant="outline"
+          size="lg"
+          className="border-border/50 text-foreground hover:bg-foreground/10 font-sans text-xs tracking-[0.15em] uppercase px-10 rounded-sm"
+          asChild
+        >
+          <Link to="/kategorie">
+            Wszystkie ubrania
+            <ArrowRight className="size-4 ml-2" />
+          </Link>
+        </Button>
       </div>
     </section>
   );
 }
 
+function PieceGridWithViewers({ pieces }: { pieces: PieceGridPiece[] }) {
+  const viewerCounts = useViewerCounts(pieces.map((p) => p.id));
+  const { addPiece, removePiece, isInCart } = useCart();
+
+  return (
+    <>
+      {pieces.map((piece) => (
+        <MainPieceCard
+          key={piece.id}
+          piece={piece}
+          href={`/ubrania/${piece.slug}`}
+          viewerCount={viewerCounts?.[piece.id]}
+          onToggleCart={() => {
+            if (isInCart(piece.id)) {
+              removePiece(piece.id, true);
+            } else {
+              addPiece(piece, true);
+            }
+          }}
+          isInCart={isInCart(piece.id)}
+        />
+      ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Categories Section
+// ---------------------------------------------------------------------------
 function CategoriesSection({
   categoriesPromise,
 }: {
@@ -478,17 +413,17 @@ function CategoriesSection({
 }) {
   return (
     <section
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
+      className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-24 flex flex-col"
       aria-labelledby="categories-heading"
     >
       <h2
         id="categories-heading"
         className="text-3xl uppercase tracking-[0.2em] font-light text-center font-secondary"
       >
-        Kategorie
+        Czego szukasz?
       </h2>
 
-      <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
+      <div className="h-px bg-linear-to-r from-transparent via-border to-transparent w-full mt-3" />
 
       <React.Suspense
         fallback={Array.from({ length: 5 }).map((_, index) => (
@@ -515,7 +450,7 @@ function CategoriesSection({
           }
         >
           {(categories) => (
-            <nav className="w-full mt-4">
+            <nav className="w-full mt-8">
               <ul
                 role="list"
                 className="flex flex-wrap gap-4 justify-center items-center"
@@ -538,7 +473,7 @@ function CategoriesSection({
 
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
 
-                      <h3 className="text-primary font-light leading-tight tracking-tight shrink-0 overflow-hidden absolute bottom-0 left-0 right-0 p-4 text-xl md:text-3xl lg:text-3xl">
+                      <h3 className="text-primary font-light leading-tight tracking-tight shrink-0 overflow-hidden absolute bottom-0 left-0 right-0 p-4 text-xl md:text-2xl lg:text-3xl">
                         {category.name}
                       </h3>
                     </Link>
@@ -550,306 +485,447 @@ function CategoriesSection({
         </AsyncError>
       </React.Suspense>
 
-      <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-4" />
+      <div className="h-px bg-linear-to-r from-transparent via-border to-transparent w-full mt-8" />
     </section>
   );
 }
 
-function TagsSection() {
-  const { isInCart, addPiece, removePiece } = useCart();
-  const { data: tags, isPending, isError } = useHomeTags();
-
-  if (isPending) {
-    return (
-      <>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <React.Fragment key={index}>
-            <section className="flex flex-col relative">
-              <Skeleton className="absolute inset-0 size-full" />
-
-              <nav className="pb-18">
-                <Carousel
-                  opts={{
-                    dragFree: true,
-                    align: "start",
-                  }}
-                  className="w-full h-fit"
-                >
-                  <CarouselContent className="max-w-7xl mx-auto">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <CarouselItem key={index} className="basis-[248px]">
-                        <Skeleton className="w-[248px] h-[417.98px]" />
-                        <Skeleton className="w-[248px] h-[417.98px]" />
-                        <Skeleton className="w-[248px] h-[417.98px]" />
-                        <Skeleton className="w-[248px] h-[417.98px]" />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                </Carousel>
-              </nav>
-            </section>
-            {index < 4 - 1 && (
-              <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
-            )}
-          </React.Fragment>
-        ))}
-      </>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Error>
-        <ErrorMedia>
-          <AlertCircleIcon />
-        </ErrorMedia>
-        <ErrorContent>
-          <ErrorTitle>Wystąpił błąd podczas ładowania tagów</ErrorTitle>
-          <ErrorDescription>
-            Spróbuj odświeżyć stronę lub wrócić później.
-          </ErrorDescription>
-        </ErrorContent>
-      </Error>
-    );
-  }
-
-  return (
-    <>
-      {tags.map((tag, index) => (
-        <React.Fragment key={tag.id}>
-          <section
-            className="flex flex-col relative"
-            aria-labelledby={`tag-${tag.id}`}
-          >
-            <div className="absolute inset-0 size-full bg-linear-to-t from-background/90 via-background/20 via-80% to-background/90 z-0" />
-            <Image
-              src={tag.image?.url || ""}
-              alt={tag.name}
-              lazyload
-              resize="fill"
-              responsive
-              className="size-full absolute -z-10 object-cover"
-            />
-
-            <Link
-              to={`/kategorie?tags=${tag.slug}`}
-              className="h-36 md:h-44 lg:h-60"
-            >
-              <div className="size-full flex items-center justify-center p-12 font-secondary">
-                <h2 className="text-4xl leading-tight font-medium text-foreground sm:text-5xl md:text-6xl lg:text-7xl relative z-10">
-                  {tag.name}
-                </h2>
-              </div>
-            </Link>
-            <nav
-              className="pb-18"
-              aria-label={`Produkty z kategorii ${tag.name}`}
-            >
-              <Carousel
-                opts={{
-                  dragFree: true,
-                  align: "start",
-                }}
-                className="w-full h-fit"
-              >
-                <CarouselContent className="max-w-7xl mx-auto">
-                  {tag.piecesToTags.map(({ piece }, pieceIndex) => (
-                    <CarouselItem key={piece.id} className="basis-[248px]">
-                      <MainPieceCard
-                        piece={piece}
-                        href={`/ubrania/${piece.slug}`}
-                        isInCart={isInCart(piece.id)}
-                        onClick={() => {
-                          window.gtag?.("event", "select_item", {
-                            item_list_id: `tag_${tag.id}`,
-                            item_list_name: tag.name,
-                            items: [
-                              pieceToGoogleAnalyticsItem(piece, {
-                                item_list_id: `tag_${tag.id}`,
-                                item_list_name: tag.name,
-                                index: pieceIndex,
-                              }),
-                            ],
-                          });
-                        }}
-                        onToggleCart={() => {
-                          if (isInCart(piece.id)) {
-                            removePiece(piece.id, true, {
-                              item_list_id: `tag_${tag.id}`,
-                              item_list_name: tag.name,
-                              index: pieceIndex,
-                            });
-                          } else {
-                            addPiece(piece, true, {
-                              item_list_id: `tag_${tag.id}`,
-                              item_list_name: tag.name,
-                              index: pieceIndex,
-                            });
-                          }
-                        }}
-                      />
-                    </CarouselItem>
-                  ))}
-                  <CarouselItem className="basis-[248px]">
-                    <Link
-                      to={`/kategorie?tags=${tag.slug}`}
-                      className={cn(
-                        buttonVariants({
-                          variant: "ghost",
-                        }),
-                        "min-w-full min-h-full"
-                      )}
-                    >
-                      Zobacz więcej
-                      <ChevronRight />
-                    </Link>
-                  </CarouselItem>
-                </CarouselContent>
-              </Carousel>
-            </nav>
-          </section>
-          {index < tags.length - 1 && (
-            <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mt-2.5" />
-          )}
-        </React.Fragment>
-      ))}
-    </>
-  );
-}
-
-function FeaturedProductsSection() {
-  const { isInCart, addProduct, removeProduct } = useCart();
-  const { onProductBuyNow } = useCheckoutDialog();
-  const { data: products, isPending, isError } = useFeaturedProducts();
-
-  return (
-    <section
-      className="mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-4"
-      aria-labelledby="featured-products-heading"
+// ---------------------------------------------------------------------------
+// Bundle Section (reusable, alternating layout)
+// ---------------------------------------------------------------------------
+function BundleSection({
+  index: bundleIndex,
+  promise,
+}: {
+  index: number;
+  promise: Promise<
+    DBQueryResult<
+      "products",
+      {
+        columns: {
+          description: false;
+        };
+        with: {
+          images: true;
+          discount: true;
+          pieces: {
+            columns: {
+              description: false;
+            };
+            with: {
+              images: true;
+              brand: true;
+              size: true;
+              discount: true;
+              category: true;
+            };
+          };
+        };
+      }
     >
-      <h2
-        id="featured-products-heading"
-        className="text-3xl uppercase tracking-[0.2em] text-primary font-light text-center pb-4 font-secondary"
+  >;
+}) {
+  const { onProductBuyNow } = useCheckoutDialog();
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 20 }, [
+    Autoplay({ delay: 3000, stopOnInteraction: false }),
+  ]);
+
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  const onSelect = React.useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const isReversed = bundleIndex % 2 === 1;
+
+  return (
+    <React.Suspense fallback={<Skeleton className="aspect-square w-full" />}>
+      <AsyncError
+        resolve={promise}
+        errorElement={
+          <Error>
+            <ErrorMedia>
+              <AlertCircleIcon />
+            </ErrorMedia>
+            <ErrorContent>
+              <ErrorTitle>Wystąpił błąd podczas ładowania</ErrorTitle>
+              <ErrorDescription>
+                Spróbuj odświeżyć stronę lub wrócić później.
+              </ErrorDescription>
+            </ErrorContent>
+          </Error>
+        }
       >
-        Nasze projekty
-      </h2>
+        {(bundle) => {
+          const pricing = calculateProductPriceDisplayData(bundle);
+          const piecesSum = bundle.pieces.reduce((sum, piece) => {
+            const p = calculatePiecePriceDisplayData(piece);
+            return sum + p.finalPrice;
+          }, 0);
 
-      <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent w-full mb-4" />
+          return (
+            <section
+              className="bg-secondary/10 py-16 md:py-24"
+              aria-label={bundle.name}
+            >
+              {/* Header */}
+              <div className="flex flex-col">
+                <div className="font-secondary flex items-end justify-between">
+                  <div className="flex flex-col px-6 py-3 border-r border-t">
+                    <span className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase">
+                      Gotowy zestaw
+                    </span>
+                    <h3 className="text-2xl font-light tracking-tight">
+                      {bundle.name}
+                    </h3>
+                  </div>
+                  <ButtonGroup className="border-l border-t">
+                    <Button
+                      variant="ghost"
+                      size="icon-lg"
+                      onClick={() => emblaApi?.scrollPrev()}
+                    >
+                      <ChevronsLeft />
+                    </Button>
+                    <ButtonGroupSeparator />
+                    <Button
+                      variant="ghost"
+                      size="icon-lg"
+                      onClick={() => emblaApi?.scrollNext()}
+                    >
+                      <ChevronsRight />
+                    </Button>
+                  </ButtonGroup>
+                </div>
+                <div className="w-full flex items-center h-1.75 gap-0.5 border-y">
+                  {Array.from({ length: bundle.images.length }).map(
+                    (_, index) => (
+                      <div
+                        key={index}
+                        className={cn(
+                          "flex-1 h-full transition-colors duration-300",
+                          index <= selectedIndex ? "bg-primary" : "bg-border"
+                        )}
+                      />
+                    )
+                  )}
+                </div>
+              </div>
 
-      {isPending ? (
-        <Carousel
-          opts={{
-            dragFree: true,
-            align: "start",
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {Array.from({ length: 8 }).map((_, index) => (
-              <CarouselItem key={index} className="basis-[312px] pl-8">
-                <Skeleton className="w-[280px] h-[373.3px]" />
-              </CarouselItem>
-            ))}
-            <CarouselItem className="basis-[280px]">
-              <Link
-                to="/projekty"
+              <div
                 className={cn(
-                  buttonVariants({
-                    variant: "ghost",
-                  }),
-                  "min-w-full min-h-full"
+                  "grid grid-cols-1 md:grid-cols-2 md:divide-x 2xl:grid-cols-5",
+                  isReversed && "md:[direction:rtl] md:*:[direction:ltr]"
                 )}
               >
-                Zobacz więcej
-                <ChevronRight />
-              </Link>
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-      ) : isError ? (
-        <Error>
-          <ErrorMedia>
-            <AlertCircleIcon />
-          </ErrorMedia>
-          <ErrorContent>
-            <ErrorTitle>Wystąpił błąd podczas ładowania projektów</ErrorTitle>
-            <ErrorDescription>
-              Spróbuj odświeżyć stronę lub wrócić później.
-            </ErrorDescription>
-          </ErrorContent>
-        </Error>
-      ) : (
-        <Carousel
-          opts={{
-            dragFree: true,
-            align: "start",
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {products.map((product, index) => (
-              <CarouselItem key={product.id} className="basis-[312px] pl-8">
-                <MainProductCard
-                  product={product}
-                  href={`/projekty/${product.slug}`}
-                  onClick={() => {
-                    window.gtag?.("event", "select_item", {
-                      item_list_id: "featured_products",
-                      item_list_name: "Polecane projekty",
-                      items: productToGoogleAnalyticsItem(product, {
-                        item_list_id: "featured_products",
-                        item_list_name: "Polecane projekty",
-                        index,
-                      }),
-                    });
-                  }}
-                  onToggleCart={() => {
-                    if (isInCart(product.id)) {
-                      removeProduct(product.id, true, {
-                        item_list_id: `featured_products`,
-                        item_list_name: "Polecane projekty",
-                        index: index,
-                      });
-                    } else {
-                      addProduct(product, true, {
-                        item_list_id: `featured_products`,
-                        item_list_name: "Polecane projekty",
-                        index: index,
-                      });
-                    }
-                  }}
-                  isInCart={isInCart(product.id)}
-                  onBuyNow={() =>
-                    onProductBuyNow(product, {
-                      item_list_id: `featured_products`,
-                      item_list_name: "Polecane projekty",
-                      index: index,
-                    })
-                  }
-                />
-              </CarouselItem>
-            ))}
-            <CarouselItem className="basis-[280px]">
-              <Link
-                to="/projekty"
-                className={cn(
-                  buttonVariants({
-                    variant: "ghost",
-                  }),
-                  "min-w-full min-h-full"
-                )}
-              >
-                Zobacz więcej
-                <ChevronRight />
-              </Link>
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-      )}
+                {/* Image carousel */}
+                <div className="embla-wrapper aspect-square overflow-hidden col-span-1 2xl:col-span-2">
+                  <div className="embla" ref={emblaRef}>
+                    <div className="embla__container flex">
+                      {bundle.images.map((image, i) => (
+                        <div
+                          className="embla__slide flex-[0_0_100%] min-w-0"
+                          key={i}
+                        >
+                          <Image
+                            src={image.url}
+                            alt={bundle.name}
+                            aspectRatio={1}
+                            responsive
+                            resize="fill"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info panel */}
+                <div className="flex flex-col gap-6 md:flex-col-reverse md:justify-end col-span-1 md:col-span-1 2xl:col-span-3">
+                  {/* Price & CTA */}
+                  <div className="p-6 md:p-8">
+                    <Item variant="outline" className="gap-0">
+                      <ItemContent className="gap-1">
+                        <ItemTitle className="text-2xl font-medium">
+                          {formatCurrency(pricing.finalPrice)}
+                        </ItemTitle>
+                        {piecesSum > pricing.finalPrice && (
+                          <ItemDescription className="text-sm text-muted-foreground">
+                            <span className="line-through">
+                              {formatCurrency(piecesSum)}
+                            </span>
+                            <span className="ml-2 text-success-foreground text-xs">
+                              Oszczędzasz{" "}
+                              {formatCurrency(piecesSum - pricing.finalPrice)}
+                            </span>
+                          </ItemDescription>
+                        )}
+                      </ItemContent>
+                      <ItemActions className="flex-col sm:flex-row mt-3">
+                        <Button
+                          onClick={() =>
+                            onProductBuyNow(bundle as any, {
+                              item_list_id: "home-bundle",
+                              item_list_name: bundle.name,
+                              index: bundleIndex,
+                            })
+                          }
+                        >
+                          Kup cały zestaw
+                          <ShoppingCart className="size-4" />
+                        </Button>
+                        <Button variant="outline" asChild>
+                          <Link to={`/projekty/${bundle.slug}`}>
+                            Zobacz szczegóły
+                            <EyeIcon className="size-4" />
+                          </Link>
+                        </Button>
+                      </ItemActions>
+                    </Item>
+                  </div>
+
+                  {/* Piece list */}
+                  <div className="grid grid-cols-2 md:grid-cols-1 md:divide-y md:border-b 2xl:col-span-2">
+                    {bundle.pieces.map((piece) => {
+                      const piecePricing =
+                        calculatePiecePriceDisplayData(piece);
+                      return (
+                        <Link
+                          to={`/ubrania/${piece.slug}`}
+                          key={piece.id}
+                          className="flex items-center gap-4 p-4 md:px-6 group hover:bg-secondary/30 transition-colors"
+                        >
+                          <div className="w-16 h-20 md:w-20 md:h-24 shrink-0 overflow-hidden rounded-sm border border-border/30">
+                            <img
+                              src={piece.images[0]?.url || "/placeholder.svg"}
+                              alt={piece.name}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              crossOrigin="anonymous"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                              {piece.brand?.name}
+                            </p>
+                            <p className="text-sm font-medium text-foreground mt-0.5 truncate">
+                              {piece.name}
+                            </p>
+                            {piece.size && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider">
+                                Rozmiar: {piece.size.name}
+                              </p>
+                            )}
+                            <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
+                              {formatCurrency(piecePricing.finalPrice)}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }}
+      </AsyncError>
+    </React.Suspense>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Newsletter Section
+// ---------------------------------------------------------------------------
+function NewsletterSection() {
+  const [email, setEmail] = React.useState("");
+  const [status, setStatus] = React.useState<
+    "idle" | "loading" | "success" | "error" | "already"
+  >("idle");
+
+  const handleSubmit = async (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.alreadySubscribed) {
+          setStatus("already");
+        } else {
+          setStatus("success");
+        }
+        setEmail("");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <section className="bg-secondary/20 border-y" aria-label="Newsletter">
+      <div className="max-w-xl mx-auto px-6 py-16 md:py-24 text-center">
+        <MailIcon className="size-8 mx-auto mb-6 text-muted-foreground" />
+        <h2 className="text-2xl md:text-3xl font-secondary tracking-wide text-foreground">
+          Bądź na bieżąco
+        </h2>
+        <p className="text-sm text-muted-foreground mt-3 mb-10">
+          Nowe dropy i oferty prosto na maila
+        </p>
+
+        {status === "success" ? (
+          <div className="flex items-center justify-center gap-2 text-success-foreground">
+            <CheckCircle2 className="size-5" />
+            <span className="text-sm font-medium">
+              Dziękujemy za zapisanie się!
+            </span>
+          </div>
+        ) : status === "already" ? (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <CheckCircle2 className="size-5" />
+            <span className="text-sm font-medium">
+              Ten email jest już zapisany
+            </span>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+          >
+            <input
+              type="email"
+              required
+              placeholder="Twój adres email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="flex-1 h-10 rounded-sm border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <Button
+              type="submit"
+              disabled={status === "loading"}
+              className="h-10 px-6"
+            >
+              {status === "loading" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Zapisz się"
+              )}
+            </Button>
+          </form>
+        )}
+        {status === "error" && (
+          <p className="text-sm text-destructive mt-3">
+            Coś poszło nie tak. Spróbuj ponownie.
+          </p>
+        )}
+      </div>
     </section>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Social Media Section
+// ---------------------------------------------------------------------------
+//const SOCIAL_PLATFORMS = [
+//  {
+//    name: "Instagram",
+//    href: INSTAGRAM_URL,
+//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745834/Instagram_Glyph_Gradient_jis95v.png",
+//    gradient: "from-purple-500 via-pink-500 to-orange-400",
+//  },
+//  {
+//    name: "TikTok",
+//    href: TIKTOK_URL,
+//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745820/TikTok_Icon_Black_Circle_zs74uw.png",
+//    gradient: "from-cyan-400 via-black to-pink-500",
+//  },
+//  {
+//    name: "YouTube",
+//    href: YOUTUBE_URL,
+//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745828/yt_icon_red_digital_jnen7h.png",
+//    gradient: "from-red-600 via-red-500 to-red-400",
+//  },
+//];
+//
+//function SocialMediaSection() {
+//  return (
+//    <section
+//      className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-24"
+//      aria-label="Social media"
+//    >
+//      <div className="text-center mb-12">
+//        <h2 className="text-2xl md:text-3xl font-secondary tracking-wide text-foreground">
+//          Obserwuj nas
+//        </h2>
+//        <p className="text-sm text-muted-foreground mt-3">Jesteśmy też tutaj</p>
+//        <div className="h-px bg-linear-to-r from-transparent via-border to-transparent mt-6 max-w-xs mx-auto" />
+//      </div>
+//
+//      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+//        {SOCIAL_PLATFORMS.map((platform) => (
+//          <a
+//            key={platform.name}
+//            href={platform.href}
+//            target="_blank"
+//            rel="noopener noreferrer"
+//            className="group flex flex-col items-center rounded-sm border border-border/50 overflow-hidden hover:border-border transition-colors"
+//          >
+//            {/* Gradient placeholder for video */}
+//            <div
+//              className={cn(
+//                "w-full aspect-9/16 max-h-[320px] bg-linear-to-br flex items-center justify-center",
+//                platform.gradient
+//              )}
+//            >
+//              <Image
+//                src={platform.icon}
+//                alt={platform.name}
+//                width={64}
+//                height={64}
+//                aspectRatio={1}
+//                resize="fill"
+//                className="size-16 opacity-80 group-hover:opacity-100 transition-opacity drop-shadow-lg invert dark:invert-0"
+//              />
+//            </div>
+//            <div className="w-full px-4 py-5 text-center bg-background">
+//              <p className="text-sm font-medium text-foreground">
+//                {platform.name}
+//              </p>
+//              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
+//                Zobacz więcej
+//                <ArrowRight className="size-3" />
+//              </span>
+//            </div>
+//          </a>
+//        ))}
+//      </div>
+//    </section>
+//  );
+//}
+
+// ---------------------------------------------------------------------------
+// Async Error Boundary
+// ---------------------------------------------------------------------------
 function AsyncError<Resolve>({
   errorElement,
   ...props

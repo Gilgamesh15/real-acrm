@@ -134,8 +134,6 @@ export async function loader({ context }: LoaderFunctionArgs) {
         eq(schema.categories.id, schema.pieces.categoryId)
       );
 
-    console.log("products", productsRes.length);
-
     const products = productsRes.map((item) => ({
       ...item.products,
       images: productsRes
