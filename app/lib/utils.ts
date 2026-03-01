@@ -46,8 +46,8 @@ export function formatViewerCount(count: number): string {
     count % 10 <= 4 &&
     (count % 100 < 10 || count % 100 >= 20)
   )
-    return `${count} osoby oglądają`;
-  return `${count} osób ogląda`;
+    return `${count} osoby oglądają teraz`;
+  return `${count} osób ogląda teraz`;
 }
 
 export const convertObjectToFormDataUnsafe = <Schema extends z4.$ZodType>(

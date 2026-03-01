@@ -415,7 +415,7 @@ function PiecesList({
 
   return (
     <Container>
-      <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-center">
+      <Section className="flex flex-row flex-wrap gap-3 sm:gap-4 flex-1 h-full w-full justify-center items-stretch">
         {pieces.map((piece, index) => (
           <MainPieceCard
             className="w-[calc(50%-0.75rem)] md:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)]"

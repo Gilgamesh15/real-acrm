@@ -31,6 +31,7 @@ import {
   ErrorTitle,
 } from "~/components/ui/error";
 import Image from "~/components/ui/image";
+import { Input } from "~/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -812,13 +813,11 @@ function NewsletterSection() {
             onSubmit={handleSubmit}
             className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
           >
-            <input
+            <Input
               type="email"
-              required
               placeholder="Twój adres email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 h-10 rounded-sm border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <Button
               type="submit"

@@ -3,12 +3,12 @@ import { filterService } from "db/services/filter.service";
 import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { exists } from "drizzle-orm";
 import {
-  EyeIcon,
-  InfoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsRightIcon,
   CreditCard,
+  EyeIcon,
+  InfoIcon,
   Package,
   RotateCcw,
   ShieldCheck,
@@ -535,10 +535,10 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                       <ItemDescription className="line-clamp-none">
                         Masz 14 dni na zwrot — bez podawania przyczyny.
                         Wystarczy napisać na kontakt@acrm.pl lub wypełnić
-                        formularz na acrm.pl/zwroty. Koszt przesyłki zwrotnej
-                        po stronie kupującego. Zwrot środków następuje nie później
-                        niż 14 dni kalendarzowych od otrzymania oświadczenia
-                        o odstąpieniu.
+                        formularz na acrm.pl/zwroty. Koszt przesyłki zwrotnej po
+                        stronie kupującego. Zwrot środków następuje nie później
+                        niż 14 dni kalendarzowych od otrzymania oświadczenia o
+                        odstąpieniu.
                       </ItemDescription>
                     </ItemContent>
                   </Item>
@@ -634,7 +634,7 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                   {similarPieces.map((similarPiece, index) => (
                     <CarouselItem
                       key={similarPiece.id}
-                      className="basis-[248px]"
+                      className="basis-[248px] min-h-full"
                     >
                       <MainPieceCard
                         piece={similarPiece}
@@ -668,6 +668,7 @@ export default function PieceDetailPage({ loaderData }: Route.ComponentProps) {
                             });
                           }
                         }}
+                        className="min-h-full"
                       />
                     </CarouselItem>
                   ))}

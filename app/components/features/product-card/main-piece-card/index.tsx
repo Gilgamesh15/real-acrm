@@ -1,4 +1,4 @@
-import { EyeIcon, ShoppingCartIcon, SparklesIcon } from "lucide-react";
+import { EyeIcon, ShoppingCartIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
@@ -38,14 +38,6 @@ export interface MainPieceCardProps {
   viewerCount?: number;
 }
 
-const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
-
-function isNewPiece(createdAt: Date | string): boolean {
-  const created =
-    typeof createdAt === "string" ? new Date(createdAt) : createdAt;
-  return Date.now() - created.getTime() < FOURTEEN_DAYS_MS;
-}
-
 const MainPieceCard = ({
   piece,
   href,
@@ -57,17 +49,32 @@ const MainPieceCard = ({
 }: MainPieceCardProps) => {
   const [primaryImage] = piece.images;
   const pricing = calculatePiecePriceDisplayData(piece);
-  const isNew = isNewPiece(piece.createdAt);
 
   return (
     <Link
       to={href}
       onClick={onClick}
       className={cn(
-        "group flex w-full max-w-[400px] flex-col overflow-hidden bg-background border",
+        "group flex w-full max-w-[400px] flex-col overflow-hidden bg-background border relative",
         className
       )}
     >
+      <div className="absolute top-2 right-2 z-10 flex flex-col items-end justify-end gap-1">
+        {viewerCount != null && viewerCount > 0 && (
+          <Badge className="bg-amber-500/90 text-white text-[10px] font-secondary font-semibold px-2 py-1 rounded-sm">
+            <EyeIcon className="size-3" />
+            {formatViewerCount(viewerCount)}
+          </Badge>
+        )}
+        {piece.size?.name && (
+          <Badge
+            variant="secondary"
+            className="font-secondary text-sm tracking-widest"
+          >
+            {piece.size?.name || "N/A"}
+          </Badge>
+        )}
+      </div>
       <div className="relative aspect-4/5 w-full overflow-hidden">
         <Image
           src={primaryImage?.url || ""}
@@ -77,18 +84,6 @@ const MainPieceCard = ({
           resize="fill"
           className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />
-        {isNew && (
-          <span className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500/90 text-white text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm">
-            <SparklesIcon className="size-3" />
-            Nowe
-          </span>
-        )}
-        {viewerCount != null && viewerCount > 0 && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 bg-amber-500/90 text-white text-[10px] font-semibold px-2 py-1 rounded-sm">
-            <EyeIcon className="size-3" />
-            {formatViewerCount(viewerCount)}
-          </span>
-        )}
       </div>
       <div className="flex flex-col gap-3 p-4 min-h-[184px] justify-between flex-1">
         <div className="flex items-start flex-1 justify-between">
@@ -100,11 +95,6 @@ const MainPieceCard = ({
               {piece.name}
             </h3>
           </div>
-          {piece.size?.name && (
-            <span className="text-xs text-nowrap whitespace-nowrap uppercase tracking-[0.2em] text-muted-foreground">
-              {piece.size?.name || "N/A"}
-            </span>
-          )}
         </div>
         <div className="flex flex-col gap-3 h-fit">
           <Separator />
