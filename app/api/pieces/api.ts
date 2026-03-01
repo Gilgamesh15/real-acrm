@@ -65,6 +65,8 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 
   const { limit, offset } = args;
 
+  logger.debug("Pieces loader args", { limit, offset });
+
   const start = performance.now();
   logger.debug("Loading pieces loader", {
     start,
