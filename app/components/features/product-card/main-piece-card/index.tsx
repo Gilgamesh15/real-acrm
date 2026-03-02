@@ -139,7 +139,9 @@ const MainPieceCard = ({
             }}
           >
             <ShoppingCartIcon className="size-3.5" />
-            {isInCart ? "W koszyku" : "Dodaj do koszyka"}
+            <span className="sr-only sm:not-sr-only">
+              {isInCart ? "W koszyku" : "Dodaj do koszyka"}
+            </span>
           </Button>
         </div>
       </div>
