@@ -1,15 +1,14 @@
 import { Heading, Hr, Link, Section, Text } from "@react-email/components";
 import { Fragment } from "react";
 
-import { formatCurrency, priceFromGrosz } from "~/lib/utils";
-
 import { COMPANY_INFO } from "~/lib/company-info";
+import { formatCurrency, priceFromGrosz } from "~/lib/utils";
 
 import { EmailBase, colors, fonts } from "./email-base";
 
 const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 const RETURN_ICON_URL =
-  "https://res.cloudinary.com/dk8cu84v7/image/upload/v1769975334/Adobe_Express_-_file_qtvusb_bwcgiv.png";
+  "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914299/Adobe_Express_-_file_qtvusb_bwcgiv_hiuemy.png";
 
 interface ReturnItem {
   name: string;

@@ -849,19 +849,19 @@ function NewsletterSection() {
 //  {
 //    name: "Instagram",
 //    href: INSTAGRAM_URL,
-//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745834/Instagram_Glyph_Gradient_jis95v.png",
+//    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914298/Instagram_Glyph_Gradient_jis95v_hsrejt.png",
 //    gradient: "from-purple-500 via-pink-500 to-orange-400",
 //  },
 //  {
 //    name: "TikTok",
 //    href: TIKTOK_URL,
-//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745820/TikTok_Icon_Black_Circle_zs74uw.png",
+//    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914295/TikTok_Icon_Black_Circle_zs74uw_kyehcr.png",
 //    gradient: "from-cyan-400 via-black to-pink-500",
 //  },
 //  {
 //    name: "YouTube",
 //    href: YOUTUBE_URL,
-//    icon: "https://res.cloudinary.com/dk8cu84v7/image/upload/v1770745828/yt_icon_red_digital_jnen7h.png",
+//    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914295/yt_icon_red_digital_jnen7h_uzgxlb.png",
 //    gradient: "from-red-600 via-red-500 to-red-400",
 //  },
 //];
