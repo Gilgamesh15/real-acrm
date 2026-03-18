@@ -1,3 +1,6 @@
+import { AdvancedVideo } from "@cloudinary/react";
+import { videoCodec } from "@cloudinary/url-gen/actions/transcode";
+import { auto } from "@cloudinary/url-gen/qualifiers/videoCodec";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -46,6 +49,7 @@ import { MainPieceCard } from "~/components/features/product-card/main-piece-car
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
 import { useViewerCounts } from "~/hooks/use-viewer-counts";
+import { cld } from "~/lib/claudinary";
 import type { DBQueryResult } from "~/lib/types";
 import {
   calculatePiecePriceDisplayData,
@@ -170,16 +174,20 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 // Hero Section
 // ---------------------------------------------------------------------------
 function HeroSection() {
+  const vid = cld.video("v1773670640/Trim_video_project_ojngrn");
+  vid.transcode(videoCodec(auto()));
+
   return (
     <section className="relative w-full h-[85svh] min-h-[520px] overflow-hidden">
       {/**GIF */}
 
-      <video
-        src="/Trim video project.mp4"
+      <AdvancedVideo
+        cldVid={vid}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         className="object-cover size-full z-0 absolute inset-0"
       />
 
