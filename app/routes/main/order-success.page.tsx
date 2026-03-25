@@ -25,6 +25,7 @@ import {
   ProductCardPrice,
   ProductCardRoot,
 } from "~/components/features/product-card/product-card-primitives";
+import { useGtagReady } from "~/hooks/use-gtag-ready";
 import { authClient } from "~/lib/auth-client";
 import { db } from "~/lib/db";
 import {
@@ -131,7 +132,10 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
     ),
   };
 
+  const isGtagReady = useGtagReady();
+
   useEffect(() => {
+    if (!isGtagReady) return;
     window.gtag?.("event", "purchase", {
       transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
       currency: "PLN",
@@ -140,7 +144,7 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
       value: priceFromGrosz(order.totalInGrosz),
       items: order.items.map((item) => orderItemsToGoogleAnalyticsItems(item)),
     });
-  }, [order]);
+  }, [order, isGtagReady]);
 
   const orderDetails = React.useMemo(() => {
     try {

@@ -9,11 +9,15 @@ import {
   ItemTitle,
 } from "~/components/ui/item";
 
-import type { PersonalDetails } from "~/lib/types";
 import { cn } from "~/lib/utils";
 
 interface PersonalDataProps {
-  personalData: PersonalDetails;
+  personalData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+  };
   className?: string;
 }
 

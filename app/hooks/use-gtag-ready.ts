@@ -26,27 +26,21 @@ export function useGtagReady(): boolean {
 
   useEffect(() => {
     // Skip if we're not in the browser
-    if (typeof window === "undefined") {
+    if (import.meta.env.SSR) {
       return;
     }
 
-    // Check if gtag and consent are already initialized
     const checkGtagReady = (): boolean => {
-      // 1. Check if gtag function exists
-      if (!window.gtag) {
-        return false;
-      }
+      if (!window.gtag) return false;
+      if (!window.dataLayer || !Array.isArray(window.dataLayer)) return false;
 
-      // 2. Check if dataLayer exists
-      if (!window.dataLayer || !Array.isArray(window.dataLayer)) {
-        return false;
-      }
-
-      // 3. Check if consent has been initialized in dataLayer
-      // Consent initialization pushes ["consent", "default", {...}] to dataLayer
       const hasConsentInit = window.dataLayer.some((entry) => {
+        // GTM object format: { "0": "consent", "1": "default", ... }
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+          return entry["0"] === "consent" && entry["1"] === "default";
+        }
+        // Raw gtag array format: ["consent", "default", { ... }]
         if (Array.isArray(entry)) {
-          // Check for consent default command
           return entry[0] === "consent" && entry[1] === "default";
         }
         return false;
