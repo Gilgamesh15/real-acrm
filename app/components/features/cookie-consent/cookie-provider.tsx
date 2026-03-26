@@ -161,8 +161,8 @@ export function CookieConsentProvider({
       setState({ ...stored, visitorId });
       setIsBannerVisible(false);
       previousCategoriesRef.current = stored.categories;
-
       loadConsentedScripts(stored.categories);
+      updateGoogleConsentMode(stored.categories);
     } else {
       setState((prev) => ({ ...prev, visitorId }));
       setIsBannerVisible(true);
@@ -173,7 +173,7 @@ export function CookieConsentProvider({
     if (config.traceability?.enabled) {
       retryFailedRecords(config.traceability);
     }
-  }, [config.consentVersion, config.traceability]);
+  }, [config.consentVersion, config.traceability, updateGoogleConsentMode]);
 
   // Check for existing Google scripts on mount
   React.useEffect(() => {

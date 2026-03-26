@@ -13,7 +13,6 @@ import {
   useRevalidator,
 } from "react-router";
 
-import { GoogleConsentMode } from "~/components/features/cookie-consent";
 import { CookieBanner } from "~/components/features/cookie-consent/cookie-banner";
 import { CookieConsentProvider } from "~/components/features/cookie-consent/cookie-provider";
 import { CookieSettings } from "~/components/features/cookie-consent/cookie-settings";
@@ -104,8 +103,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
 
         {/* google analytics */}
-        <GoogleConsentMode />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            // Define dataLayer and the gtag function.
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
 
+            // Set default consent to 'denied' as a placeholder
+            // Determine actual values based on your own requirements
+            gtag('consent', 'default', {
+              'ad_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied',
+              'analytics_storage': 'denied'
+            });
+          `,
+          }}
+        />
+        {/* Google tag (gtag.js) */}
         {import.meta.env.VITE_GOOGLE_ANALYTICS_ID && (
           <script
             async
