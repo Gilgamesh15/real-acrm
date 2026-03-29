@@ -1,10 +1,14 @@
 import * as schema from "db/schema";
 import { desc, eq } from "drizzle-orm";
-import { DownloadIcon, Trash2 } from "lucide-react";
+import { BellOff, DownloadIcon, Trash2 } from "lucide-react";
 import React from "react";
-import { data, redirect, useFetcher } from "react-router";
-import { useRevalidator } from "react-router";
-import { useNavigate } from "react-router";
+import {
+  data,
+  redirect,
+  useFetcher,
+  useNavigate,
+  useRevalidator,
+} from "react-router";
 import { toast } from "sonner";
 
 import {
@@ -41,8 +45,19 @@ export async function loader({ context }: Route.LoaderArgs) {
     throw redirect("/zaloguj-sie", { status: 302 });
   }
 
+  const subscriber = await db.query.newsletterSubscribers.findFirst({
+    where: eq(schema.newsletterSubscribers.email, session.user.email),
+  });
+
+  const isSubscribed =
+    subscriber != null &&
+    (subscriber.unsubscribedAt === null ||
+      subscriber.subscribedAt > subscriber.unsubscribedAt);
+
   return {
     userId: session.user.id,
+    isNewsletterSubscribed: isSubscribed,
+    unsubscribeToken: isSubscribed ? subscriber.unsubscribeToken : null,
   };
 }
 
@@ -50,6 +65,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 enum Intent {
   EXPORT = "export",
   DELETE = "delete",
+  UNSUBSCRIBE = "unsubscribe",
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -62,9 +78,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const userId = session.user.id;
   try {
-    const intent = (await request.formData()).get("intent") as
-      | Intent
-      | undefined;
+    const formData = await request.formData();
+    const intent = formData.get("intent") as Intent | undefined;
     if (!intent) {
       return data(
         {
@@ -142,6 +157,39 @@ export async function action({ request, context }: Route.ActionArgs) {
         );
       }
 
+      case Intent.UNSUBSCRIBE: {
+        const token = formData.get("token") as string | null;
+
+        if (!token) {
+          return data(
+            {
+              success: false,
+              message: "Brak tokenu",
+              data: null,
+              intent,
+            },
+            { status: 400 }
+          );
+        }
+
+        await db
+          .update(schema.newsletterSubscribers)
+          .set({ unsubscribedAt: new Date() })
+          .where(eq(schema.newsletterSubscribers.unsubscribeToken, token));
+
+        logger.info("User unsubscribed from newsletter", { userId });
+
+        return data(
+          {
+            success: true,
+            message: "Wypisano z newslettera",
+            data: null,
+            intent,
+          },
+          { status: 200 }
+        );
+      }
+
       case Intent.DELETE: {
         await db.delete(schema.users).where(eq(schema.users.id, userId));
 
@@ -207,7 +255,8 @@ export const meta: Route.MetaFunction = () => [
   { title: "Ustawienia prywatności | ACRM" },
 ];
 
-export default function PrivacyPage() {
+export default function PrivacyPage({ loaderData }: Route.ComponentProps) {
+  const { isNewsletterSubscribed, unsubscribeToken } = loaderData;
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
 
@@ -217,6 +266,9 @@ export default function PrivacyPage() {
   const isExporting =
     fetcher.state !== "idle" &&
     fetcher.formData?.get("intent") === Intent.EXPORT;
+  const isUnsubscribing =
+    fetcher.state !== "idle" &&
+    fetcher.formData?.get("intent") === Intent.UNSUBSCRIBE;
   const isLoading = fetcher.state !== "idle";
 
   const onExportData = async () => {
@@ -285,6 +337,47 @@ export default function PrivacyPage() {
   return (
     <div className="space-y-6">
       <h1 className="sr-only">Ustawienia prywatności</h1>
+
+      {isNewsletterSubscribed && unsubscribeToken && (
+        <Item variant="outline">
+          <ItemHeader>
+            <ItemTitle>Newsletter</ItemTitle>
+          </ItemHeader>
+          <ItemContent>
+            <ItemDescription>
+              Jesteś zapisany/a do newslettera. Możesz w każdej chwili wycofać
+              zgodę na otrzymywanie wiadomości marketingowych.
+            </ItemDescription>
+          </ItemContent>
+          <ItemFooter>
+            <Button
+              onClick={() => {
+                if (isLoading) return;
+                fetcher.submit(
+                  { intent: Intent.UNSUBSCRIBE, token: unsubscribeToken },
+                  { method: "POST" }
+                );
+              }}
+              disabled={isUnsubscribing}
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              {isUnsubscribing ? (
+                <>
+                  <Spinner />
+                  Wypisywanie...
+                </>
+              ) : (
+                <>
+                  <BellOff className="mr-2 h-4 w-4" />
+                  Wypisz się z newslettera
+                </>
+              )}
+            </Button>
+          </ItemFooter>
+        </Item>
+      )}
+
       <Item variant="outline">
         <ItemHeader>
           <ItemTitle>Eksportuj dane</ItemTitle>

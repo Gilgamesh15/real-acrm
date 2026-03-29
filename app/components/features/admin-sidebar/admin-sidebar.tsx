@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   ListTodoIcon,
   LogOutIcon,
+  MailIcon,
   MenuIcon,
   PackageIcon,
   PaletteIcon,
@@ -194,6 +195,16 @@ const sidebarData: TNavGroup[] = [
         title: "Zniżki",
         url: "/admin/discounts",
         icon: PercentIcon,
+      },
+    ],
+  },
+  {
+    title: "Zarządzanie newsletterem",
+    items: [
+      {
+        title: "Subskrybenci",
+        url: "/admin/newsletter-subscribers",
+        icon: MailIcon,
       },
     ],
   },

@@ -11,7 +11,6 @@ import {
   ChevronsRight,
   Clock,
   EyeIcon,
-  Loader2,
   MailIcon,
   PackageCheck,
   RotateCcw,
@@ -34,7 +33,6 @@ import {
   ErrorTitle,
 } from "~/components/ui/error";
 import Image from "~/components/ui/image";
-import { Input } from "~/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -48,6 +46,7 @@ import { api } from "~/api/api.server";
 import { MainPieceCard } from "~/components/features/product-card/main-piece-card";
 import { useCart } from "~/components/features/providers/cart-provider";
 import { useCheckoutDialog } from "~/components/features/providers/checkout-dialog-provider";
+import { useWelcomePopup } from "~/components/features/welcome-popup/welcome-popup-provider";
 import { useViewerCounts } from "~/hooks/use-viewer-counts";
 import { cld } from "~/lib/claudinary";
 import type { DBQueryResult } from "~/lib/types";
@@ -758,38 +757,7 @@ function BundleSection({
 // Newsletter Section
 // ---------------------------------------------------------------------------
 function NewsletterSection() {
-  const [email, setEmail] = React.useState("");
-  const [status, setStatus] = React.useState<
-    "idle" | "loading" | "success" | "error" | "already"
-  >("idle");
-
-  const handleSubmit = async (e: { preventDefault(): void }) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.alreadySubscribed) {
-          setStatus("already");
-        } else {
-          setStatus("success");
-        }
-        setEmail("");
-      } else {
-        setStatus("error");
-      }
-    } catch {
-      setStatus("error");
-    }
-  };
+  const { handleForceOpen, isSubscribed } = useWelcomePopup();
 
   return (
     <section className="bg-secondary/20 border-y" aria-label="Newsletter">
@@ -799,51 +767,24 @@ function NewsletterSection() {
           Bądź na bieżąco
         </h2>
         <p className="text-sm text-muted-foreground mt-3 mb-10">
-          Nowe dropy i oferty prosto na maila
+          Zapisz się do newslettera i odbierz kod rabatowy na pierwsze
+          zamówienie
         </p>
 
-        {status === "success" ? (
+        {isSubscribed ? (
           <div className="flex items-center justify-center gap-2 text-success-foreground">
             <CheckCircle2 className="size-5" />
-            <span className="text-sm font-medium">
-              Dziękujemy za zapisanie się!
-            </span>
-          </div>
-        ) : status === "already" ? (
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <CheckCircle2 className="size-5" />
-            <span className="text-sm font-medium">
-              Ten email jest już zapisany
-            </span>
+            <span className="text-sm font-medium">Jesteś już zapisany!</span>
           </div>
         ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-          >
-            <Input
-              type="email"
-              placeholder="Twój adres email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button
-              type="submit"
-              disabled={status === "loading"}
-              className="h-10 px-6"
-            >
-              {status === "loading" ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                "Zapisz się"
-              )}
+          <>
+            <Button onClick={handleForceOpen} className="h-10 px-6">
+              Zapisz się i odbierz -10%
             </Button>
-          </form>
-        )}
-        {status === "error" && (
-          <p className="text-sm text-destructive mt-3">
-            Coś poszło nie tak. Spróbuj ponownie.
-          </p>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Oferta jednorazowa – tylko dla nowych subskrybentów.
+            </p>
+          </>
         )}
       </div>
     </section>

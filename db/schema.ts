@@ -829,7 +829,16 @@ export const newsletterSubscribers = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     email: text("email").notNull(),
+    subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
+    unsubscribedAt: timestamp("unsubscribed_at"),
+    welcomeCodeSent: boolean("welcome_code_sent").default(false).notNull(),
+    unsubscribeToken: text("unsubscribe_token")
+      .notNull()
+      .$defaultFn(() => crypto.randomUUID()),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [uniqueIndex().on(table.email)]
+  (table) => [
+    uniqueIndex().on(table.email),
+    uniqueIndex().on(table.unsubscribeToken),
+  ]
 );

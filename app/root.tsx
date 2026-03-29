@@ -16,9 +16,11 @@ import {
 import { CookieBanner } from "~/components/features/cookie-consent/cookie-banner";
 import { CookieConsentProvider } from "~/components/features/cookie-consent/cookie-provider";
 import { CookieSettings } from "~/components/features/cookie-consent/cookie-settings";
+import { WelcomePopupDialog } from "~/components/features/welcome-popup/welcome-popup-dialog";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { WelcomePopupProvider } from "./components/features/welcome-popup/welcome-popup-provider";
 import { Button } from "./components/ui/button";
 import {
   Empty,
@@ -173,11 +175,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 },
               }}
             >
-              <div className="min-h-svh max-w-screen overflow-x-hidden flex flex-col">
-                {children}
-              </div>
-              <CookieBanner />
-              <CookieSettings />
+              <WelcomePopupProvider>
+                <div className="min-h-svh max-w-screen overflow-x-hidden flex flex-col">
+                  {children}
+                </div>
+                <CookieBanner />
+                <CookieSettings />
+                <WelcomePopupDialog />
+              </WelcomePopupProvider>
             </CookieConsentProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>

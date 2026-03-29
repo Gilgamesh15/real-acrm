@@ -9,7 +9,6 @@ export default [
     route("/pieces", "./api/pieces/api.ts"),
     route("/categories", "./api/categories/api.ts"),
     route("/tags", "./api/tags/index.ts"),
-    route("/newsletter", "./api/newsletter/api.ts"),
     route("/viewers", "./api/viewers/api.ts"),
 
     // Brands
@@ -22,6 +21,23 @@ export default [
     ...prefix("/sizes", [
       index("./api/sizes/sizes.handlers.ts"),
       route("/:slug", "./api/sizes/:slug/sizes-by-slug.handlers.ts"),
+    ]),
+
+    // Newsletter
+    ...prefix("/newsletter", [
+      index("./api/newsletter/newsletter.handlers.ts"),
+      route(
+        "/subscribe",
+        "./api/newsletter/subscribe/newsletter-subscribe.handlers.ts"
+      ),
+      route(
+        "/unsubscribe",
+        "./api/newsletter/unsubscribe/newsletter-unsubscribe.handlers.ts"
+      ),
+      route(
+        "/:email",
+        "./api/newsletter/:email/newsletter-by-email.handlers.ts"
+      ),
     ]),
   ]),
   // API
@@ -77,6 +93,9 @@ export default [
     route("/kategorie/*", "./routes/main/pieces/pieces-browse.page.tsx"),
     // Pieces
     route("/ubrania/:pieceSlug", "./routes/main/pieces/piece-detail.page.tsx"),
+
+    // Unsubscribe
+    route("/wypisz-sie", "./routes/main/unsubscribe.page.tsx"),
 
     // Legal
     route("/regulamin", "./routes/main/legal/terms-of-service.page.tsx"),
@@ -198,6 +217,11 @@ export default [
           "./routes/admin/orders/admin-orders-detail.page.tsx"
         ),
       ]),
+      // Newsletter subscribers
+      route(
+        "/newsletter-subscribers",
+        "./routes/admin/newsletter/admin-newsletter-subscribers-list.page.tsx"
+      ),
       // Discounts
       ...prefix("/discounts", [
         index("./routes/admin/discounts/admin-discounts-list.page.tsx"),
