@@ -907,7 +907,8 @@ class OrderService {
 
   async createOrder(
     args: CreateOrderSchemaType,
-    userId: string | undefined
+    userId: string | undefined,
+    searchParams: URLSearchParams
   ): Promise<
     | {
         order: DBQueryResult<
@@ -1281,11 +1282,8 @@ class OrderService {
                 enabled: true,
               },
             },
-            success_url: `${APP_URL}/zamowienie/${createdOrder.orderNumber}/sukces`,
-            cancel_url: `${APP_URL}/`,
-            //consent_collection: {
-            //  terms_of_service: "required",
-            //},
+            success_url: `${APP_URL}/zamowienie/${createdOrder.orderNumber}/sukces?${searchParams.toString()}`,
+            cancel_url: `${APP_URL}/?${searchParams.toString()}`,
           };
 
           if (userId) {
