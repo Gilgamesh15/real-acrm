@@ -32,17 +32,17 @@ const SOCIAL_MEDIA_LINKS = [
   {
     label: "Instagram",
     href: INSTAGRAM_URL,
-    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914298/Instagram_Glyph_Gradient_jis95v_hsrejt.png",
+    icon: "https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013454/5acbb712-9232-4b5b-b8ec-a1a83d90329e_dtjqm2_hd5qbe.jpg",
   },
   {
     label: "TikTok",
     href: TIKTOK_URL,
-    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914295/TikTok_Icon_Black_Circle_zs74uw_kyehcr.png",
+    icon: "https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013341/TikTok_Icon_Black_Circle_zs74uw_kyehcr_fn95ib.png",
   },
   {
     label: "Youtube",
     href: YOUTUBE_URL,
-    icon: "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914295/yt_icon_red_digital_jnen7h_uzgxlb.png",
+    icon: "https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013364/yt_icon_red_digital_jnen7h_uzgxlb_qwaijc.png",
   },
 ];
 

@@ -8,7 +8,7 @@ import { EmailBase, colors, fonts } from "./email-base";
 
 const CONTACT_EMAIL = import.meta.env.VITE_COMPANY_EMAIL;
 const RETURN_ICON_URL =
-  "https://res.cloudinary.com/dqz9vgiko/image/upload/v1772914299/Adobe_Express_-_file_qtvusb_bwcgiv_hiuemy.png";
+  "https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013405/Adobe_Express_-_file_qtvusb_bwcgiv_hiuemy_p6lema.png";
 
 interface ReturnItem {
   name: string;
