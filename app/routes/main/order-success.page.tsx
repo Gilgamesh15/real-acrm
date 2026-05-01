@@ -1,7 +1,7 @@
 import * as schema from "db/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, data } from "react-router";
 
 import { buttonVariants } from "~/components/ui/button";
@@ -25,7 +25,6 @@ import {
   ProductCardPrice,
   ProductCardRoot,
 } from "~/components/features/product-card/product-card-primitives";
-import { useGtagReady } from "~/hooks/use-gtag-ready";
 import { authClient } from "~/lib/auth-client";
 import { db } from "~/lib/db";
 import {
@@ -33,9 +32,7 @@ import {
   formatDate,
   groupOrderItems,
   orderDetailsFromOrder,
-  orderItemsToGoogleAnalyticsItems,
   priceDataToDisplayData,
-  priceFromGrosz,
 } from "~/lib/utils";
 
 import type { Route } from "./+types/order-success.page";
@@ -131,20 +128,6 @@ export default function OrderSuccessPage({ loaderData }: Route.ComponentProps) {
       0
     ),
   };
-
-  const isGtagReady = useGtagReady();
-
-  useEffect(() => {
-    if (!isGtagReady) return;
-    window.gtag?.("event", "purchase", {
-      transaction_id: order.stripeCheckoutSessionId || order.orderNumber,
-      currency: "PLN",
-      tax: priceFromGrosz(order.taxInGrosz),
-      shipping: 0,
-      value: priceFromGrosz(order.totalInGrosz),
-      items: order.items.map((item) => orderItemsToGoogleAnalyticsItems(item)),
-    });
-  }, [order, isGtagReady]);
 
   const orderDetails = React.useMemo(() => {
     try {

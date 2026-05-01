@@ -5,6 +5,7 @@ import type z from "zod";
 
 import { auth } from "~/lib/auth.server";
 import { CreateOrderSchema } from "~/lib/schemas";
+import { getGaClientId } from "~/lib/utils";
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const { logger } = context;
@@ -31,10 +32,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
   logger.debug("Creating order with the following args:", { args });
   logger.info("Creating order IDENTIFICATION", { args });
 
+  const gaClientId = getGaClientId(request);
+
   const result = await orderService.createOrder(
     args,
     userId,
-    new URLSearchParams(request.url)
+    new URLSearchParams(request.url),
+    gaClientId
   );
 
   if ("issues" in result) {

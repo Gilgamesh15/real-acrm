@@ -1060,3 +1060,20 @@ export function orderItemsToGoogleAnalyticsItems(
       : {}),
   };
 }
+
+export const getGaClientId = (request: Request): string | null => {
+  const cookieHeader = request.headers.get("Cookie");
+  if (!cookieHeader) return null;
+
+  const cookies = Object.fromEntries(
+    cookieHeader.split(";").map((c) => {
+      const [key, ...val] = c.trim().split("=");
+      return [key.trim(), val.join("=")];
+    })
+  );
+
+  const gaClientIdCookie = cookies["_ga"];
+  if (!gaClientIdCookie) return null;
+
+  return gaClientIdCookie.split(".").slice(-2).join(".");
+};

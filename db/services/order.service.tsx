@@ -16,13 +16,110 @@ import {
   calculatePiecePrice,
   createIdentificationNumber,
   orderDetailsFromOrder,
+  orderItemsToGoogleAnalyticsItems,
   orderStatusFromOrder,
+  priceFromGrosz,
 } from "~/lib/utils";
 
 const APP_URL = process.env.VITE_APP_URL;
 
 class OrderService {
   constructor(private logger: Logger) {}
+
+  async emitPurchaseEvent(
+    order: DBQueryResult<
+      "orders",
+      {
+        with: {
+          items: {
+            with: {
+              piece: {
+                columns: {
+                  id: true;
+                  name: true;
+                };
+                with: {
+                  brand: {
+                    columns: {
+                      name: true;
+                    };
+                  };
+                  category: {
+                    columns: {
+                      path: true;
+                      name: true;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      }
+    >,
+    gaClientId: string
+  ) {
+    const customerId = order.userId;
+
+    if (!gaClientId) {
+      this.logger.info(
+        `GA4 Plugin: Order ${order.id} does not have a ga_client_id, skipping event`
+      );
+      return;
+    }
+
+    const measurementId = process.env.VITE_GOOGLE_ANALYTICS_ID;
+    const apiSecret = process.env.GOOGLE_ANALYTICS_API_SECRET;
+    const gaEndpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`;
+    const debugEndpoint = `https://www.google-analytics.com/debug/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`;
+
+    const url =
+      process.env.NODE_ENV === "development" ? debugEndpoint : gaEndpoint;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: gaClientId,
+          user_id: customerId,
+          events: [
+            {
+              name: "purchase",
+              params: {
+                transaction_id:
+                  order.stripeCheckoutSessionId || order.orderNumber,
+                currency: "PLN",
+                tax: priceFromGrosz(order.taxInGrosz),
+                shipping: 0,
+                value: priceFromGrosz(order.totalInGrosz),
+                items: order.items.map((item) =>
+                  orderItemsToGoogleAnalyticsItems(item)
+                ),
+              },
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `GA4 Plugin: Failed to send events: ${response.statusText}`
+        );
+      }
+
+      this.logger.info(
+        "GA4 Plugin: Events sent to Google Analytics successfully"
+      );
+    } catch (error) {
+      this.logger.error(
+        "GA4 Plugin: Error sending events to Google Analytics:",
+        { error }
+      );
+    }
+  }
 
   // ========================== COMPLETE ORDER ==========================
   // ========================== COMPLETE ORDER - UPDATED ==========================
@@ -499,7 +596,11 @@ class OrderService {
           stripeSessionId,
           orderId: order.id,
         });
-        return { alreadyProcessed: false, orderId: order.id };
+        return {
+          alreadyProcessed: false,
+          orderId: order.id,
+          gaClientId: stripeSession.metadata?.ga_client_id as string | null,
+        };
       });
 
       // Handle idempotency - order was already processed
@@ -532,6 +633,8 @@ class OrderService {
               piece: {
                 with: {
                   images: true,
+                  brand: { columns: { name: true } },
+                  category: { columns: { path: true, name: true } },
                 },
               },
             },
@@ -643,6 +746,17 @@ class OrderService {
         stripeSessionId,
         orderId: order.id,
       });
+
+      try {
+        const gaClientId = transactionResult.gaClientId as string | null;
+        if (gaClientId) await this.emitPurchaseEvent(order, gaClientId);
+      } catch (err) {
+        this.logger.error("Failed to emit purchase event", {
+          err,
+          stripeSessionId,
+          orderId: order.id,
+        });
+      }
 
       return data(
         {
@@ -908,7 +1022,8 @@ class OrderService {
   async createOrder(
     args: CreateOrderSchemaType,
     userId: string | undefined,
-    searchParams: URLSearchParams
+    searchParams: URLSearchParams,
+    gaClientId: string | null
   ): Promise<
     | {
         order: DBQueryResult<
@@ -1276,6 +1391,7 @@ class OrderService {
                 : undefined,
             metadata: {
               orderId: createdOrder.id,
+              ga_client_id: gaClientId,
             },
             name_collection: {
               individual: {

@@ -49,6 +49,7 @@ declare global {
       readonly VITE_GOOGLE_ANALYTICS_ID: string | undefined;
       readonly VITE_GOOGLE_ADS_ID: string | undefined;
       // server
+      readonly GOOGLE_ANALYTICS_API_SECRET: string | undefined;
       readonly BETTER_AUTH_SECRET: string;
       readonly BETTER_STACK_ENDPOINT: string;
       readonly BETTER_STACK_SOURCE_TOKEN: string;
