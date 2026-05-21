@@ -21,7 +21,7 @@ export const WelcomeDiscountEmail = ({
 }: WelcomeDiscountEmailProps) => {
   return (
     <EmailBase
-      iconUrl="https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013454/5acbb712-9232-4b5b-b8ec-a1a83d90329e_dtjqm2_hd5qbe.jpg"
+      iconUrl="https://res.cloudinary.com/dzqrf4wlc/image/upload/v1779380620/order-confirmation-email-hero_lspqml.png"
       title="Witaj w ACRM!"
     >
       <Section style={{ backgroundColor: colors.background }}>

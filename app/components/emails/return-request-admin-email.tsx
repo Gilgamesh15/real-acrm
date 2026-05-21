@@ -6,7 +6,7 @@ import { formatCurrency, priceFromGrosz } from "~/lib/utils";
 import { EmailBase, colors, fonts } from "./email-base";
 
 const RETURN_ICON_URL =
-  "https://res.cloudinary.com/dvuebzp3i/image/upload/v1776013405/Adobe_Express_-_file_qtvusb_bwcgiv_hiuemy_p6lema.png";
+  "https://res.cloudinary.com/dzqrf4wlc/image/upload/v1779380620/order-confirmation-email-hero_lspqml.png"
 
 interface ReturnItem {
   name: string;

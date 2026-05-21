@@ -173,7 +173,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 // Hero Section
 // ---------------------------------------------------------------------------
 function HeroSection() {
-  const vid = cld.video("v1776013261/Trim_video_project_ojngrn_fm0afk");
+  const vid = cld.video("v1779380689/Trim_video_project_mfjaug");
   vid.transcode(videoCodec(auto()));
 
   return (
