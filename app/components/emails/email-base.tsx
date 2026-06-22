@@ -236,7 +236,7 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
                   }}
                 >
                   <Img
-                    src="https://res.cloudinary.com/dzqrf4wlc/image/upload/v1779380554/Instagram_Glyph_Gradient_c5kmt4.png"
+                    src="https://res.cloudinary.com/dfy7wey4x/image/upload/v1782125334/brand/instagram-glyph-gradient.png"
                     alt="Inst"
                     width={32}
                     title="Instagram"
@@ -265,7 +265,7 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
                     alt="Tt"
                     width={32}
                     title="TikTok"
-                    src="https://res.cloudinary.com/dzqrf4wlc/image/upload/v1779380577/TikTok_Icon_Black_Circle_k54nej.png"
+                    src="https://res.cloudinary.com/dfy7wey4x/image/upload/v1782125337/brand/tiktok-icon-black-circle.png"
                     height={32}
                   />
                 </Link>
@@ -291,7 +291,7 @@ export const EmailBase = ({ iconUrl, title, children }: EmailBaseProps) => {
                     alt="Yt"
                     width={32}
                     title="Youtube"
-                    src="https://res.cloudinary.com/dzqrf4wlc/image/upload/v1779380597/yt_icon_red_digital_h4nkg3.png"
+                    src="https://res.cloudinary.com/dfy7wey4x/image/upload/v1782125340/brand/yt-icon-red-digital.png"
                     height={32}
                   />
                 </Link>
